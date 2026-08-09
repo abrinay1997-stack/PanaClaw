@@ -79,6 +79,11 @@ export interface NavLink {
 export const navLinks: NavLink[] = [
   { href: routes.home, label: 'Inicio' },
   { href: routes.servicios, label: 'Servicios' },
+  // eVot va pegado a Servicios y no al final: es el único producto del catálogo
+  // que no es una web, así que quien llega buscando "sitios" tiene que tropezarse
+  // con él temprano o no lo verá nunca. El nombre va solo, sin explicación — la
+  // barra no da para una frase y la página entera es la explicación.
+  { href: routes.evot, label: 'eVot' },
   // Va antes de Planes a propósito: quien duda del precio suele estar dudando
   // de si sabemos hacerlo. La prueba tiene que llegarle antes que la cifra.
   { href: routes.proyectos, label: 'Proyectos' },

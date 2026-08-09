@@ -355,6 +355,57 @@ tenerla, y hoy responde a esas preguntas con cualquier cosa.
 El 43 va primero: el resto de esta lista describe cómo responde algo que quizá
 no esté respondiendo, y desde aquí no hay forma de saberlo.
 
+## Bloque 8 — eVot, el bot multicanal
+
+**Hecho el 2026-08-09.** El sitio ya vende algo que no es una web: `/evot/`, con
+entrada propia en la barra (entre *Servicios* y *Proyectos*), en el pie, en el
+desplegable de `/contacto` y en la base del chat. Todo el contenido sale de
+`src/data/evot.ts` — precio, canales, las 13 pantallas del panel, los dos gastos
+que paga el cliente, lo que incluye, lo que no y las seis preguntas—, así que la
+página, el formulario y lo que responde el bot no pueden desincronizarse. Emite
+`Service` + `Offer` y `FAQPage`.
+
+Dos decisiones que conviene no deshacer:
+
+- **Los dos gastos mensuales del cliente van publicados con el mismo tamaño que
+  los $70**, no en una nota al pie. Un producto que anuncia $70 y calla la nube y
+  la llave de IA es exactamente la letra chica que el resto del sitio dice no
+  tener, y aquí duele más porque el argumento entero es «no te alquilamos nada».
+- **eVot no entró en `plans.ts` ni en `modules.ts`.** No se entrega en días de
+  diseño, no lleva rondas de revisión y su precio no se compone como el de una
+  web; mezclarlo habría obligado a poner asteriscos en los cuatro planes.
+
+**Medido el 2026-08-09** sobre el build de producción, mismo método que la tabla
+de arriba:
+
+| Página | Alto (escritorio / móvil) | Acciones en `<main>` |
+|---|---|---|
+| `/evot` | 8 276 / 11 368 px | 8 |
+
+Es la página más larga del sitio, por delante de `/planes` (5 394 / 8 195). Es
+contenido, no relleno: un producto que nadie conoce necesita que le enseñen los
+canales, el panel por dentro, el precio real y las objeciones. Por eso el índice
+va arriba del todo y no al final de la primera sección, y por eso en el teléfono
+se recortó el aire —relleno de tarjeta y huecos, unos 1 200 px— sin quitar una
+sola frase. Las acciones (8) están muy por debajo de las 16 de `/planes`: aquí
+solo se puede hacer una cosa.
+
+**El navbar se desbordaba y nadie lo sabía.** Con siete enlaces el pill ya se
+salía 18 px a 901 px de ancho; con el octavo el desborde llegó a 77 px en toda
+la franja 901–999 px. No se veía porque `body{overflow-x:hidden}` se traga el
+sobrante y `medir:movil` mide el centrado del pill, no lo que pasa dentro. El nav
+colapsa ahora a 1000 px en vez de a 900. **Si algún día entra un noveno enlace,
+hay que volver a medir esa franja** — y la comprobación todavía no está en
+`medir:movil`, así que hoy depende de que alguien se acuerde.
+
+| # | Pendiente | Quién |
+|---|---|---|
+| 44 | **`/planes` cobra $250–$900 por «Respuestas automáticas con IA» y `/evot` cobra $70 por contestar los mensajes.** Un cliente que lea las dos páginas ve dos precios para lo que él entiende como lo mismo, y eso desmonta la promesa de precios claros. No son lo mismo —el módulo se construye dentro de tu web a medida; eVot es un producto ya hecho que se monta en tu cuenta— pero el sitio no lo dice en ninguna parte. **Decisión tuya:** o el módulo cambia de nombre y de descripción para que se distinga solo, o desaparece y todo lo de IA pasa por eVot. Es la más urgente de esta lista: hoy las dos páginas están publicadas a la vez. | `[tuyo]` |
+| 45 | **El cotizador no conoce eVot.** La capacidad «Respuestas automáticas» sigue cotizando el módulo. Se arregla en `quote.ts` en cuanto esté decidido el 44, no antes: cablearlo ahora sería programar la contradicción. | `[código]` |
+| 46 | **El alcance y el plazo de eVot son una propuesta mía, no una decisión tomada.** «Entrega en 48 horas», qué entra por los $70 y qué no (las cinco líneas de cada lista) salieron de lo que el producto hace, no de lo que tú te comprometes a hacer. Se revisan enteros en `src/data/evot.ts`; una promesa que no puedas cumplir un martes ocupado es peor que no publicarla. | `[tuyo]` |
+| 47 | **eVot no aparece en la home.** Está en la barra, en el pie y en el chat, pero quien entra por la portada y no mira el menú no se entera de que existe. No se metió a propósito: la home ya tiene 17 acciones compitiendo y meter una decimoctava sin decidir qué sale es empeorar el punto 15. | `[código]` + `[tuyo]` |
+| 48 | **Las cuatro sugerencias del chat no mencionan eVot.** Dirigen hacia planes, plazos, código y mantenimiento; el producto nuevo no entra en la conversación si nadie pregunta por él. Cambiarlo es sustituir una de las cuatro, y cuál sale es decisión de negocio. | `[tuyo]` |
+
 ---
 
 ## Fuera de alcance mientras no haya presupuesto
