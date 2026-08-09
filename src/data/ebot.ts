@@ -1,5 +1,5 @@
 /**
- * eVot — el bot multicanal con panel, montado en la cuenta del cliente.
+ * eBot — el bot multicanal con panel, montado en la cuenta del cliente.
  *
  * Es el único producto del catálogo que NO es un sitio web, y por eso vive en su
  * propio archivo en vez de colarse en `plans.ts` o en `modules.ts`: no se entrega
@@ -19,10 +19,10 @@
  */
 import { routes } from './links';
 
-export const evot = {
-  /** Nombre de producto. Se escribe así en todas partes: minúscula y V alta. */
-  name: 'eVot',
-  slug: 'evot',
+export const ebot = {
+  /** Nombre de producto. Se escribe así en todas partes: e minúscula y B alta. */
+  name: 'eBot',
+  slug: 'ebot',
   tagline: 'Todos tus mensajes, en un solo lugar.',
   /**
    * Qué se paga a PanaClaw. Es pago único: no hay mensualidad nuestra, y esa es
@@ -42,7 +42,7 @@ export const evot = {
  * Canales
  * ------------------------------------------------------------------ */
 
-export interface EvotCanal {
+export interface EbotCanal {
   name: string;
   /** Qué cambia para el cliente al conectarlo, no cómo se conecta. */
   desc: string;
@@ -55,7 +55,7 @@ export interface EvotCanal {
   nota?: string;
 }
 
-export const evotCanales: EvotCanal[] = [
+export const ebotCanales: EbotCanal[] = [
   {
     name: 'WhatsApp',
     desc: 'Donde de verdad te escriben. El bot contesta con tu número de siempre.',
@@ -79,12 +79,12 @@ export const evotCanales: EvotCanal[] = [
  * Qué hace
  * ------------------------------------------------------------------ */
 
-export interface EvotCapacidad {
+export interface EbotCapacidad {
   title: string;
   desc: string;
 }
 
-export const evotCapacidades: EvotCapacidad[] = [
+export const ebotCapacidades: EbotCapacidad[] = [
   {
     title: 'Contesta a cualquier hora',
     desc: 'A las once de la noche y en domingo. La mayoría de los mensajes de un negocio son las mismas cinco preguntas —precio, horario, dónde están, si hay disponibilidad, cómo se paga— y esas ya no te despiertan.',
@@ -119,7 +119,7 @@ export const evotCapacidades: EvotCapacidad[] = [
  * El panel
  * ------------------------------------------------------------------ */
 
-export interface EvotPanelGroup {
+export interface EbotPanelGroup {
   title: string;
   /** Los nombres son los mismos que se leen dentro del panel. */
   items: { name: string; desc: string }[];
@@ -132,7 +132,7 @@ export interface EvotPanelGroup {
  * persona va a ver el día que entre, y una lista de nombres inventados para la
  * página de ventas convierte la primera sesión en una búsqueda del tesoro.
  */
-export const evotPanel: EvotPanelGroup[] = [
+export const ebotPanel: EbotPanelGroup[] = [
   {
     title: 'Tu bandeja',
     items: [
@@ -167,8 +167,15 @@ export const evotPanel: EvotPanelGroup[] = [
  * Qué se paga, y a quién
  * ------------------------------------------------------------------ */
 
-export interface EvotCosto {
+export interface EbotCosto {
   concepto: string;
+  /**
+   * El mismo gasto dicho en dos palabras, con su artículo. Lo usa el desglose
+   * del cotizador, donde no cabe «La nube donde vive» y donde una frase
+   * compuesta a la brava («de el cerebro que piensa») delata que la escribió
+   * una máquina.
+   */
+  corto: string;
   price: string;
   /** A quién se le paga. Es el dato que evita la sorpresa, no el importe. */
   aQuien: string;
@@ -182,15 +189,17 @@ export interface EvotCosto {
  * son parte del precio real. Un producto que anuncia $70 y calla dos cuentas
  * mensuales es exactamente la letra chica que el resto del sitio dice no tener.
  */
-export const evotCostos: EvotCosto[] = [
+export const ebotCostos: EbotCosto[] = [
   {
     concepto: 'La nube donde vive',
+    corto: 'la nube',
     price: '$5 al mes',
     aQuien: 'Se paga a Cloudflare',
     desc: 'Cloudflare es la empresa donde corre el bot. La cuenta se abre a tu nombre, con tu tarjeta, y ese plan da de sobra para un negocio.',
   },
   {
     concepto: 'El cerebro que piensa',
+    corto: 'tu llave de IA',
     price: '$1–2 al mes',
     aQuien: 'Se paga a la empresa de IA que elijas',
     // Sin repetir aquí lo del gasto al día: ya lo dice la entradilla de la
@@ -200,7 +209,7 @@ export const evotCostos: EvotCosto[] = [
 ];
 
 /** Lo que sí hacemos por los $70. */
-export const evotIncluye: string[] = [
+export const ebotIncluye: string[] = [
   'Lo montamos en tu cuenta y te entregamos tu panel con tu contraseña',
   'Conectamos los canales que uses de los cuatro',
   'Le cargamos lo que tu negocio sabe: precios, horarios, políticas y preguntas frecuentes',
@@ -213,19 +222,19 @@ export const evotIncluye: string[] = [
  * los planes publican su lista de exclusiones: lo que sale caro no es cobrar
  * aparte, es que el cliente se entere después.
  */
-export const evotNoIncluye: string[] = [
+export const ebotNoIncluye: string[] = [
   'Las dos cuentas de arriba: se pagan a Cloudflare y a la empresa de IA, no a nosotros',
   'Escribir desde cero los documentos de tu negocio, si todavía no existen',
   'Atender las conversaciones a diario por ti — eso sigue siendo tuyo',
   'El trámite de verificación de WhatsApp con Meta, que solo tú puedes firmar',
-  'Una página web: eVot atiende tus mensajes, no reemplaza tu sitio',
+  'Una página web: eBot atiende tus mensajes, no reemplaza tu sitio',
 ];
 
 /* ------------------------------------------------------------------ *
  * Propiedad
  * ------------------------------------------------------------------ */
 
-export interface EvotHecho {
+export interface EbotHecho {
   k: string;
   desc: string;
 }
@@ -235,7 +244,7 @@ export interface EvotHecho {
  * pagas queda a tu nombre. Cambiar cualquiera de estas tres frases es cambiar
  * lo que se está vendiendo, no la redacción.
  */
-export const evotPropiedad: EvotHecho[] = [
+export const ebotPropiedad: EbotHecho[] = [
   {
     k: 'Vive en tu cuenta',
     desc: 'El bot y el panel corren en tu propia cuenta de Cloudflare, con tu llave. Nosotros no tenemos que estar en medio para que funcione, y el día que quieras seguir solo, sigues solo.',
@@ -254,7 +263,7 @@ export const evotPropiedad: EvotHecho[] = [
  * Preguntas
  * ------------------------------------------------------------------ */
 
-export interface EvotFaq {
+export interface EbotFaq {
   q: string;
   a: string;
 }
@@ -263,7 +272,7 @@ export interface EvotFaq {
  * Las seis que frenan la compra. No son las que la gente pregunta primero: son
  * las que se callan y por las que no vuelve a escribir.
  */
-export const evotFaq: EvotFaq[] = [
+export const ebotFaq: EbotFaq[] = [
   {
     q: '¿Por qué $70 si esto en otro lado cuesta una mensualidad?',
     a: 'Porque no te lo alquilamos. El programa es abierto y ya está hecho; los $70 son el trabajo de montarlo en tu cuenta, conectar tus canales y enseñarle lo que tu negocio sabe. Lo que sigue pagando cada mes no lo cobramos nosotros: son los $5 de la nube y el gasto de tu llave de IA, que van directo a esas dos empresas.',
@@ -290,5 +299,5 @@ export const evotFaq: EvotFaq[] = [
   },
 ];
 
-/** Enlace al formulario con eVot ya elegido en el desplegable. */
-export const evotContactHref = `${routes.contacto}?plan=${evot.slug}`;
+/** Enlace al formulario con eBot ya elegido en el desplegable. */
+export const ebotContactHref = `${routes.contacto}?plan=${ebot.slug}`;

@@ -184,12 +184,22 @@ async function checkCifraEstable(browser, base) {
   const abiertas = [];
   page.on('popup', (p) => abiertas.push(p));
 
-  // Con un módulo de rango ($250–$900) para que el formato de intervalo también
-  // pase por la comparación.
+  /*
+   * Dos capacidades a la vez, una de ellas eBot: es la única línea del
+   * cotizador que no sale de `modules.ts`, así que si su precio se compusiera
+   * distinto en alguno de los tres sitios, se vería aquí.
+   *
+   * Antes esta caso marcaba «Respuestas automáticas», que costaba $250–$900 y
+   * de paso metía un rango en la comparación. Ese módulo se quitó al publicarse
+   * eBot, y con él desapareció el último precio de intervalo del cotizador:
+   * hoy todas las capacidades tienen cifra única, así que el formato «$X – $Y»
+   * ya no se ejerce por ningún camino. Si algún día vuelve a haber un rango,
+   * conviene volver a meterlo en este caso.
+   */
   const { corriente } = await recorrer(page, base, {
     objetivo: 'vender',
     alcance: 'catalogo',
-    capacidades: ['ia', 'portal'],
+    capacidades: ['ebot', 'portal'],
     urgencia: 'mes',
   });
   const resultado = totales(await page.locator('[data-total]').textContent());

@@ -110,7 +110,7 @@ contacto y a lo que responde el chat.
 |---|---|
 | `site.ts` | Nombre, descripción, WhatsApp, horario |
 | `plans.ts` | Los cuatro planes y el diagnóstico |
-| `evot.ts` | eVot: el bot multicanal con panel — precio, canales, panel y costos del cliente |
+| `ebot.ts` | eBot: el bot multicanal con panel — precio, canales, panel y costos del cliente |
 | `modules.ts` | Capacidades que se suman a un plan |
 | `care.ts` | Planes de mantenimiento |
 | `services.ts` | Los tres pilares, el proceso y los enlaces del nav |

@@ -600,7 +600,7 @@ h2.section-title .muted{color:var(--studio-gray);}
 }
 /* El nav colapsa antes que el resto del layout (1000px, no 900) y por eso tiene
    su propia consulta.
-   Con siete enlaces el pill ya se desbordaba 18px a 901px; con el octavo (eVot)
+   Con siete enlaces el pill ya se desbordaba 18px a 901px; con el octavo (eBot)
    el desborde llegaba a 77px y cubría toda la franja 901–999px. No se veía:
    `body{overflow-x:hidden}` se traga el sobrante, así que los enlaces se
    comprimían contra el CTA sin que ninguna medición del proyecto lo delatara —

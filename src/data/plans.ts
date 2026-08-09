@@ -1,4 +1,4 @@
-import { evot } from './evot';
+import { ebot } from './ebot';
 
 export interface Plan {
   slug: string;
@@ -95,10 +95,10 @@ export interface PlanOption {
 export const planOptions: PlanOption[] = [
   ...plans.map((p) => ({ value: p.slug, label: `${p.name} — ${p.price}` })),
   { value: diagnostico.slug, label: `${diagnostico.name} — ${diagnostico.price}` },
-  // eVot no es un plan de sitio web, pero sí es algo que se pide por este mismo
-  // formulario. Su precio se importa de `evot.ts` en vez de escribirse: si algún
+  // eBot no es un plan de sitio web, pero sí es algo que se pide por este mismo
+  // formulario. Su precio se importa de `ebot.ts` en vez de escribirse: si algún
   // día sube, el desplegable no puede quedarse anunciando la cifra vieja.
-  { value: evot.slug, label: `${evot.name} — ${evot.price}` },
+  { value: ebot.slug, label: `${ebot.name} — ${ebot.price}` },
   { value: 'modulos', label: 'Sistema por módulos' },
   { value: 'care', label: 'Solo mantenimiento (Care)' },
   { value: 'otro', label: 'Aún no lo sé' },

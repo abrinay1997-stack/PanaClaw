@@ -1,6 +1,6 @@
 ---
 /**
- * /evot/ — la página del bot multicanal con panel.
+ * /ebot/ — la página del bot multicanal con panel.
  *
  * Es la primera página del sitio que vende algo que NO es una web, y eso cambia
  * dos cosas respecto a `/planes`:
@@ -18,7 +18,7 @@
  * solo en /proceso. La salida de esta página es el CTA del nav, el del hero y el
  * del bloque de precio, y ni uno más.
  *
- * Todo el contenido sale de `src/data/evot.ts`. Esta página no escribe una sola
+ * Todo el contenido sale de `src/data/ebot.ts`. Esta página no escribe una sola
  * cifra ni una sola característica a mano: lo que se cambie ahí cambia aquí, en
  * el desplegable de /contacto y en lo que responde el chat, en el mismo build.
  */
@@ -28,33 +28,33 @@ import SceneBg from '../components/SceneBg.astro';
 import SectionNav from '../components/SectionNav.astro';
 
 import {
-  evot,
-  evotCanales,
-  evotCapacidades,
-  evotPanel,
-  evotCostos,
-  evotIncluye,
-  evotNoIncluye,
-  evotPropiedad,
-  evotFaq,
-  evotContactHref,
-} from '../data/evot';
-import { evotVisual } from '../data/images';
+  ebot,
+  ebotCanales,
+  ebotCapacidades,
+  ebotPanel,
+  ebotCostos,
+  ebotIncluye,
+  ebotNoIncluye,
+  ebotPropiedad,
+  ebotFaq,
+  ebotContactHref,
+} from '../data/ebot';
+import { ebotVisual } from '../data/images';
 import { routes } from '../data/links';
 import { site, waLink } from '../data/site';
 
 const origin = Astro.site ?? new URL('http://localhost:4321');
-const evotUrl = new URL(routes.evot, origin).toString();
+const ebotUrl = new URL(routes.ebot, origin).toString();
 
 /** El precio va como número: schema.org no acepta "$70". */
-const amount = Number(evot.price.replace(/[^0-9.]/g, ''));
+const amount = Number(ebot.price.replace(/[^0-9.]/g, ''));
 
 const serviceSchema = {
   '@context': 'https://schema.org',
   '@type': 'Service',
-  name: `${evot.name} — bot multicanal con panel`,
+  name: `${ebot.name} — bot multicanal con panel`,
   serviceType: 'Implementación de asistente automatizado para atención al cliente',
-  description: evot.summary,
+  description: ebot.summary,
   areaServed: { '@type': 'Country', name: site.location },
   provider: {
     '@type': 'Organization',
@@ -63,11 +63,11 @@ const serviceSchema = {
   },
   offers: {
     '@type': 'Offer',
-    name: `Implementación de ${evot.name}`,
-    description: evotIncluye.join('. '),
+    name: `Implementación de ${ebot.name}`,
+    description: ebotIncluye.join('. '),
     price: amount,
     priceCurrency: 'USD',
-    url: evotUrl,
+    url: ebotUrl,
     availability: 'https://schema.org/InStock',
   },
 };
@@ -81,53 +81,53 @@ const serviceSchema = {
 const faqSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: evotFaq.map((item) => ({
+  mainEntity: ebotFaq.map((item) => ({
     '@type': 'Question',
     name: item.q,
     acceptedAnswer: { '@type': 'Answer', text: item.a },
   })),
 };
 
-const canalNames = evotCanales.map((c) => c.name).join(', ');
+const canalNames = ebotCanales.map((c) => c.name).join(', ');
 
 /**
  * Cuántas pantallas trae el panel. Se cuenta, no se escribe: el titular anuncia
- * la cifra y una pantalla nueva en `evot.ts` la dejaría desactualizada — que es
+ * la cifra y una pantalla nueva en `ebot.ts` la dejaría desactualizada — que es
  * exactamente la clase de dato inventado que la regla 14 prohíbe.
  */
-const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
+const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
 ---
 
 <BaseLayout
-  title={`${evot.name} — bot multicanal`}
-  description={`${evot.name}: contesta por ${canalNames} las 24 horas y guarda cada conversación y cada cliente en un panel tuyo. Implementación ${evot.price}, pago único, sin mensualidad nuestra.`}
-  activePath={routes.evot}
+  title={`${ebot.name} — bot multicanal`}
+  description={`${ebot.name}: contesta por ${canalNames} las 24 horas y guarda cada conversación y cada cliente en un panel tuyo. Implementación ${ebot.price}, pago único, sin mensualidad nuestra.`}
+  activePath={routes.ebot}
   jsonLd={[serviceSchema, faqSchema]}
 >
   <!-- HERO -->
-  <section class="evot-hero">
-    <SceneBg visual={evotVisual} side="left" />
+  <section class="ebot-hero">
+    <SceneBg visual={ebotVisual} side="left" />
     <div class="container">
-      <div class="evot-hero-copy">
+      <div class="ebot-hero-copy">
         <Reveal>
-          <span class="eyebrow">{evot.name} · Bot multicanal con panel</span>
+          <span class="eyebrow">{ebot.name} · Bot multicanal con panel</span>
           <h1>Todos tus mensajes, <span class="muted">en un solo lugar.</span></h1>
         </Reveal>
         <Reveal delay={0.12}>
-          <p class="evot-lead">{evot.summary}</p>
+          <p class="ebot-lead">{ebot.summary}</p>
         </Reveal>
         <Reveal delay={0.2}>
-          <div class="evot-hero-price">
-            <span class="evot-hero-amount">{evot.price}</span>
-            <span class="evot-hero-kicker">{evot.priceKicker}</span>
+          <div class="ebot-hero-price">
+            <span class="ebot-hero-amount">{ebot.price}</span>
+            <span class="ebot-hero-kicker">{ebot.priceKicker}</span>
           </div>
-          <div class="evot-hero-actions">
-            <a class="btn btn-primary" href={evotContactHref}>
-              <span class="dot"></span> Quiero {evot.name}
+          <div class="ebot-hero-actions">
+            <a class="btn btn-primary" href={ebotContactHref}>
+              <span class="dot"></span> Quiero {ebot.name}
             </a>
             <a
               class="btn btn-ghost"
-              href={waLink(`Hola ${site.name}, quiero ${evot.name} para mi negocio. Mi negocio es: `)}
+              href={waLink(`Hola ${site.name}, quiero ${ebot.name} para mi negocio. Mi negocio es: `)}
               target="_blank"
               rel="noopener"
             >
@@ -140,14 +140,14 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   </section>
 
   <!-- CANALES: lo primero que hay que creer es que entra por donde te escriben -->
-  <section class="evot-canales" id="canales">
+  <section class="ebot-canales" id="canales">
     <div class="container">
       <Reveal>
         <span class="eyebrow">Los cuatro canales</span>
         <h2 class="section-title">Contesta por donde <span class="muted">ya te escriben.</span></h2>
       </Reveal>
       <Reveal>
-        <p class="evot-intro">
+        <p class="ebot-intro">
           No hay que enseñarle a nadie a usar una aplicación nueva. Tu cliente escribe donde
           siempre escribió y le contestan igual de rápido a las tres de la tarde que a las once de
           la noche. Tú lo ves todo desde una sola pantalla.
@@ -161,10 +161,10 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
         teléfono no le ahorra el scroll a nadie. Las dos reglas de <SectionNav>
         se respetan: cada destino declara su `id` y su `scroll-margin-top`.
       -->
-      <div class="evot-index">
-        <span class="evot-index-label">Salta a lo que viniste a ver</span>
+      <div class="ebot-index">
+        <span class="ebot-index-label">Salta a lo que viniste a ver</span>
         <SectionNav
-          label={`Secciones de ${evot.name}`}
+          label={`Secciones de ${ebot.name}`}
           items={[
             { href: '#hace', label: 'Qué hace' },
             { href: '#panel', label: 'El panel por dentro' },
@@ -174,13 +174,13 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
         />
       </div>
 
-      <div class="evot-canal-grid">
-        {evotCanales.map((canal) => (
+      <div class="ebot-canal-grid">
+        {ebotCanales.map((canal) => (
           <Reveal>
-            <div class="evot-canal">
+            <div class="ebot-canal">
               <h3>{canal.name}</h3>
               <p>{canal.desc}</p>
-              {canal.nota && <p class="evot-canal-nota">{canal.nota}</p>}
+              {canal.nota && <p class="ebot-canal-nota">{canal.nota}</p>}
             </div>
           </Reveal>
         ))}
@@ -189,18 +189,18 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   </section>
 
   <!-- QUÉ HACE -->
-  <section class="evot-hace" id="hace">
+  <section class="ebot-hace" id="hace">
     <div class="container">
       <Reveal>
         <span class="eyebrow">Qué hace</span>
         <h2 class="section-title">Las mismas cinco preguntas, <span class="muted">contestadas sin ti.</span></h2>
       </Reveal>
 
-      <div class="evot-hace-grid">
-        {evotCapacidades.map((cap, i) => (
+      <div class="ebot-hace-grid">
+        {ebotCapacidades.map((cap, i) => (
           <Reveal>
-            <div class="evot-cap">
-              <span class="evot-cap-idx">{String(i + 1).padStart(2, '0')}</span>
+            <div class="ebot-cap">
+              <span class="ebot-cap-idx">{String(i + 1).padStart(2, '0')}</span>
               <h3>{cap.title}</h3>
               <p>{cap.desc}</p>
             </div>
@@ -211,30 +211,30 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   </section>
 
   <!-- EL PANEL -->
-  <section class="evot-panel" id="panel">
+  <section class="ebot-panel" id="panel">
     <div class="container">
       <Reveal>
         <span class="eyebrow">El panel por dentro</span>
         <h2 class="section-title">{pantallas} pantallas. <span class="muted">Estas son, con su nombre real.</span></h2>
       </Reveal>
       <Reveal>
-        <p class="evot-intro">
+        <p class="ebot-intro">
           Entras con tu contraseña desde el teléfono o la computadora. Lo que ves aquí abajo es
           exactamente lo que vas a encontrar adentro, y en el mismo orden — nada de nombres
           bonitos para la página de ventas.
         </p>
       </Reveal>
 
-      <div class="evot-panel-grid">
-        {evotPanel.map((group) => (
+      <div class="ebot-panel-grid">
+        {ebotPanel.map((group) => (
           <Reveal>
-            <div class="evot-panel-group">
+            <div class="ebot-panel-group">
               <h3>{group.title}</h3>
               <ul>
                 {group.items.map((item) => (
                   <li>
-                    <span class="evot-panel-name">{item.name}</span>
-                    <span class="evot-panel-desc">{item.desc}</span>
+                    <span class="ebot-panel-name">{item.name}</span>
+                    <span class="ebot-panel-desc">{item.desc}</span>
                   </li>
                 ))}
               </ul>
@@ -246,51 +246,51 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   </section>
 
   <!-- PRECIO: lo nuestro y lo que no es nuestro, al mismo tamaño -->
-  <section class="evot-precio" id="precio">
+  <section class="ebot-precio" id="precio">
     <div class="container">
       <Reveal>
         <span class="eyebrow">Qué cuesta de verdad</span>
-        <h2 class="section-title">{evot.price} una vez. <span class="muted">Y dos cuentas que no nos pagas a nosotros.</span></h2>
+        <h2 class="section-title">{ebot.price} una vez. <span class="muted">Y dos cuentas que no nos pagas a nosotros.</span></h2>
       </Reveal>
 
       <Reveal>
-        <div class="evot-precio-card">
-          <div class="evot-precio-copy">
+        <div class="ebot-precio-card">
+          <div class="ebot-precio-copy">
             <h3>Lo que nos pagas a nosotros</h3>
-            <p class="evot-precio-desc">
+            <p class="ebot-precio-desc">
               Una sola vez, por montarlo y dejarlo funcionando en tu cuenta. No hay cuota de
               plataforma, ni límite de mensajes, ni un precio que suba el año que viene.
             </p>
-            <ul class="evot-check">
-              {evotIncluye.map((item) => <li>{item}</li>)}
+            <ul class="ebot-check">
+              {ebotIncluye.map((item) => <li>{item}</li>)}
             </ul>
           </div>
-          <div class="evot-precio-tag">
-            <span class="evot-precio-v">{evot.price}</span>
-            <span class="evot-precio-k">{evot.priceKicker}</span>
-            <a class="btn btn-primary" href={evotContactHref}>
-              <span class="dot"></span> Pedir {evot.name}
+          <div class="ebot-precio-tag">
+            <span class="ebot-precio-v">{ebot.price}</span>
+            <span class="ebot-precio-k">{ebot.priceKicker}</span>
+            <a class="btn btn-primary" href={ebotContactHref}>
+              <span class="dot"></span> Pedir {ebot.name}
             </a>
           </div>
         </div>
       </Reveal>
 
-      <div class="evot-costos">
+      <div class="ebot-costos">
         <Reveal>
-          <h3 class="evot-sub">Lo que pagas por tu cuenta, cada mes</h3>
-          <p class="evot-intro">
+          <h3 class="ebot-sub">Lo que pagas por tu cuenta, cada mes</h3>
+          <p class="ebot-intro">
             Estas dos no pasan por nosotros: las contratas tú, a tu nombre, y son las que hacen
             que el bot sea tuyo de verdad. Son aproximadas y para un negocio normal; el panel te
             enseña el gasto al día para que nunca sea una sorpresa.
           </p>
         </Reveal>
-        <div class="evot-costo-grid">
-          {evotCostos.map((costo) => (
+        <div class="ebot-costo-grid">
+          {ebotCostos.map((costo) => (
             <Reveal>
-              <div class="evot-costo">
-                <span class="evot-costo-k">{costo.concepto}</span>
-                <span class="evot-costo-v">{costo.price}</span>
-                <span class="evot-costo-a">{costo.aQuien}</span>
+              <div class="ebot-costo">
+                <span class="ebot-costo-k">{costo.concepto}</span>
+                <span class="ebot-costo-v">{costo.price}</span>
+                <span class="ebot-costo-a">{costo.aQuien}</span>
                 <p>{costo.desc}</p>
               </div>
             </Reveal>
@@ -299,10 +299,10 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
       </div>
 
       <Reveal>
-        <div class="evot-no">
-          <h3 class="evot-sub">Lo que no está incluido</h3>
-          <ul class="evot-cross">
-            {evotNoIncluye.map((item) => <li>{item}</li>)}
+        <div class="ebot-no">
+          <h3 class="ebot-sub">Lo que no está incluido</h3>
+          <ul class="ebot-cross">
+            {ebotNoIncluye.map((item) => <li>{item}</li>)}
           </ul>
         </div>
       </Reveal>
@@ -310,17 +310,17 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   </section>
 
   <!-- PROPIEDAD -->
-  <section class="evot-propiedad">
+  <section class="ebot-propiedad">
     <div class="container">
-      <div class="evot-propiedad-grid">
+      <div class="ebot-propiedad-grid">
         <Reveal>
-          <h2 class="evot-propiedad-title">Es tuyo. <span class="muted">Igual que el código de tu sitio.</span></h2>
+          <h2 class="ebot-propiedad-title">Es tuyo. <span class="muted">Igual que el código de tu sitio.</span></h2>
         </Reveal>
-        <div class="evot-propiedad-facts">
-          {evotPropiedad.map((hecho, i) => (
+        <div class="ebot-propiedad-facts">
+          {ebotPropiedad.map((hecho, i) => (
             <Reveal delay={0.1 + i * 0.08}>
-              <div class="evot-propiedad-fact">
-                <span class="evot-propiedad-k">{hecho.k}</span>
+              <div class="ebot-propiedad-fact">
+                <span class="ebot-propiedad-k">{hecho.k}</span>
                 <p>{hecho.desc}</p>
               </div>
             </Reveal>
@@ -331,20 +331,20 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   </section>
 
   <!-- PREGUNTAS -->
-  <section class="evot-faq" id="preguntas">
+  <section class="ebot-faq" id="preguntas">
     <div class="container">
       <Reveal>
         <span class="eyebrow">Preguntas</span>
         <h2 class="section-title">Lo que se pregunta <span class="muted">antes de decir que sí.</span></h2>
       </Reveal>
 
-      <div class="evot-faq-items">
-        {evotFaq.map((item) => (
+      <div class="ebot-faq-items">
+        {ebotFaq.map((item) => (
           <Reveal>
-            <details class="evot-faq-item">
+            <details class="ebot-faq-item">
               <summary>
                 <span>{item.q}</span>
-                <span class="evot-mark" aria-hidden="true"></span>
+                <span class="ebot-mark" aria-hidden="true"></span>
               </summary>
               <p>{item.a}</p>
             </details>
@@ -353,7 +353,7 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
       </div>
 
       <Reveal>
-        <p class="evot-faq-foot">
+        <p class="ebot-faq-foot">
           ¿Otra duda? Está el <a href={routes.ayuda}>centro de ayuda</a>, y si tampoco está ahí,
           contesta la misma persona que montaría tu bot.
         </p>
@@ -367,7 +367,7 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   /* Sin `.hero` global: esa clase trae el halo naranja del hero de la home, y
      aquí el fondo lo pone <SceneBg>. Dos fuentes de luz peleando dejaban el
      titular sin contraste justo en la mitad izquierda. */
-  .evot-hero {
+  .ebot-hero {
     position: relative;
     display: flex;
     align-items: center;
@@ -375,18 +375,18 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     padding: 168px 0 110px;
     overflow: hidden;
   }
-  .evot-hero .container {
+  .ebot-hero .container {
     position: relative;
     z-index: 1;
   }
-  .evot-hero-copy {
+  .ebot-hero-copy {
     max-width: 54ch;
   }
   /* Medido a 1440×900: con 88px y 15ch el titular ocupaba cinco líneas y
      empujaba el precio y los dos botones por debajo del pliegue. En una página
      que vende un producto que nadie conoce, la cifra tiene que verse sin
      scrollear — es la que decide si se sigue leyendo. */
-  .evot-hero h1 {
+  .ebot-hero h1 {
     font-size: clamp(38px, 5vw, 74px);
     font-weight: 600;
     line-height: 0.98;
@@ -395,10 +395,10 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     max-width: 17ch;
     text-shadow: 0 4px 40px rgba(16, 1, 1, 0.85);
   }
-  .evot-hero h1 .muted {
+  .ebot-hero h1 .muted {
     color: var(--studio-gray);
   }
-  .evot-lead {
+  .ebot-lead {
     margin-top: 26px;
     max-width: 56ch;
     font-size: 18px;
@@ -410,26 +410,26 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   /* El precio va en el hero y no solo en su bloque: es la cifra que decide si
      alguien sigue leyendo, y en un producto desconocido decidirla tarde es
      perder a quien se imaginó una mensualidad. */
-  .evot-hero-price {
+  .ebot-hero-price {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
     gap: 8px 18px;
     margin-top: 34px;
   }
-  .evot-hero-amount {
+  .ebot-hero-amount {
     font-size: clamp(44px, 5.6vw, 68px);
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1;
   }
-  .evot-hero-kicker {
+  .ebot-hero-kicker {
     font-size: 13px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--flash-orange);
   }
-  .evot-hero-actions {
+  .ebot-hero-actions {
     display: flex;
     gap: 14px;
     flex-wrap: wrap;
@@ -437,10 +437,10 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   }
 
   /* ---------- CANALES ---------- */
-  .evot-canales {
+  .ebot-canales {
     padding-bottom: 100px;
   }
-  .evot-intro {
+  .ebot-intro {
     max-width: 62ch;
     margin-bottom: 44px;
     font-size: 17px;
@@ -448,12 +448,12 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     color: var(--studio-gray);
     line-height: 1.7;
   }
-  .evot-canal-grid {
+  .ebot-canal-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 18px;
   }
-  .evot-canal {
+  .ebot-canal {
     height: 100%;
     padding: 30px 26px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -461,17 +461,17 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     background: rgba(255, 255, 255, 0.02);
     transition: border-color 0.25s, background 0.25s;
   }
-  .evot-canal:hover {
+  .ebot-canal:hover {
     border-color: var(--flash-orange);
     background: rgba(255, 81, 0, 0.06);
   }
-  .evot-canal h3 {
+  .ebot-canal h3 {
     font-size: 21px;
     font-weight: 600;
     letter-spacing: -0.01em;
     margin-bottom: 12px;
   }
-  .evot-canal p {
+  .ebot-canal p {
     font-size: 15px;
     font-weight: 300;
     color: var(--studio-gray);
@@ -479,14 +479,14 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   }
   /* El trámite que no depende de nosotros se marca, no se esconde: quien lee
      rápido tiene que verlo sin leerlo entero. */
-  .evot-canal-nota {
+  .ebot-canal-nota {
     margin-top: 14px;
     padding-top: 14px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     font-size: 13.5px;
   }
 
-  .evot-index {
+  .ebot-index {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
@@ -495,7 +495,7 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     padding-bottom: 34px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
-  .evot-index-label {
+  .ebot-index-label {
     font-size: 13px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -505,22 +505,22 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   /* ---------- QUÉ HACE ---------- */
   /* Los cuatro destinos del índice necesitan margen: el nav flotante mide 110px
      y sin esto el salto deja el titular debajo de la barra. */
-  .evot-hace,
-  .evot-panel,
-  .evot-precio,
-  .evot-faq,
-  .evot-canales {
+  .ebot-hace,
+  .ebot-panel,
+  .ebot-precio,
+  .ebot-faq,
+  .ebot-canales {
     scroll-margin-top: 110px;
   }
-  .evot-hace {
+  .ebot-hace {
     padding-top: 20px;
   }
-  .evot-hace-grid {
+  .ebot-hace-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 22px;
   }
-  .evot-cap {
+  .ebot-cap {
     height: 100%;
     padding: 32px 28px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -528,24 +528,24 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     background: rgba(255, 255, 255, 0.02);
     transition: border-color 0.25s, background 0.25s;
   }
-  .evot-cap:hover {
+  .ebot-cap:hover {
     border-color: var(--flash-orange);
     background: rgba(255, 81, 0, 0.05);
   }
-  .evot-cap-idx {
+  .ebot-cap-idx {
     display: block;
     font-size: 13px;
     letter-spacing: 0.16em;
     color: var(--flash-orange);
   }
-  .evot-cap h3 {
+  .ebot-cap h3 {
     margin: 14px 0 12px;
     font-size: 22px;
     font-weight: 600;
     letter-spacing: -0.01em;
     line-height: 1.15;
   }
-  .evot-cap p {
+  .ebot-cap p {
     font-size: 15px;
     font-weight: 300;
     color: var(--studio-gray);
@@ -553,44 +553,44 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   }
 
   /* ---------- PANEL ---------- */
-  .evot-panel-grid {
+  .ebot-panel-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 22px;
   }
-  .evot-panel-group {
+  .ebot-panel-group {
     height: 100%;
     padding: 30px 28px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.03);
   }
-  .evot-panel-group h3 {
+  .ebot-panel-group h3 {
     font-size: 13px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--flash-orange);
     margin-bottom: 22px;
   }
-  .evot-panel-group ul {
+  .ebot-panel-group ul {
     list-style: none;
     display: grid;
     gap: 16px;
   }
-  .evot-panel-group li {
+  .ebot-panel-group li {
     padding-bottom: 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   }
-  .evot-panel-group li:last-child {
+  .ebot-panel-group li:last-child {
     padding-bottom: 0;
     border-bottom: none;
   }
-  .evot-panel-name {
+  .ebot-panel-name {
     display: block;
     font-size: 16px;
     font-weight: 500;
   }
-  .evot-panel-desc {
+  .ebot-panel-desc {
     display: block;
     margin-top: 4px;
     font-size: 14px;
@@ -600,7 +600,7 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   }
 
   /* ---------- PRECIO ---------- */
-  .evot-precio-card {
+  .ebot-precio-card {
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 44px;
@@ -610,14 +610,14 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     background: linear-gradient(120deg, rgba(255, 81, 0, 0.16), rgba(238, 0, 0, 0.06));
     border: 1px solid rgba(255, 81, 0, 0.4);
   }
-  .evot-precio-copy h3 {
+  .ebot-precio-copy h3 {
     font-size: clamp(24px, 3vw, 34px);
     font-weight: 600;
     letter-spacing: -0.02em;
     line-height: 1.1;
     margin-bottom: 14px;
   }
-  .evot-precio-desc {
+  .ebot-precio-desc {
     max-width: 58ch;
     font-size: 16px;
     font-weight: 300;
@@ -625,17 +625,17 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     line-height: 1.65;
     margin-bottom: 22px;
   }
-  .evot-precio-tag {
+  .ebot-precio-tag {
     text-align: right;
   }
-  .evot-precio-v {
+  .ebot-precio-v {
     display: block;
     font-size: clamp(48px, 6vw, 76px);
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1;
   }
-  .evot-precio-k {
+  .ebot-precio-k {
     display: block;
     margin: 10px 0 22px;
     font-size: 12px;
@@ -646,71 +646,71 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
 
   /* Listas de sí y de no. El símbolo va en `::before` y no en el texto para que
      el lector de pantalla lea la frase y no un carácter suelto. */
-  .evot-check,
-  .evot-cross {
+  .ebot-check,
+  .ebot-cross {
     list-style: none;
     display: grid;
     gap: 10px;
   }
-  .evot-check li,
-  .evot-cross li {
+  .ebot-check li,
+  .ebot-cross li {
     position: relative;
     padding-left: 26px;
     font-size: 15.5px;
     font-weight: 300;
     line-height: 1.55;
   }
-  .evot-check li {
+  .ebot-check li {
     color: var(--soft-white);
   }
-  .evot-cross li {
+  .ebot-cross li {
     color: var(--studio-gray);
   }
-  .evot-check li::before,
-  .evot-cross li::before {
+  .ebot-check li::before,
+  .ebot-cross li::before {
     position: absolute;
     left: 0;
     top: 0;
     font-weight: 500;
   }
-  .evot-check li::before {
+  .ebot-check li::before {
     content: '✓';
     color: var(--flash-orange);
   }
-  .evot-cross li::before {
+  .ebot-cross li::before {
     content: '×';
     color: var(--studio-gray);
   }
 
-  .evot-costos {
+  .ebot-costos {
     margin-top: 64px;
   }
-  .evot-sub {
+  .ebot-sub {
     font-size: clamp(22px, 2.6vw, 30px);
     font-weight: 600;
     letter-spacing: -0.02em;
     margin-bottom: 16px;
   }
-  .evot-costo-grid {
+  .ebot-costo-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 18px;
   }
-  .evot-costo {
+  .ebot-costo {
     height: 100%;
     padding: 30px 28px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.02);
   }
-  .evot-costo-k {
+  .ebot-costo-k {
     display: block;
     font-size: 13px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--studio-gray);
   }
-  .evot-costo-v {
+  .ebot-costo-v {
     display: block;
     margin-top: 10px;
     font-size: clamp(30px, 3.4vw, 42px);
@@ -718,7 +718,7 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     letter-spacing: -0.03em;
     line-height: 1;
   }
-  .evot-costo-a {
+  .ebot-costo-a {
     display: block;
     margin-top: 10px;
     font-size: 13px;
@@ -726,7 +726,7 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     text-transform: uppercase;
     color: var(--flash-orange);
   }
-  .evot-costo p {
+  .ebot-costo p {
     margin-top: 16px;
     font-size: 15px;
     font-weight: 300;
@@ -734,7 +734,7 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     line-height: 1.65;
   }
 
-  .evot-no {
+  .ebot-no {
     margin-top: 54px;
     padding: 34px 36px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -743,31 +743,31 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   }
 
   /* ---------- PROPIEDAD ---------- */
-  .evot-propiedad {
+  .ebot-propiedad {
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     padding: 100px 0;
   }
-  .evot-propiedad-grid {
+  .ebot-propiedad-grid {
     display: grid;
     grid-template-columns: 0.9fr 1.1fr;
     gap: 60px;
     align-items: start;
   }
-  .evot-propiedad-title {
+  .ebot-propiedad-title {
     font-size: clamp(32px, 4.2vw, 56px);
     font-weight: 600;
     line-height: 1.02;
     letter-spacing: -0.02em;
     text-transform: uppercase;
   }
-  .evot-propiedad-title .muted {
+  .ebot-propiedad-title .muted {
     color: var(--studio-gray);
   }
-  .evot-propiedad-facts {
+  .ebot-propiedad-facts {
     display: grid;
     gap: 28px;
   }
-  .evot-propiedad-k {
+  .ebot-propiedad-k {
     display: block;
     font-size: 13px;
     letter-spacing: 0.16em;
@@ -775,7 +775,7 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     color: var(--flash-orange);
     margin-bottom: 10px;
   }
-  .evot-propiedad-fact p {
+  .ebot-propiedad-fact p {
     max-width: 56ch;
     font-size: 16px;
     font-weight: 300;
@@ -786,15 +786,15 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
   /* ---------- PREGUNTAS ---------- */
   /* Mismo acordeón que /ayuda: es el patrón que el sitio ya tiene y copiar su
      comportamiento evita que dos preguntas frecuentes se abran distinto. */
-  .evot-faq-items {
+  .ebot-faq-items {
     display: grid;
     gap: 2px;
     max-width: 90ch;
   }
-  .evot-faq-item {
+  .ebot-faq-item {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
-  .evot-faq-item summary {
+  .ebot-faq-item summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -806,20 +806,20 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     cursor: pointer;
     list-style: none;
   }
-  .evot-faq-item summary::-webkit-details-marker {
+  .ebot-faq-item summary::-webkit-details-marker {
     display: none;
   }
-  .evot-faq-item summary:hover {
+  .ebot-faq-item summary:hover {
     color: var(--flash-orange);
   }
-  .evot-mark {
+  .ebot-mark {
     position: relative;
     flex-shrink: 0;
     width: 16px;
     height: 16px;
   }
-  .evot-mark::before,
-  .evot-mark::after {
+  .ebot-mark::before,
+  .ebot-mark::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -827,18 +827,18 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     background: var(--flash-orange);
     transition: transform 0.25s ease;
   }
-  .evot-mark::before {
+  .ebot-mark::before {
     width: 16px;
     height: 1.5px;
   }
-  .evot-mark::after {
+  .ebot-mark::after {
     width: 1.5px;
     height: 16px;
   }
-  .evot-faq-item[open] .evot-mark::after {
+  .ebot-faq-item[open] .ebot-mark::after {
     transform: rotate(90deg);
   }
-  .evot-faq-item p {
+  .ebot-faq-item p {
     padding: 0 0 24px;
     max-width: 68ch;
     font-size: 16px;
@@ -846,51 +846,51 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     color: var(--studio-gray);
     line-height: 1.75;
   }
-  .evot-faq-foot {
+  .ebot-faq-foot {
     margin-top: 34px;
     font-size: 15px;
     font-weight: 300;
     color: var(--studio-gray);
   }
-  .evot-faq-foot a {
+  .ebot-faq-foot a {
     color: var(--flash-orange);
   }
 
   /* ---------- RESPONSIVE ---------- */
   @media (max-width: 1024px) {
-    .evot-canal-grid {
+    .ebot-canal-grid {
       grid-template-columns: repeat(2, 1fr);
     }
-    .evot-hace-grid,
-    .evot-panel-grid {
+    .ebot-hace-grid,
+    .ebot-panel-grid {
       grid-template-columns: 1fr;
     }
   }
   @media (max-width: 900px) {
-    .evot-hero {
+    .ebot-hero {
       min-height: 0;
       padding: 150px 0 90px;
     }
-    .evot-hero-copy {
+    .ebot-hero-copy {
       max-width: none;
     }
-    .evot-precio-card {
+    .ebot-precio-card {
       grid-template-columns: 1fr;
       gap: 26px;
       padding: 32px 26px;
     }
-    .evot-precio-tag {
+    .ebot-precio-tag {
       text-align: left;
     }
-    .evot-costo-grid,
-    .evot-propiedad-grid {
+    .ebot-costo-grid,
+    .ebot-propiedad-grid {
       grid-template-columns: 1fr;
       gap: 26px;
     }
-    .evot-no {
+    .ebot-no {
       padding: 28px 24px;
     }
-    .evot-propiedad {
+    .ebot-propiedad {
       padding: 80px 0;
     }
   }
@@ -901,32 +901,32 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
     entre ellas. Son ~1 200 px menos de scroll sin quitar una sola frase.
   */
   @media (max-width: 640px) {
-    .evot-canal-grid {
+    .ebot-canal-grid {
       grid-template-columns: 1fr;
     }
-    .evot-canal-grid,
-    .evot-hace-grid,
-    .evot-panel-grid,
-    .evot-costo-grid {
+    .ebot-canal-grid,
+    .ebot-hace-grid,
+    .ebot-panel-grid,
+    .ebot-costo-grid {
       gap: 12px;
     }
-    .evot-canal,
-    .evot-cap,
-    .evot-panel-group,
-    .evot-costo {
+    .ebot-canal,
+    .ebot-cap,
+    .ebot-panel-group,
+    .ebot-costo {
       padding: 24px 22px;
     }
-    .evot-intro {
+    .ebot-intro {
       margin-bottom: 32px;
     }
-    .evot-index {
+    .ebot-index {
       margin-bottom: 32px;
       padding-bottom: 26px;
     }
-    .evot-costos {
+    .ebot-costos {
       margin-top: 44px;
     }
-    .evot-no {
+    .ebot-no {
       margin-top: 38px;
     }
   }
@@ -938,17 +938,17 @@ const pantallas = evotPanel.reduce((n, g) => n + g.items.length, 0);
      que `global.css` aplica a las grids del resto del sitio, aquí con los
      nombres de esta página. Va en `is:global` porque el nodo intermedio lo
      genera el componente y no lleva el `data-astro-cid` de esta página. */
-  .evot-canal-grid > .reveal,
-  .evot-hace-grid > .reveal,
-  .evot-panel-grid > .reveal,
-  .evot-costo-grid > .reveal {
+  .ebot-canal-grid > .reveal,
+  .ebot-hace-grid > .reveal,
+  .ebot-panel-grid > .reveal,
+  .ebot-costo-grid > .reveal {
     display: flex;
     flex-direction: column;
   }
-  .evot-canal-grid > .reveal > *,
-  .evot-hace-grid > .reveal > *,
-  .evot-panel-grid > .reveal > *,
-  .evot-costo-grid > .reveal > * {
+  .ebot-canal-grid > .reveal > *,
+  .ebot-hace-grid > .reveal > *,
+  .ebot-panel-grid > .reveal > *,
+  .ebot-costo-grid > .reveal > * {
     flex: 1 1 auto;
   }
 </style>

@@ -86,14 +86,14 @@ export const smarkVisual: Visual = {
 };
 
 /**
- * /evot — la escena del hero del bot multicanal.
+ * /ebot — la escena del hero del bot multicanal.
  *
  * Reutiliza `interfaz.png` (la mano tocando la esfera de datos) con encuadre y
  * brillo propios, igual que hace `smarkVisual`: es la imagen del catálogo que
  * habla de una máquina que responde, y aquí va detrás de un titular largo, así
  * que se encuadra a la derecha —donde no cae el texto— y se deja más apagada.
  */
-export const evotVisual: Visual = {
+export const ebotVisual: Visual = {
   src: interfaz,
   alt: 'Una mano de cristal oscuro tocando una esfera de datos incandescente.',
   focus: '68% center',

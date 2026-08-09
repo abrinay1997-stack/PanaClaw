@@ -5,14 +5,14 @@ import { metaPixelId, ga4MeasurementId } from '../data/analytics';
 import { plans, diagnostico } from '../data/plans';
 import { modules } from '../data/modules';
 import {
-  evot,
-  evotCanales,
-  evotCapacidades,
-  evotCostos,
-  evotIncluye,
-  evotNoIncluye,
-  evotFaq,
-} from '../data/evot';
+  ebot,
+  ebotCanales,
+  ebotCapacidades,
+  ebotCostos,
+  ebotIncluye,
+  ebotNoIncluye,
+  ebotFaq,
+} from '../data/ebot';
 import { carePlans, careNote } from '../data/care';
 import { faqGroups } from '../data/faq';
 import { services, procesoSteps } from '../data/services';
@@ -206,18 +206,18 @@ export const GET: APIRoute = () => {
       '. Puedes empezar con una y sumar el resto más adelante.',
   });
 
-  /* ---------------- eVot ---------------- */
+  /* ---------------- eBot ---------------- */
 
   /**
-   * eVot es el único producto que no es una web, y por eso es el que más riesgo
+   * eBot es el único producto que no es una web, y por eso es el que más riesgo
    * de recuperación falsa tiene: casi nadie va a escribir su nombre. Preguntan
    * «¿tienen algo para contestar WhatsApp solo?». Sin estas frases de intención,
    * esa pregunta recupera el módulo "Respuestas automáticas con IA" —comparten
    * media frase— y el bot contesta $250–$900 por algo que cuesta $70.
    */
-  const evotIntencion = [
-    'evot',
-    'que es evot',
+  const ebotIntencion = [
+    'ebot',
+    'que es ebot',
     'bot',
     'chatbot',
     'tienen chatbot',
@@ -241,22 +241,22 @@ export const GET: APIRoute = () => {
   ];
 
   add({
-    id: 'evot-que-es',
-    topic: 'evot',
-    q: evotIntencion,
+    id: 'ebot-que-es',
+    topic: 'ebot',
+    q: ebotIntencion,
     text:
-      `${evot.summary} ` +
-      `Contesta por ${evotCanales.map((c) => c.name).join(', ')}, ` +
-      `y además: ${evotCapacidades.map((c) => c.title.toLowerCase()).join('; ')}. ` +
-      `Todo está en la página de ${evot.name}.`,
+      `${ebot.summary} ` +
+      `Contesta por ${ebotCanales.map((c) => c.name).join(', ')}, ` +
+      `y además: ${ebotCapacidades.map((c) => c.title.toLowerCase()).join('; ')}. ` +
+      `Todo está en la página de ${ebot.name}.`,
   });
 
   add({
-    id: 'evot-costos',
-    topic: 'evot',
+    id: 'ebot-costos',
+    topic: 'ebot',
     q: [
-      `cuanto cuesta ${evot.name}`,
-      `precio de ${evot.name}`,
+      `cuanto cuesta ${ebot.name}`,
+      `precio de ${ebot.name}`,
       'cuanto cuesta el bot',
       'el bot tiene mensualidad',
       'hay que pagar todos los meses por el bot',
@@ -267,20 +267,20 @@ export const GET: APIRoute = () => {
       'cuanto gasta el bot al mes',
     ],
     text:
-      `La implementación de ${evot.name} cuesta ${evot.price} una sola vez y no lleva mensualidad nuestra. ` +
+      `La implementación de ${ebot.name} cuesta ${ebot.price} una sola vez y no lleva mensualidad nuestra. ` +
       `Aparte pagas por tu cuenta, y directo a esas empresas: ` +
       // Sin `toLowerCase()`: "Cloudflare" es un nombre propio y en minúscula el
       // modelo lo copiaba tal cual, escribiendo mal la única empresa a la que el
       // cliente le va a pasar la tarjeta.
-      evotCostos.map((c) => `${c.concepto} — ${c.price}, ${c.aQuien}`).join('; ') +
+      ebotCostos.map((c) => `${c.concepto} — ${c.price}, ${c.aQuien}`).join('; ') +
       `. Son aproximados para un negocio normal, y el panel te muestra el gasto al día.`,
   });
 
   add({
-    id: 'evot-incluye',
-    topic: 'evot',
+    id: 'ebot-incluye',
+    topic: 'ebot',
     q: [
-      `que incluye ${evot.name}`,
+      `que incluye ${ebot.name}`,
       'que hacen ustedes con el bot',
       'que me entregan con el bot',
       'quien monta el bot',
@@ -289,13 +289,13 @@ export const GET: APIRoute = () => {
       'el bot necesita mi pagina web',
     ],
     text:
-      `Por los ${evot.price} de ${evot.name}: ${evotIncluye.join('; ')}. ${evot.priceKicker.replace(' · ', '. ')}. ` +
-      `No incluye: ${evotNoIncluye.join('; ')}.`,
+      `Por los ${ebot.price} de ${ebot.name}: ${ebotIncluye.join('; ')}. ${ebot.priceKicker.replace(' · ', '. ')}. ` +
+      `No incluye: ${ebotNoIncluye.join('; ')}.`,
   });
 
   add({
-    id: 'evot-de-quien-es',
-    topic: 'evot',
+    id: 'ebot-de-quien-es',
+    topic: 'ebot',
     q: [
       'de quien son las conversaciones del bot',
       'donde se guardan los mensajes del bot',
@@ -306,16 +306,16 @@ export const GET: APIRoute = () => {
       'puedo apagar el bot',
     ],
     text:
-      `${evot.name} corre en tu propia cuenta, con tu llave, así que las conversaciones son tuyas y no pasan por nosotros. ` +
+      `${ebot.name} corre en tu propia cuenta, con tu llave, así que las conversaciones son tuyas y no pasan por nosotros. ` +
       'Los mensajes se borran solos a los 90 días; los clientes y lo pendiente se quedan hasta que tú los borres. ' +
       'Si le preguntan si es un bot, lo admite, y puedes apagarlo entero desde el panel en un clic.',
   });
 
-  // Las preguntas de la página de eVot entran una por una: cada una ya trae
+  // Las preguntas de la página de eBot entran una por una: cada una ya trae
   // redactada la respuesta que se lee en el sitio, así que el bot no tiene que
   // deducir nada — solo parafrasear lo que está publicado.
-  for (const [i, item] of evotFaq.entries()) {
-    add({ id: `evot-faq-${i}`, topic: 'evot', q: [item.q], text: item.a });
+  for (const [i, item] of ebotFaq.entries()) {
+    add({ id: `ebot-faq-${i}`, topic: 'ebot', q: [item.q], text: item.a });
   }
 
   /* ---------------- Care ---------------- */
@@ -593,12 +593,12 @@ export const GET: APIRoute = () => {
   const prices = [
     ...plans.map((p) => p.price),
     diagnostico.price,
-    evot.price,
-    // Los dos gastos mensuales de eVot no los cobramos nosotros, pero el bot
+    ebot.price,
+    // Los dos gastos mensuales de eBot no los cobramos nosotros, pero el bot
     // los dice igual — y si no están en la lista blanca, la respuesta correcta
     // se bloquea como si fuera inventada. El rango "$1–2" se parte igual que
     // los de módulos y Care.
-    ...evotCostos.flatMap((c) => c.price.split(/[–-]/).map((s) => s.trim())),
+    ...ebotCostos.flatMap((c) => c.price.split(/[–-]/).map((s) => s.trim())),
     ...modules.flatMap((m) => m.price.split(/[–-]/).map((s) => s.trim())),
     ...carePlans.flatMap((c) => c.price.split(/[–-]/).map((s) => s.trim())),
     '$40',
