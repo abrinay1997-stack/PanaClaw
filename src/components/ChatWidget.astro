@@ -16,8 +16,22 @@ import { routes } from '../data/links';
  *    atajo a WhatsApp en vez de quedarse roto. Así el mismo código sirve en
  *    Pages hoy y en Netlify mañana.
  */
+/*
+ * La segunda es de eBot y va en ese sitio a propósito.
+ *
+ * Es el único producto del catálogo que nadie viene buscando: quien entra al
+ * sitio busca una web, así que si el chat no lo nombra, no aparece en la
+ * conversación jamás. Pero va SEGUNDA y no primera — el precio de un sitio
+ * sigue siendo la pregunta que trae a la gente.
+ *
+ * Y va escrita como se pregunta («¿tienen bot para WhatsApp?»), no como se
+ * llama el producto: quien no conoce el nombre no puede pulsar una pastilla que
+ * diga «eBot». Comprobado contra la recuperación real de `_retrieval.mts` sobre
+ * la base ya construida: devuelve `ebot-que-es` en primer lugar.
+ */
 const sugerencias = [
   '¿Cuánto cuesta un sitio?',
+  '¿Tienen bot para WhatsApp?',
   '¿En cuánto tiempo lo entregan?',
   '¿El código es mío?',
   '¿Qué incluye el mantenimiento?',

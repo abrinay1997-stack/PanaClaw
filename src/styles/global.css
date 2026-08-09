@@ -598,7 +598,17 @@ h2.section-title .muted{color:var(--studio-gray);}
   .care-grid{grid-template-columns:1fr;}
   .proceso-grid{grid-template-columns:1fr;}
 }
-@media(max-width:900px){
+/* El nav colapsa antes que el resto del layout (1000px, no 900) y por eso tiene
+   su propia consulta.
+   Con siete enlaces el pill ya se desbordaba 18px a 901px; con el octavo (eBot)
+   el desborde llegaba a 77px y cubría toda la franja 901–999px. No se veía:
+   `body{overflow-x:hidden}` se traga el sobrante, así que los enlaces se
+   comprimían contra el CTA sin que ninguna medición del proyecto lo delatara —
+   `medir:movil` mira el centrado del pill, no lo que pasa dentro.
+   Medido a 901, 920, 960, 1000, 1024, 1100, 1180, 1280 y 1440 px: a partir de
+   1001 el contenido entra con aire de sobra, y por debajo manda el desplegable.
+   Si algún día entra un noveno enlace, hay que volver a medir esta franja. */
+@media(max-width:1000px){
   /* Nav flotante colapsa: pill se convierte en menu dropdown */
   .nav-pill{padding:8px;}
   .nav-pill nav{

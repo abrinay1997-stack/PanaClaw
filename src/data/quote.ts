@@ -12,6 +12,7 @@
  */
 import { plans, type Plan } from './plans';
 import { modules } from './modules';
+import { ebot, ebotCostos } from './ebot';
 
 /* ------------------------------------------------------------------ *
  * Precios: de texto a número
@@ -99,7 +100,14 @@ export const steps: QuoteStep[] = [
       { value: 'panel', label: 'Panel de control', hint: 'Tus números y tu gestión en una pantalla.' },
       { value: 'portal', label: 'Portal de clientes', hint: 'Cada cliente consulta lo suyo sin escribirte.' },
       { value: 'api', label: 'Conectar con otro sistema', hint: 'Que tu web y tu programa dejen de ir por separado.' },
-      { value: 'ia', label: 'Respuestas automáticas', hint: 'Contestar lo de siempre por WhatsApp, a cualquier hora.' },
+      /*
+       * Esta opción era «Respuestas automáticas» y cotizaba el módulo de
+       * $250–$900. Hoy la cubre eBot por $70, así que cotizar aquí lo caro sería
+       * cobrar de más por lo mismo. El nombre del producto va en la ayuda y no
+       * en la etiqueta: quien está en el paso 3 no sabe todavía qué es «eBot»,
+       * sabe qué le duele.
+       */
+      { value: 'ebot', label: 'Contestar tus mensajes solo', hint: `${ebot.name}: WhatsApp, Instagram, Messenger y Telegram, a cualquier hora.` },
       { value: 'inventario', label: 'Control de inventario', hint: 'Dejar de vender lo que no tienes.' },
     ],
   },
@@ -129,7 +137,26 @@ export const steps: QuoteStep[] = [
 export interface CapabilityRule {
   includedFrom?: PlanSlug;
   moduleName?: string;
+  /**
+   * Producto propio con precio cerrado que NO vive en `modules.ts` — hoy solo
+   * eBot. No es un módulo: no se construye dentro del sitio, se monta aparte en
+   * la cuenta del cliente, y por eso arrastra una nota que los módulos no
+   * necesitan (los gastos mensuales que el cotizador no puede sumar porque no
+   * los cobramos nosotros).
+   */
+  product?: { name: string; price: string; note: string };
 }
+
+/**
+ * La nota de eBot en el desglose. Se compone de `ebot.ts`, como todo lo demás:
+ * el cotizador suma los $70 y solo los $70 — decir «total» sin mencionar las
+ * dos cuentas mensuales sería el mismo engaño que la página de eBot evita
+ * publicándolas en grande.
+ */
+const ebotNota =
+  `Pago único. Aparte pagas por tu cuenta ` +
+  ebotCostos.map((c) => `${c.price.replace(' al mes', '')}/mes de ${c.corto}`).join(' y ') +
+  '.';
 
 export const CAPABILITIES: Record<string, CapabilityRule> = {
   form: { includedFrom: 'start' }, // los cuatro planes lo traen
@@ -142,7 +169,7 @@ export const CAPABILITIES: Record<string, CapabilityRule> = {
   panel: { moduleName: 'Panel de control' },
   portal: { moduleName: 'Portal de clientes' },
   api: { moduleName: 'Conexión con otro sistema' },
-  ia: { moduleName: 'Respuestas automáticas con IA' },
+  ebot: { product: { name: ebot.name, price: ebot.price, note: ebotNota } },
 };
 
 /* ------------------------------------------------------------------ *
@@ -247,6 +274,11 @@ export function capabilityState(cap: string, answers: Answers): CapabilityState 
     const mod = modules.find((m) => m.name === rule.moduleName);
     if (mod) return { kind: 'modulo', delta: parsePrice(mod.price) };
   }
+  // Un producto con precio cerrado se comporta igual que un módulo de cara a la
+  // etiqueta: se suma tal cual y no depende del plan. No hace falta un estado
+  // nuevo, y añadirlo obligaría a tocar la interfaz para no enseñar nada
+  // distinto.
+  if (rule.product) return { kind: 'modulo', delta: parsePrice(rule.product.price) };
   return null;
 }
 
@@ -363,6 +395,14 @@ export function computeQuote(answers: Answers): QuoteResult | null {
     if (rule.moduleName) {
       const mod = modules.find((m) => m.name === rule.moduleName);
       if (mod) lines.push({ label: option.label, price: parsePrice(mod.price), note: mod.stack });
+      continue;
+    }
+    if (rule.product) {
+      lines.push({
+        label: `${option.label} (${rule.product.name})`,
+        price: parsePrice(rule.product.price),
+        note: rule.product.note,
+      });
     }
   }
 

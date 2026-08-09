@@ -30,6 +30,7 @@ export function withBase(path: string): string {
 export const routes = {
   home: BASE,
   servicios: withBase('servicios/'),
+  ebot: withBase('ebot/'),
   proyectos: withBase('proyectos/'),
   planes: withBase('planes/'),
   proceso: withBase('proceso/'),

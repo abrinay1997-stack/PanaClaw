@@ -38,11 +38,22 @@ export const modules: Module[] = [
     price: '$350',
     stack: 'Tu web y el programa que ya usas dejan de vivir por separado.',
   },
-  {
-    name: 'Respuestas automáticas con IA',
-    price: '$250–$900',
-    stack: 'Contesta las preguntas de siempre por WhatsApp, a cualquier hora.',
-  },
+  /*
+   * Aquí vivía «Respuestas automáticas con IA» ($250–$900), y se quitó el
+   * 2026-08-09 al publicarse eBot.
+   *
+   * Su descripción era «Contesta las preguntas de siempre por WhatsApp, a
+   * cualquier hora» — literalmente lo que eBot hace por $70. Con los dos
+   * publicados, el sitio ofrecía dos precios muy distintos para lo que el
+   * cliente lee como una sola cosa, y eso desmonta la promesa de precios claros
+   * sobre la que se sostiene el resto.
+   *
+   * Para revertirlo: se devuelve este objeto al array y se le vuelve a apuntar
+   * la capacidad del cotizador (`CAPABILITIES.ebot` en `quote.ts`). Pero antes
+   * conviene que las dos cosas dejen de prometer lo mismo — si de verdad se
+   * vende IA hecha a medida DENTRO del sistema del cliente, ese es otro
+   * producto y necesita otro nombre.
+   */
   {
     name: 'Control de inventario',
     price: '$550',
