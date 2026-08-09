@@ -417,6 +417,14 @@ las capacidades tienen cifra única, así que ese formato ya no lo prueba nadie.
 Está anotado en el propio script: si vuelve a haber un rango, hay que devolverlo
 a ese caso.
 
+**Hecho el 2026-08-09 (el chat lo sugiere).** Las pastillas iniciales del chat
+pasan de cuatro a cinco: la segunda es «¿Tienen bot para WhatsApp?». Va escrita
+como se pregunta y no como se llama el producto —quien no conoce el nombre no
+puede pulsar una pastilla que diga «eBot»— y va segunda porque el precio de un
+sitio sigue siendo lo que trae a la gente. Comprobado contra la recuperación
+real de `_retrieval.mts` sobre la base ya construida: devuelve `ebot-que-es` en
+primer lugar, igual que «¿pueden contestar mis mensajes de Instagram?».
+
 **El navbar se desbordaba y nadie lo sabía.** Con siete enlaces el pill ya se
 salía 18 px a 901 px de ancho; con el octavo el desborde llegó a 77 px en toda
 la franja 901–999 px. No se veía porque `body{overflow-x:hidden}` se traga el
@@ -429,7 +437,7 @@ hay que volver a medir esa franja** — y la comprobación todavía no está en
 |---|---|---|
 | 46 | **El alcance y el plazo de eBot son una propuesta mía, no una decisión tomada.** «Entrega en 48 horas», qué entra por los $70 y qué no (las cinco líneas de cada lista) salieron de lo que el producto hace, no de lo que tú te comprometes a hacer. Se revisan enteros en `src/data/ebot.ts`; una promesa que no puedas cumplir un martes ocupado es peor que no publicarla. | `[tuyo]` |
 | 47 | **eBot no aparece en la home.** Está en la barra, en el pie y en el chat, pero quien entra por la portada y no mira el menú no se entera de que existe. No se metió a propósito: la home ya tiene 17 acciones compitiendo y meter una decimoctava sin decidir qué sale es empeorar el punto 15. | `[código]` + `[tuyo]` |
-| 48 | **Las cuatro sugerencias del chat no mencionan eBot.** Dirigen hacia planes, plazos, código y mantenimiento; el producto nuevo no entra en la conversación si nadie pregunta por él. Cambiarlo es sustituir una de las cuatro, y cuál sale es decisión de negocio. | `[tuyo]` |
+| 48 | **En un iPhone SE, la pastilla de eBot queda bajo el pliegue del propio chat.** El panel abierto solo deja ver la primera —le pasaba igual a las cuatro de antes, así que no lo trajo eBot—, y quien no desplaza dentro del chat solo ve «¿Cuánto cuesta un sitio?». Cabrían las cinco recortando el mensaje de bienvenida, que ocupa cuatro líneas en esa pantalla. Medido el 2026-08-09 con `medir:movil` (el panel entero entra y no se corta; lo que no entra es el contenido de su lista). | `[código]` |
 
 ---
 
