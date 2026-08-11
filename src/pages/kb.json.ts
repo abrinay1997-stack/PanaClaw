@@ -13,6 +13,15 @@ import {
   ebotNoIncluye,
   ebotFaq,
 } from '../data/ebot';
+import {
+  seguridad,
+  securityPlans,
+  seguridadNoIncluye,
+  seguridadFaq,
+  precioCompleto,
+  revision,
+  protegida,
+} from '../data/seguridad';
 import { carePlans, careNote } from '../data/care';
 import { faqGroups } from '../data/faq';
 import { services, procesoSteps } from '../data/services';
@@ -318,6 +327,130 @@ export const GET: APIRoute = () => {
     add({ id: `ebot-faq-${i}`, topic: 'ebot', q: [item.q], text: item.a });
   }
 
+  /* ---------------- Seguridad ---------------- */
+
+  /**
+   * Igual que con eBot: casi nadie va a escribir «Revisión de Seguridad».
+   * Preguntan «me hackearon la página» o «mi WordPress está lleno de virus», y
+   * sin estas frases de intención esas preguntas recuperan el pilar 02 de
+   * servicios —comparten la palabra «hackeen»— y el bot contesta con un
+   * argumento de venta de sitios nuevos a alguien que tiene una urgencia.
+   */
+  const seguridadIntencion = [
+    'seguridad',
+    'ciberseguridad',
+    'seguridad de mi web',
+    'proteger mi sitio',
+    'me hackearon',
+    'me hackearon la pagina',
+    'mi sitio esta hackeado',
+    'wordpress hackeado',
+    'tengo virus en mi web',
+    'mi web redirige a otra pagina',
+    'me pidieron un rescate',
+    'auditoria de seguridad',
+    'escaneo de vulnerabilidades',
+    'pentest',
+    'mi sitio se cae',
+    'mi sitio sale como no seguro',
+    'certificado ssl',
+    'candado del navegador',
+    'copias de seguridad',
+    'backups',
+    'doble factor',
+    'verificacion en dos pasos',
+    'aviso de cookies',
+    'ley de datos personales',
+    'revisan sitios que no hicieron ustedes',
+  ];
+
+  add({
+    id: 'seguridad-que-es',
+    topic: 'seguridad',
+    q: seguridadIntencion,
+    text:
+      `${seguridad.summary} Es para el sitio que YA tienes, lo hayamos hecho nosotros o no. ` +
+      `Hay tres planes: ` +
+      securityPlans.map((p) => `${p.name} ${precioCompleto(p)} (${p.kicker})`).join(', ') +
+      `. Todo está en la página de ${seguridad.name}.`,
+  });
+
+  for (const p of securityPlans) {
+    add({
+      id: `seguridad-${p.slug}`,
+      topic: 'seguridad',
+      q: [p.name, `cuanto cuesta ${p.name}`, `que incluye ${p.name}`, `precio ${p.name}`],
+      text: `${p.name} cuesta ${precioCompleto(p)}. ${p.kicker}. ${p.desc} Incluye: ${p.features.join('; ')}.`,
+    });
+  }
+
+  /**
+   * El hecho que evita la respuesta más cara del bot.
+   *
+   * A un cliente al que acaban de hackear, un bot que conteste «claro, nosotros
+   * te protegemos» le está prometiendo algo que no es: limpiar un sitio
+   * infectado es otro trabajo y no está publicado. Y una garantía de que no lo
+   * vuelvan a hackear no la puede dar nadie. Las dos cosas van escritas para
+   * que el modelo tenga qué decir en vez de improvisar.
+   */
+  add({
+    id: 'seguridad-limites',
+    topic: 'seguridad',
+    q: [
+      'garantizan que no me hackeen',
+      'me aseguran que no entren',
+      'que pasa si me hackean estando con ustedes',
+      'limpian un sitio hackeado',
+      'pueden recuperar mi sitio',
+      'que no incluye la seguridad',
+      'se puede cancelar el plan de seguridad',
+      'hay permanencia en seguridad',
+    ],
+    text:
+      `Lo que ${seguridad.name} no cubre, dicho claro: ${seguridadNoIncluye.join('; ')}. ` +
+      'Los planes mensuales se cancelan cuando quieras, sin permanencia, y los informes y la ' +
+      'configuración se quedan contigo.',
+  });
+
+  add({
+    id: 'seguridad-vs-care',
+    topic: 'seguridad',
+    q: [
+      'diferencia entre care y seguridad',
+      'care incluye seguridad',
+      'necesito care y seguridad',
+      'estoy pagando dos veces',
+      'ya tengo care',
+    ],
+    text:
+      `Care mantiene el sitio que hicimos nosotros: cambios, actualizaciones, vigilancia y copias. ` +
+      `${seguridad.name} protege un sitio cualquiera, sea de quien sea: lo escanea, cierra por donde se ` +
+      `entra y pone un filtro delante. Si ya tienes Care, escríbenos antes de contratar seguridad: ` +
+      `te decimos qué te falta de verdad y qué estarías pagando dos veces.`,
+  });
+
+  add({
+    id: 'seguridad-cotizador',
+    topic: 'seguridad',
+    q: [
+      'puedo cotizar seguridad',
+      'me sale en el cotizador la seguridad',
+      'sitio nuevo con seguridad',
+      'cuanto sale la web con proteccion',
+    ],
+    text:
+      `Sí. En el cotizador, la opción "Que no te lo hackeen" suma la ${revision.name} ` +
+      `(${revision.price}, pago único al entregar) y ${protegida.name} ` +
+      `(${precioCompleto(protegida)}). Las dos cifras salen separadas —una de una vez y otra al mes— ` +
+      `porque no se pueden sumar en el mismo número.`,
+  });
+
+  // Las preguntas de la página entran una por una, igual que las de eBot: cada
+  // una ya trae redactada la respuesta que se lee en el sitio.
+  for (const [i, item] of seguridadFaq.entries()) {
+    add({ id: `seguridad-faq-${i}`, topic: 'seguridad', q: [item.q], text: item.a });
+  }
+
   /* ---------------- Care ---------------- */
   for (const c of carePlans) {
     add({
@@ -599,6 +732,10 @@ export const GET: APIRoute = () => {
     // se bloquea como si fuera inventada. El rango "$1–2" se parte igual que
     // los de módulos y Care.
     ...ebotCostos.flatMap((c) => c.price.split(/[–-]/).map((s) => s.trim())),
+    // Los tres de seguridad son todos rangos, así que se parten igual que los
+    // de módulos y Care: sin esto, la mitad de cada horquilla se bloquearía
+    // como cifra inventada y el bot no podría decir su propio precio.
+    ...securityPlans.flatMap((p) => p.price.split(/[–-]/).map((s) => s.trim())),
     ...modules.flatMap((m) => m.price.split(/[–-]/).map((s) => s.trim())),
     ...carePlans.flatMap((c) => c.price.split(/[–-]/).map((s) => s.trim())),
     '$40',

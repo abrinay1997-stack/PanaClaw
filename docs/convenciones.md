@@ -33,9 +33,12 @@ uno. El resumen de las cinco más importantes está en el
    `<SceneBg>`: a sangre, apagadas y bajo un velo que abre carril al texto. Lo
    que brilla es el titular.
 10. **Nada duplica los precios.** El cotizador (`quote.ts`) y la base del chat
-    (`kb.json.ts`) los componen de `plans.ts` y `modules.ts`. Un cotizador o un
-    bot que digan un número distinto al de `/planes` destruyen justo la confianza
-    que el sitio vende.
+    (`kb.json.ts`) los componen de `plans.ts`, `modules.ts`, `ebot.ts` y
+    `seguridad.ts`. Un cotizador o un bot que digan un número distinto al de
+    `/planes` destruyen justo la confianza que el sitio vende. Corolario desde
+    que hay servicios mensuales: **una cifra de una vez y una mensual no se
+    suman jamás**, ni para enseñar un número más redondo. El cotizador lleva dos
+    totales y `medir:cotizador` los vigila por separado.
 11. **Estilos para nodos creados por JS: siempre `:global()`** colgando de un
     ancestro que sí esté en la plantilla. Ha mordido tres veces.
 12. **Cero jerga en el copy de cara al cliente.** Nada de Supabase, Railway,

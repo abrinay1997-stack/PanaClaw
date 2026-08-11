@@ -40,8 +40,13 @@ const BUDGET = {
    * En píxeles y no en "pantallas": el iPhone SE tiene 568px de alto y con esa
    * vara cualquier footer decente ya va por 2 pantallas, así que el umbral
    * quedaba pegado al valor real y saltaría por ruido. El footer llegó a medir
-   * 1580px; hoy anda por 1191 en el peor teléfono. 1300 separa las dos cosas
-   * sin ambigüedad.
+   * 1580px; hoy anda por 1249 en el peor teléfono (2026-08-11). 1300 separa las
+   * dos cosas sin ambigüedad.
+   *
+   * Este cepo ya cobró una pieza: el séptimo enlace de la columna de Servicios
+   * —Seguridad— subió el pie a 1337px en un iPhone SE, y de ahí salió el
+   * recorte del respiro entre enlaces en `Footer.astro`. Es exactamente para lo
+   * que está: un enlace de más no se ve en un escritorio de 1440px.
    */
   footerMaxPx: 1300,
 };

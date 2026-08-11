@@ -1,9 +1,15 @@
 /**
  * Motor del cotizador.
  *
- * Todo lo que hay aquí se deriva de `plans.ts` y `modules.ts`: este archivo NO
- * inventa precios, los compone. Si cambia el precio de un plan o de una
- * capacidad, el cotizador se actualiza solo.
+ * Todo lo que hay aquí se deriva de `plans.ts`, `modules.ts`, `ebot.ts` y
+ * `seguridad.ts`: este archivo NO inventa precios, los compone. Si cambia el
+ * precio de un plan o de una capacidad, el cotizador se actualiza solo.
+ *
+ * Hay DOS totales y nunca se funden en uno: lo que se paga de una vez y lo que
+ * se paga cada mes. Lo trajo el servicio de seguridad, que es las dos cosas a
+ * la vez, y es la única forma de decir la verdad — proyectar una mensualidad a
+ * doce meses para poder enseñar un solo número sería anunciar un compromiso que
+ * nadie ha firmado.
  *
  * Es lógica pura y sin dependencias del DOM para que la pueda usar tanto el
  * render de Astro como el script del navegador, con exactamente el mismo
@@ -13,6 +19,7 @@
 import { plans, type Plan } from './plans';
 import { modules } from './modules';
 import { ebot, ebotCostos } from './ebot';
+import { seguridadCotizador } from './seguridad';
 
 /* ------------------------------------------------------------------ *
  * Precios: de texto a número
@@ -33,6 +40,17 @@ export function formatMoney({ min, max }: Money): string {
   const f = (n: number) => `$${n.toLocaleString('en-US')}`;
   return min === max ? f(min) : `${f(min)} – ${f(max)}`;
 }
+
+/**
+ * Una cifra mensual. El sufijo se decide aquí y en ningún otro sitio: es lo que
+ * distingue «$45» de «$45 cada mes hasta que lo pares», y escribirlo a mano en
+ * cada plantilla es cómo se acaba enseñando una mensualidad sin decir que lo es.
+ * Mismo formato que usa Care en `/servicios`.
+ */
+export const formatMensual = (money: Money): string => `${formatMoney(money)}/mes`;
+
+/** Una cantidad que no suma nada: sirve para saber si hay parte mensual. */
+export const isZero = ({ min, max }: Money): boolean => min === 0 && max === 0;
 
 /* ------------------------------------------------------------------ *
  * Pasos
@@ -109,6 +127,13 @@ export const steps: QuoteStep[] = [
        */
       { value: 'ebot', label: 'Contestar tus mensajes solo', hint: `${ebot.name}: WhatsApp, Instagram, Messenger y Telegram, a cualquier hora.` },
       { value: 'inventario', label: 'Control de inventario', hint: 'Dejar de vender lo que no tienes.' },
+      /*
+       * La única opción del cotizador con una parte mensual. Va la última a
+       * propósito: es lo que se decide después de tener el sitio en la cabeza,
+       * y ponerla entre las capacidades del sitio la haría competir con ellas
+       * en vez de sumarse.
+       */
+      { value: 'seguridad', label: 'Que no te lo hackeen', hint: 'Lo revisamos al entregar y lo dejamos vigilado mes a mes.' },
     ],
   },
   {
@@ -145,6 +170,24 @@ export interface CapabilityRule {
    * los cobramos nosotros).
    */
   product?: { name: string; price: string; note: string };
+  /**
+   * Servicio que se cobra en dos tiempos: algo al entregar y algo cada mes.
+   * Hoy solo Seguridad.
+   *
+   * Es la única regla que produce DOS líneas de desglose y que suma en dos
+   * totales distintos. Las dos cifras no se pueden fundir en una: «$375 y $45
+   * al mes» no es ningún número, y un cotizador que se inventara la suma —doce
+   * meses por delante, pongamos— estaría anunciando un compromiso que nadie ha
+   * firmado. Se enseñan separadas o no se enseñan.
+   */
+  servicio?: {
+    setupName: string;
+    setupPrice: string;
+    setupNote: string;
+    monthlyName: string;
+    monthlyPrice: string;
+    monthlyNote: string;
+  };
 }
 
 /**
@@ -170,6 +213,7 @@ export const CAPABILITIES: Record<string, CapabilityRule> = {
   portal: { moduleName: 'Portal de clientes' },
   api: { moduleName: 'Conexión con otro sistema' },
   ebot: { product: { name: ebot.name, price: ebot.price, note: ebotNota } },
+  seguridad: { servicio: seguridadCotizador },
 };
 
 /* ------------------------------------------------------------------ *
@@ -242,6 +286,8 @@ export type CapabilityState =
   | { kind: 'gratis' }
   /** Se cobra aparte. */
   | { kind: 'modulo'; delta: Money }
+  /** Se cobra aparte, y además deja una mensualidad detrás. */
+  | { kind: 'servicio'; delta: Money; mensual: Money }
   /** Marcarla cambia de plan: el precio es la diferencia, no el del plan nuevo. */
   | { kind: 'sube-plan'; delta: Money; to: Plan };
 
@@ -279,20 +325,45 @@ export function capabilityState(cap: string, answers: Answers): CapabilityState 
   // nuevo, y añadirlo obligaría a tocar la interfaz para no enseñar nada
   // distinto.
   if (rule.product) return { kind: 'modulo', delta: parsePrice(rule.product.price) };
+  if (rule.servicio) {
+    return {
+      kind: 'servicio',
+      delta: parsePrice(rule.servicio.setupPrice),
+      mensual: parsePrice(rule.servicio.monthlyPrice),
+    };
+  }
   return null;
 }
 
+/**
+ * Lo que ve el cliente en la etiqueta de una opción.
+ *
+ * Son dos campos y no una cadena porque hay dos totales: `unico` es lo que la
+ * opción mueve en el total de una vez y `mensual` lo que mueve en el de cada
+ * mes. Pegados en la misma frase se leerían como una suma —«+$150 y $60» invita
+ * a sumar 210— y además el arnés de `medir:cotizador` no podría comprobar por
+ * separado que cada cifra mueve su total exactamente lo que anuncia, que es la
+ * única comprobación que impide que una etiqueta mienta.
+ */
+export interface PriceLabel {
+  unico: string;
+  /** Solo cuando la opción deja una mensualidad detrás. */
+  mensual?: string;
+}
+
 /** El texto que ve el cliente para cada estado. */
-export function capabilityLabel(state: CapabilityState): string {
+export function capabilityLabel(state: CapabilityState): PriceLabel {
   switch (state.kind) {
     case 'bloqueada':
-      return 'Ya incluido';
+      return { unico: 'Ya incluido' };
     case 'gratis':
-      return 'Incluido';
+      return { unico: 'Incluido' };
     case 'modulo':
-      return `+${formatMoney(state.delta)}`;
+      return { unico: `+${formatMoney(state.delta)}` };
+    case 'servicio':
+      return { unico: `+${formatMoney(state.delta)}`, mensual: `y ${formatMensual(state.mensual)}` };
     case 'sube-plan':
-      return `+${formatMoney(state.delta)} · pasa a ${state.to.name.replace('PanaClaw ', '')}`;
+      return { unico: `+${formatMoney(state.delta)} · pasa a ${state.to.name.replace('PanaClaw ', '')}` };
   }
 }
 
@@ -316,7 +387,7 @@ export function optionPriceLabel(
   stepId: string,
   value: string,
   answers: Answers = {}
-): string | null {
+): PriceLabel | null {
   if (stepId === 'urgencia') return null;
 
   const opt = steps.find((s) => s.id === stepId)?.options.find((o) => o.value === value);
@@ -330,7 +401,7 @@ export function optionPriceLabel(
   // Pasos que fijan el plan: enseñamos desde cuánto arranca esa elección
   if (!opt.requiresPlan) return null;
   const plan = plans.find((p) => p.slug === opt.requiresPlan);
-  return plan ? `Desde ${plan.price}` : null;
+  return plan ? { unico: `Desde ${plan.price}` } : null;
 }
 
 /* ------------------------------------------------------------------ *
@@ -342,6 +413,12 @@ export interface QuoteLine {
   /** null = viene incluido en el plan. */
   price: Money | null;
   note?: string;
+  /**
+   * Cada cuánto se paga esta línea. Sin este campo, una línea mensual acabaría
+   * sumada al total de una vez y el cotizador anunciaría como precio de tu
+   * sitio una cifra que incluye un mes de vigilancia.
+   */
+  periodo?: 'unico' | 'mes';
 }
 
 export interface QuoteResult {
@@ -349,7 +426,10 @@ export interface QuoteResult {
   /** Por qué se recomienda ese plan y no otro. */
   reason: string;
   lines: QuoteLine[];
+  /** Lo que se paga de una vez. */
   total: Money;
+  /** Lo que se paga cada mes. `{min:0,max:0}` cuando no hay nada mensual. */
+  mensual: Money;
   delivery: string;
   urgencia: string;
   /** Solo cuando pidió "Ya" y el plan tarda más de una semana. */
@@ -403,13 +483,40 @@ export function computeQuote(answers: Answers): QuoteResult | null {
         price: parsePrice(rule.product.price),
         note: rule.product.note,
       });
+      continue;
+    }
+    /*
+     * Dos líneas para una sola casilla. Es la única capacidad que lo hace, y es
+     * lo honesto: quien marca «Que no te lo hackeen» está contratando una
+     * revisión que se paga y se acaba, y una vigilancia que se paga mientras la
+     * quiera. Una sola línea tendría que callar una de las dos cosas.
+     */
+    if (rule.servicio) {
+      lines.push({
+        label: `${option.label} (${rule.servicio.setupName})`,
+        price: parsePrice(rule.servicio.setupPrice),
+        note: rule.servicio.setupNote,
+      });
+      lines.push({
+        label: rule.servicio.monthlyName,
+        price: parsePrice(rule.servicio.monthlyPrice),
+        note: rule.servicio.monthlyNote,
+        periodo: 'mes',
+      });
     }
   }
 
-  const total = lines.reduce<Money>(
-    (acc, l) => (l.price ? { min: acc.min + l.price.min, max: acc.max + l.price.max } : acc),
-    { min: 0, max: 0 }
-  );
+  const sumar = (periodo: 'unico' | 'mes') =>
+    lines.reduce<Money>(
+      (acc, l) =>
+        l.price && (l.periodo ?? 'unico') === periodo
+          ? { min: acc.min + l.price.min, max: acc.max + l.price.max }
+          : acc,
+      { min: 0, max: 0 }
+    );
+
+  const total = sumar('unico');
+  const mensual = sumar('mes');
 
   const extras = lines.length - 1;
   const reason = driver
@@ -436,6 +543,7 @@ export function computeQuote(answers: Answers): QuoteResult | null {
     reason,
     lines,
     total,
+    mensual,
     delivery: extras > 0 ? `${plan.delivery}, más el plazo de cada capacidad` : plan.delivery,
     urgencia: urgenciaLabel,
     urgenciaAviso,

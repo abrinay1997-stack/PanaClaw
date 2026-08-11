@@ -17,14 +17,18 @@
  *      conversión— y abre UNA sola pestaña de WhatsApp.
  *   B. "Ninguna de estas" desmarca lo que hay marcado, en vez de solo avanzar.
  *   C. La cifra no cambia por el camino: el total corriente, el del resultado y
- *      el del mensaje de WhatsApp son el mismo número.
+ *      el del mensaje de WhatsApp son el mismo número. Se comprueban LAS DOS
+ *      cifras —la de una vez y la mensual— por separado: desde que existe el
+ *      servicio de seguridad, un cotizador que sumara la mensualidad al total
+ *      pasaría igual esta comprobación si solo se mirara un número.
  *   D. El precio de cada plan en el cotizador es el que dice /planes. Un
  *      cotizador que diga un número distinto destruye justo la confianza que el
  *      sitio vende.
  *   E. Lo que el plan ya trae sale apagado y no se puede marcar — y nada
  *      bloqueado queda marcado, que encerraría a la persona en el plan caro.
- *   F. Cada etiqueta mueve el total exactamente lo que anuncia, para las 11
- *      capacidades y los 4 planes. Es la comprobación que de verdad importa:
+ *   F. Cada etiqueta mueve el total exactamente lo que anuncia, para las 12
+ *      capacidades y los 4 planes — y la parte mensual de una etiqueta mueve el
+ *      total mensual, nunca el otro. Es la comprobación que de verdad importa:
  *      mientras pase, ninguna etiqueta del cotizador puede mentir.
  *   G. `prefers-reduced-motion` apaga el scroll animado — midiendo también el
  *      caso contrario, para que la comprobación no pase por accidente.
@@ -87,6 +91,24 @@ async function ninguna(page) {
   await page.locator('.cot-step').nth(i).locator('button[data-skip]').click();
 }
 
+const totales = (t) => t.replace(/\s+/g, ' ').trim();
+
+/**
+ * Las dos cifras que enseña el cotizador: la de una vez y la de cada mes.
+ *
+ * Se leen de nodos distintos a propósito. Mientras vivieron en el mismo texto
+ * —«$375 y $45/mes»— cualquier comparación tenía que partir una cadena por un
+ * separador, y un cambio de redacción habría dejado el cepo comparando basura
+ * contra basura sin que nada fallara.
+ */
+async function ambasCifras(page, unicoSel, mesSel) {
+  const unico = totales(await page.locator(unicoSel).textContent());
+  const mes = totales((await page.locator(mesSel).textContent()) ?? '');
+  return { unico, mes };
+}
+
+const corrientes = (page) => ambasCifras(page, '[data-running-total]', '[data-running-mes]');
+
 /**
  * Recorre los cuatro pasos hasta el resultado.
  * Devuelve el total corriente justo antes de pedirlo, para poder compararlo.
@@ -98,15 +120,13 @@ async function recorrer(page, base, { objetivo, alcance, capacidades = [], urgen
   await marcar(page, alcance);
   await siguiente(page);
   for (const c of capacidades) await marcar(page, c);
-  const corriente = (await page.locator('[data-running-total]').textContent()).trim();
+  const corriente = await corrientes(page);
   if (saltar) await ninguna(page);
   else await siguiente(page);
   await marcar(page, urgencia);
   await siguiente(page);
   return { corriente };
 }
-
-const totales = (t) => t.replace(/\s+/g, ' ').trim();
 
 /* ------------------------------------------------------------------ *
  * A · El envío llega a /gracias/
@@ -152,22 +172,29 @@ async function checkNinguna(browser, base) {
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
 
-  // Se marcan dos capacidades caras ANTES de arrepentirse: es justo el caso que
-  // cobraba $1,050 de más.
+  // Se marcan dos capacidades caras ANTES de arrepentirse —es justo el caso que
+  // cobraba $1,050 de más— y una de ellas es la que deja mensualidad: un
+  // arrepentimiento que borrara el pago único pero no la cuota mensual dejaría
+  // al cliente suscrito a algo que acaba de rechazar.
   await recorrer(page, base, {
     objetivo: 'nuevo',
     alcance: 'una',
-    capacidades: ['reservas', 'login'],
+    capacidades: ['reservas', 'seguridad'],
     urgencia: 'ya',
     saltar: true,
   });
 
   const lineas = await page.locator('.cot-line').count();
   const total = totales(await page.locator('[data-total]').textContent());
-  const ok = lineas === 1;
-  if (!ok) fail(`"Ninguna de estas" dejó ${lineas} líneas (se espera solo el plan) y un total de ${total}`);
-  console.log(`   líneas tras arrepentirse ${String(lineas).padEnd(18)} ${mark(ok)}`);
+  const mensualVisible = await page.locator('[data-total-mes]').isVisible();
+  const ok = lineas === 1 && !mensualVisible;
+  if (lineas !== 1)
+    fail(`"Ninguna de estas" dejó ${lineas} líneas (se espera solo el plan) y un total de ${total}`);
+  if (mensualVisible)
+    fail('"Ninguna de estas" dejó una mensualidad en pantalla: se rechazó y se sigue cobrando');
+  console.log(`   líneas tras arrepentirse ${String(lineas).padEnd(18)} ${mark(lineas === 1)}`);
   console.log(`   total                    ${total.padEnd(18)} ${mark(ok)}`);
+  console.log(`   mensualidad              ${(mensualVisible ? 'sigue ahí' : 'ninguna').padEnd(18)} ${mark(!mensualVisible)}`);
   await ctx.close();
 }
 
@@ -185,24 +212,24 @@ async function checkCifraEstable(browser, base) {
   page.on('popup', (p) => abiertas.push(p));
 
   /*
-   * Dos capacidades a la vez, una de ellas eBot: es la única línea del
-   * cotizador que no sale de `modules.ts`, así que si su precio se compusiera
-   * distinto en alguno de los tres sitios, se vería aquí.
+   * Tres capacidades a la vez, elegidas para que ninguna forma de componer un
+   * precio se quede sin ejercer en los tres caminos:
    *
-   * Antes esta caso marcaba «Respuestas automáticas», que costaba $250–$900 y
-   * de paso metía un rango en la comparación. Ese módulo se quitó al publicarse
-   * eBot, y con él desapareció el último precio de intervalo del cotizador:
-   * hoy todas las capacidades tienen cifra única, así que el formato «$X – $Y»
-   * ya no se ejerce por ningún camino. Si algún día vuelve a haber un rango,
-   * conviene volver a meterlo en este caso.
+   *  · eBot es la única línea que no sale de `modules.ts` (producto con precio
+   *    cerrado propio),
+   *  · seguridad es la única que produce DOS líneas y una cuota mensual, y de
+   *    paso devuelve al cotizador el formato de rango «$X – $Y», que se quedó
+   *    sin ejercer el día que se quitó el módulo «Respuestas automáticas»
+   *    ($250–$900) al publicarse eBot,
+   *  · portal es un módulo corriente.
    */
   const { corriente } = await recorrer(page, base, {
     objetivo: 'vender',
     alcance: 'catalogo',
-    capacidades: ['ebot', 'portal'],
+    capacidades: ['ebot', 'seguridad', 'portal'],
     urgencia: 'mes',
   });
-  const resultado = totales(await page.locator('[data-total]').textContent());
+  const resultado = await ambasCifras(page, '[data-total]', '[data-total-mes]');
 
   await page.fill('#cot-nombre', 'Prueba');
   await page.fill('#cot-contacto', 'prueba@ejemplo.com');
@@ -211,11 +238,48 @@ async function checkCifraEstable(browser, base) {
 
   const wa = abiertas.find((p) => p.url().includes('wa.me'));
   const texto = wa ? decodeURIComponent(new URL(wa.url()).searchParams.get('text') ?? '') : '';
-  const enMensaje = totales(texto.match(/Total estimado: (.+)/)?.[1] ?? '(no aparece)');
+  const enMensaje = {
+    unico: totales(texto.match(/Total estimado: (.+)/)?.[1] ?? '(no aparece)'),
+    mes: totales(texto.match(/Mensualidad: (.+)/)?.[1] ?? '(no aparece)'),
+  };
 
-  const ok = corriente === resultado && resultado === enMensaje;
-  if (!ok) fail(`la cifra cambia por el camino: corriente ${corriente}, resultado ${resultado}, mensaje ${enMensaje}`);
-  console.log(`   corriente ${corriente.padEnd(18)} resultado ${resultado.padEnd(18)} mensaje ${enMensaje.padEnd(18)} ${mark(ok)}`);
+  /*
+   * Las cifras se comparan por su NÚMERO, no por su cadena: el mismo importe se
+   * escribe con adornos distintos en cada sitio ("y $30 – $60/mes" en pantalla,
+   * "$30 – $60/mes" en el mensaje), y exigir el mismo texto obligaría a que la
+   * redacción de los tres caminos fuera idéntica para siempre — que es una
+   * comprobación de estilo, no de honestidad.
+   */
+  const mismoImporte = (a, b) => {
+    const x = cifras(a);
+    const y = cifras(b);
+    return x.min === y.min && x.max === y.max;
+  };
+
+  const okUnico =
+    mismoImporte(corriente.unico, resultado.unico) && mismoImporte(resultado.unico, enMensaje.unico);
+  const okMes =
+    corriente.mes !== '' &&
+    mismoImporte(corriente.mes, resultado.mes) &&
+    mismoImporte(resultado.mes, enMensaje.mes);
+
+  if (!okUnico)
+    fail(
+      `el total de una vez cambia por el camino: corriente ${corriente.unico}, ` +
+        `resultado ${resultado.unico}, mensaje ${enMensaje.unico}`
+    );
+  if (!okMes)
+    fail(
+      `la mensualidad cambia por el camino (o no aparece): corriente "${corriente.mes}", ` +
+        `resultado "${resultado.mes}", mensaje "${enMensaje.mes}"`
+    );
+
+  console.log(
+    `   de una vez  ${corriente.unico.padEnd(16)} ${resultado.unico.padEnd(16)} ${enMensaje.unico.padEnd(16)} ${mark(okUnico)}`
+  );
+  console.log(
+    `   al mes      ${corriente.mes.padEnd(16)} ${resultado.mes.padEnd(16)} ${enMensaje.mes.padEnd(16)} ${mark(okMes)}`
+  );
   await ctx.close();
 }
 
@@ -282,7 +346,10 @@ async function estadoDeCapacidades(page) {
   return page.evaluate(() =>
     [...document.querySelectorAll('input[name="capacidades"]')].map((input) => ({
       value: input.value,
-      etiqueta: document.querySelector(`[data-opt-price="${input.value}"]`)?.textContent.trim() ?? '',
+      // La etiqueta son dos nodos: lo que suma de una vez y lo que suma al mes.
+      // Se leen por separado porque cada una tiene que cuadrar con SU total.
+      etiqueta: document.querySelector(`[data-opt-unico="${input.value}"]`)?.textContent.trim() ?? '',
+      etiquetaMes: document.querySelector(`[data-opt-mes="${input.value}"]`)?.textContent.trim() ?? '',
       bloqueada: input.disabled,
       marcada: input.checked,
       apagada: !!input.closest('.cot-opt')?.classList.contains('is-locked'),
@@ -375,26 +442,38 @@ async function checkEtiquetasHonestas(browser, base) {
   let comprobadas = 0;
   let fallos = 0;
 
+  const delta = (antes, despues) => ({ min: despues.min - antes.min, max: despues.max - antes.max });
+  const iguales = (a, b) => a.min === b.min && a.max === b.max;
+
   for (const caso of RUTAS_A_PLAN) {
     await hastaCapacidades(page, base, caso);
     for (const cap of await estadoDeCapacidades(page)) {
       if (cap.bloqueada) continue; // no se puede marcar: nada que comparar
 
-      const antes = cifras(await page.locator('[data-running-total]').textContent());
+      const antes = await corrientes(page);
       await marcar(page, cap.value);
-      const despues = cifras(await page.locator('[data-running-total]').textContent());
+      const despues = await corrientes(page);
       await desmarcar(page, cap.value);
 
-      const real = { min: despues.min - antes.min, max: despues.max - antes.max };
-      const anunciado = cap.etiqueta === 'Incluido' ? { min: 0, max: 0 } : cifras(cap.etiqueta);
-      const ok = real.min === anunciado.min && real.max === anunciado.max;
+      const realUnico = delta(cifras(antes.unico), cifras(despues.unico));
+      const realMes = delta(cifras(antes.mes), cifras(despues.mes));
+      const anunciadoUnico = cap.etiqueta === 'Incluido' ? { min: 0, max: 0 } : cifras(cap.etiqueta);
+      /*
+       * Sin parte mensual anunciada, lo que se exige es CERO movimiento en el
+       * total mensual. Es la mitad que de verdad protege: sin esta línea, una
+       * capacidad que empezara a colar una cuota mensual sin decirlo pasaría
+       * esta comprobación en verde.
+       */
+      const anunciadoMes = cap.etiquetaMes ? cifras(cap.etiquetaMes) : { min: 0, max: 0 };
+      const ok = iguales(realUnico, anunciadoUnico) && iguales(realMes, anunciadoMes);
 
       comprobadas++;
       if (!ok) {
         fallos++;
         fail(
-          `${caso.plan} · "${cap.value}": la etiqueta dice "${cap.etiqueta}" ` +
-            `y el total se mueve ${real.min}–${real.max}`
+          `${caso.plan} · "${cap.value}": la etiqueta dice "${cap.etiqueta}` +
+            `${cap.etiquetaMes ? ` / ${cap.etiquetaMes}` : ''}" y el total se mueve ` +
+            `${realUnico.min}–${realUnico.max} de una vez y ${realMes.min}–${realMes.max} al mes`
         );
       }
     }
