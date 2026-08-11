@@ -17,22 +17,9 @@ uno. El resumen de las cinco más importantes está en el
 3. **Un solo `<h1>` por página.**
 4. **Cero placeholders en producción:** nada de `#`, `lorem`, `G-XXXXXXXXXX`.
 5. **Solo animar `transform` y `opacity`.** Todo lo demás provoca repintados.
-   **Una excepción, y está medida:** la silueta del navbar (`Nav.astro`) anima el
-   atributo `d` de un `<path>` cuadro a cuadro. No hay forma de expresar con una
-   transformación una figura que *cambia de forma* —el bulto se estira y se
-   encoge según lo ancha que sea la pestaña de destino—, y las alternativas eran
-   peores: dos elementos superpuestos dejan una costura visible en la unión, y
-   una transición CSS sobre `d` no la soportan todos los navegadores. El coste
-   real es un `<path>` de diez comandos repintado durante ~400 ms, y solo cuando
-   se cambia de página o se encoge el nav. Si algún día hace falta otra
-   excepción, se mide antes y se escribe aquí.
 6. **Sin librería de animación.** El movimiento se hace con transiciones CSS y
    JavaScript solo decide cuándo dispararlas (`IntersectionObserver` en
-   `Reveal`). La silueta del navbar es la única que se anima desde JavaScript, y
-   tampoco reproduce una animación con principio y final: persigue su destino con
-   suavizado exponencial y lo vuelve a medir en cada cuadro. Es lo que le deja
-   cambiar de idea a mitad de camino —si el nav se encoge mientras el bulto
-   viaja, o se pulsa otra pestaña— sin cancelar nada y sin saltos. Aquí vivió GSAP + ScrollTrigger: pesaba 43 KB comprimidos —el 74 %
+   `Reveal`). Aquí vivió GSAP + ScrollTrigger: pesaba 43 KB comprimidos —el 74 %
    de todo el JS del sitio— y lo único que hacía era poner un atributo cuando un
    elemento entraba en pantalla. En una página que vende abrir en menos de un
    segundo, eso no se sostiene. Si algún día hace falta una línea de tiempo de
@@ -124,16 +111,6 @@ el destino a `FormDestination` y tratarlo en la página como uno más.
 bootstrap `if (document.readyState !== 'loading') initReveals()` al final. Los
 `<script type="module">` son diferidos y `astro:page-load` se dispara antes; sin
 el bootstrap, el listener llega tarde.
-
-**"El bulto del navbar se queda quieto, o cae fuera de la pestaña"** → Se calcula
-midiendo el enlace con `aria-current="page"`, así que primero comprueba que ese
-atributo esté donde toca (`syncCurrent` lo re-sincroniza en cada
-`astro:page-load`, porque el nav sobrevive a las navegaciones). Si el atributo
-está bien pero la forma no se mueve, mira que `.floating-nav` tenga la clase
-`has-shape`: por debajo de 1101 px los enlaces viven en un desplegable y la
-silueta se apaga a propósito. Y si aparece corrida unos píxeles al cargar, es la
-fuente: los anchos se miden antes de que Archivo termine de cargar y se
-recalculan con `document.fonts.ready`.
 
 **"El shader no aparece"** → Verifica que el navegador soporte WebGL
 (`chrome://gpu`). Si no, se muestra la imagen fallback automáticamente.
