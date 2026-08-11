@@ -49,6 +49,20 @@ import { routes } from '../data/links';
           <strong>Pago anual adelantado:</strong> {careNote.replace('Pago anual adelantado: ', '')}
         </div>
       </Reveal>
+
+      <!--
+        Care solo cubre lo que hicimos nosotros, y hasta ahora quien llegaba
+        aquí con un sitio ajeno se iba sin nada. La distinción va escrita, no
+        insinuada: son dos servicios con dos precios y confundirlos termina en
+        alguien pagando dos veces lo mismo.
+      -->
+      <Reveal>
+        <p class="care-otro">
+          ¿El sitio no lo hicimos nosotros? Care no lo cubre, pero
+          <a href={routes.seguridad}>Seguridad web</a> sí: lo revisamos, cerramos por donde podrían
+          entrar y lo dejamos vigilado, desde $80 la revisión.
+        </p>
+      </Reveal>
     </div>
   </section>
 
@@ -118,6 +132,17 @@ import { routes } from '../data/links';
   }
   .care-head h1 .muted {
     color: var(--studio-gray);
+  }
+  .care-otro {
+    max-width: 64ch;
+    margin-top: 26px;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.7;
+  }
+  .care-otro a {
+    color: var(--flash-orange);
   }
   .care-lead-text {
     margin-top: 24px;

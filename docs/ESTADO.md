@@ -101,8 +101,10 @@ encabezados, animaciones) salen de `document.getAnimations()` y
 que el envío pase por `/gracias/`, que la cifra sea la misma en el total
 corriente, el resultado y el mensaje de WhatsApp, que los precios coincidan con
 `/planes`, que lo que el plan ya trae salga bloqueado, y que **cada etiqueta
-mueva el total exactamente lo que anuncia** (34 combinaciones de capacidad ×
+mueva el total exactamente lo que anuncia** (38 combinaciones de capacidad ×
 plan). Mientras esa última pase, ninguna etiqueta del cotizador puede mentir.
+Desde el 2026-08-11 son **dos** cifras las que vigila —la de una vez y la
+mensual— y las compara por separado: sumarlas daría un número creíble y falso.
 
 La regla al añadir una comprobación a cualquiera de las dos: **romper lo que
 vigila y ver que salta.** Dos de las de `medir:cotizador` pasaban en verde con
@@ -410,12 +412,11 @@ línea en `CAPABILITIES.ebot` (`quote.ts`). Pero antes conviene que las dos cosa
 dejen de prometer lo mismo — si de verdad se vende IA hecha a medida **dentro**
 del sistema del cliente, ese es otro producto y necesita otro nombre.
 
-**Lo que ese cambio se llevó por delante, y conviene no olvidar:** era el único
-precio de rango del cotizador. La comprobación C de `medir:cotizador` lo usaba
-justamente para ejercitar el formato «$X – $Y» en los tres caminos; hoy todas
-las capacidades tienen cifra única, así que ese formato ya no lo prueba nadie.
-Está anotado en el propio script: si vuelve a haber un rango, hay que devolverlo
-a ese caso.
+**Lo que ese cambio se llevó por delante, y ya está devuelto:** era el único
+precio de rango del cotizador, y la comprobación C de `medir:cotizador` lo usaba
+para ejercitar el formato «$X – $Y» en los tres caminos. Quedó sin ejercer desde
+el 2026-08-09 hasta el 2026-08-11, cuando la capacidad de seguridad
+($80–$150 y $30–$60/mes) volvió a meter rangos en ese caso.
 
 **Hecho el 2026-08-09 (el chat lo sugiere).** Las pastillas iniciales del chat
 pasan de cuatro a cinco: la segunda es «¿Tienen bot para WhatsApp?». Va escrita
@@ -439,6 +440,80 @@ hay que volver a medir esa franja** — y la comprobación todavía no está en
 | 47 | **eBot no aparece en la home.** Está en la barra, en el pie y en el chat, pero quien entra por la portada y no mira el menú no se entera de que existe. No se metió a propósito: la home ya tiene 17 acciones compitiendo y meter una decimoctava sin decidir qué sale es empeorar el punto 15. | `[código]` + `[tuyo]` |
 | 48 | **En un iPhone SE, la pastilla de eBot queda bajo el pliegue del propio chat.** El panel abierto solo deja ver la primera —le pasaba igual a las cuatro de antes, así que no lo trajo eBot—, y quien no desplaza dentro del chat solo ve «¿Cuánto cuesta un sitio?». Cabrían las cinco recortando el mensaje de bienvenida, que ocupa cuatro líneas en esa pantalla. Medido el 2026-08-09 con `medir:movil` (el panel entero entra y no se corta; lo que no entra es el contenido de su lista). | `[código]` |
 
+## Bloque 9 — Seguridad web, el servicio para sitios ajenos
+
+**Hecho el 2026-08-11.** El sitio vende un tercer producto que no es «hacerte una
+web»: `/seguridad/`, con tres planes que salen del documento *Planes de
+Servicios: Web y Ciberseguridad* — Revisión de Seguridad ($80–$150, pago único),
+Web Protegida ($30–$60/mes) y Web Protegida Total ($70–$120/mes). Todo sale de
+`src/data/seguridad.ts`: los tres planes, las 14 filas de la comparativa, los
+cuatro pasos de la revisión, lo que no cubre y las seis preguntas. Está en el
+pie, en el desplegable de `/contacto` (los tres, uno a uno), en el índice de
+`/planes`, bajo Care en `/servicios`, en el cotizador y en la base del chat.
+Emite `Service` + tres `Offer` con `priceSpecification` —los rangos se publican
+como rango, no aplastados a un número— y `FAQPage`.
+
+**Dos adaptaciones del documento original, y conviene saber que se hicieron:**
+los precios venían en euros y aquí se publican en dólares con las mismas cifras
+(son números de venta, no una conversión contable), y la fila de RGPD pasó a la
+ley panameña de datos personales, que es la que le aplica a un cliente de aquí.
+
+**Tres decisiones que conviene no deshacer:**
+
+- **Este servicio es para el sitio que el cliente YA tiene**, lo hayamos hecho
+  nosotros o no. Es lo que lo separa de Care, y por eso `/servicios` dice en
+  texto que Care no cubre sitios ajenos y `/seguridad` dice que a un cliente
+  nuestro media lista no le hace falta. Un servicio de seguridad que no admite
+  qué no necesitas se lee como el que te llama para decirte que tu computadora
+  tiene un virus.
+- **La revisión de pago único va primera**, al revés que el anclaje de
+  `/planes`. Nadie se suscribe a proteger algo que no sabe si está roto: el paso
+  barato es el que convierte la duda en una lista de fallos con nombre.
+- **«Lo que no incluye» empieza por la garantía que no existe.** Nadie puede
+  firmar que no te van a hackear; publicarlo cuesta una venta y ahorra la
+  discusión que viene después de la única vez que importa.
+
+**Hecho el 2026-08-11 (el cotizador aprende a llevar dos cifras).** El paso 3
+ofrece «Que no te lo hackeen», que suma **$80–$150 de una vez** y **$30–$60 al
+mes**, en dos líneas de desglose y en **dos totales que nunca se funden**: uno
+de pago único y otro mensual, en el total corriente, en el resultado y en el
+mensaje de WhatsApp. Proyectar la mensualidad a doce meses para enseñar un solo
+número habría sido anunciar un compromiso que nadie ha firmado.
+
+`medir:cotizador` vigila las dos por separado (comprobación C) y comprueba que
+la parte mensual de una etiqueta mueva el total mensual y **cero** el otro —y al
+revés— en las 38 combinaciones de capacidad × plan (antes 34). Las dos
+comprobaciones nuevas se verificaron rompiendo lo que vigilan: pasar la línea
+mensual al total de una vez tumba C y las cuatro combinaciones de seguridad de
+F; quitar la mensualidad del mensaje de WhatsApp tumba C sola.
+
+**Medido el 2026-08-11** sobre el build de producción, mismo método que la tabla
+de arriba:
+
+| Página | Alto (escritorio / móvil) | Acciones en `<main>` |
+|---|---|---|
+| `/seguridad` | 7 146 / 9 957 px | 11 |
+
+Es la segunda página más larga del sitio, por detrás de `/ebot` (8 276 / 11 368)
+y por delante de `/planes`. Un `<h1>`, cero saltos de encabezado, cero imágenes
+sin `alt`. Los dos únicos objetivos táctiles por debajo de 24 px son enlaces
+dentro de una frase, que caen en la excepción explícita de WCAG 2.5.8 — los
+mismos que ya tenían `/privacidad` y `/terminos`.
+
+**El pie se pasó de presupuesto y el cepo lo cazó.** El séptimo enlace de la
+columna de Servicios subió el footer a 1 337 px en un iPhone SE, con el tope en
+1 300. Se arregló recortando el respiro entre enlaces en `Footer.astro`, no
+quitando un enlace: el objetivo táctil queda en 29 px, por encima de los 24 que
+pide la norma, y el pie baja a 1 249. `medir:movil` en verde.
+
+| # | Pendiente | Quién |
+|---|---|---|
+| 49 | **Los precios, el alcance y los plazos de seguridad son una propuesta mía, no una decisión tomada.** Las cifras salen del documento tal cual (en dólares en vez de euros) y «informe en 5 días» o «respuesta en 24–48 h» son promesas que tienes que poder cumplir un martes ocupado. Se revisan enteras en `src/data/seguridad.ts`. Es el mismo pendiente que el 46 tiene para eBot. | `[tuyo]` |
+| 50 | **Web Protegida Total se pisa con Care Pro.** El tercer plan incluye mantenimiento, actualizaciones, vigilancia y soporte prioritario por $70–$120/mes; Care Pro cuesta $75/mes y hace casi lo mismo sobre un sitio nuestro. Hoy se sostiene con una distinción escrita —Care mantiene lo que construimos, Seguridad protege cualquier sitio— y con la nota que manda a escribirnos antes de contratar los dos. **Decisión tuya:** o se funden, o el tercer plan deja de ofrecer mantenimiento, o Care deja de ofrecer vigilancia. Es el mismo choque que eBot tuvo con «Respuestas automáticas con IA», y aquel se resolvió quitando uno de los dos. | `[tuyo]` |
+| 51 | **Seguridad no está en la barra de navegación.** Está en el pie, en `/planes`, en `/servicios`, en el cotizador y en el chat, pero no en el nav. No se metió porque sería el **noveno** enlace y el bloque 8 dejó escrito que la franja de 1000 a 1100 px hay que volver a medirla con cada enlace nuevo — y esa comprobación todavía no está en `medir:movil`, así que hoy depende de que alguien se acuerde. Meterlo obliga a medir esa franja o a decidir qué sale. | `[código]` + `[tuyo]` |
+| 52 | **La revisión no tiene un camino de compra propio para tráfico frío.** Es la oferta más barata del catálogo después del Diagnóstico de $49 —y las dos se parecen mucho: las dos son «te decimos qué está mal por poco dinero»—. Hoy conviven sin explicar en qué se diferencian: una mira la velocidad y la otra la seguridad. Es el punto 13 visto desde aquí, y probablemente sean un solo producto con dos mitades. | `[tuyo]` |
+| 53 | **El chat no sabe recomendar entre Care y Seguridad más allá de un hecho.** Está escrito `seguridad-vs-care` y responde la pregunta directa, pero la comparación fina —«tengo WordPress y ustedes no lo hicieron, ¿qué contrato?»— depende de que se cierre el punto 50. | `[código]` |
+
 ---
 
 ## Fuera de alcance mientras no haya presupuesto
@@ -451,7 +526,7 @@ evaluarlos cada mes.
 | Checkout / depósito en línea `[$]` | Exige cuenta de comercio y comisión por transacción. Hasta entonces el cierre es por WhatsApp o formulario |
 | Panel de cliente `[$]` | Necesita servidor y base de datos con coste recurrente. Contradice el «$0 de infraestructura» que hoy sostiene el margen |
 | BrowserStack o similar `[$]` | Ya cubierto gratis: `npm run medir:movil` mide el layout real en Chromium headless |
-| Auditoría de seguridad formal `[$]` | Un sitio estático sin panel ni base de datos tiene una superficie de ataque mínima. Cuando haya panel de cliente, se replantea |
+| Auditoría de seguridad formal **de este sitio** `[$]` | Un sitio estático sin panel ni base de datos tiene una superficie de ataque mínima. Cuando haya panel de cliente, se replantea. No confundir con el servicio de `/seguridad/`, que se le vende a sitios de clientes y sí está publicado |
 | Community manager, producción de vídeo, patrocinios `[$]` | Plan de redes, no de repo |
 
 ---

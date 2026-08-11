@@ -46,9 +46,15 @@ salta. Sale con código 1 si algo se pasa de presupuesto.
 `/gracias/` —el único punto donde el píxel cuenta una conversión—, que la cifra
 sea la misma en el total corriente, en el resultado y en el mensaje de WhatsApp,
 que los precios coincidan con `/planes`, y que **cada etiqueta mueva el total
-exactamente lo que anuncia**, para las once capacidades y los cuatro planes.
+exactamente lo que anuncia**, para las doce capacidades y los cuatro planes.
 Nació de un fallo que se dio por comprobado durante semanas porque leyendo el
 código parecía correcto.
+
+Desde que existe el servicio de seguridad, el cotizador lleva **dos cifras** —lo
+que se paga de una vez y lo que se paga cada mes— y el arnés las comprueba por
+separado en los tres caminos. Es la parte que más fácil sería romper sin que se
+notara: una mensualidad sumada al total de una vez sigue dando un número
+creíble.
 
 Las dos comparten `scripts/_harness.mjs` (cargar Playwright y servir `dist/`).
 La regla al añadir una comprobación: **romper lo que vigila y ver que salta**.
@@ -111,6 +117,7 @@ contacto y a lo que responde el chat.
 | `site.ts` | Nombre, descripción, WhatsApp, horario |
 | `plans.ts` | Los cuatro planes y el diagnóstico |
 | `ebot.ts` | eBot: el bot multicanal con panel — precio, canales, panel y costos del cliente |
+| `seguridad.ts` | Seguridad web: los tres planes de protección, la comparativa y lo que no cubre |
 | `modules.ts` | Capacidades que se suman a un plan |
 | `care.ts` | Planes de mantenimiento |
 | `services.ts` | Los tres pilares, el proceso y los enlaces del nav |
@@ -128,8 +135,9 @@ está en [`docs/convenciones.md`](docs/convenciones.md).
 1. **Nunca hardcodear rutas internas.** Usar `routes.*` o `withBase()` de
    `src/data/links.ts`.
 2. **Los precios no se duplican.** El cotizador y la base del chat los componen
-   de `plans.ts` y `modules.ts`. Un cotizador que diga un número distinto al de
-   `/planes` destruye justo la confianza que el sitio vende.
+   de `plans.ts`, `modules.ts`, `ebot.ts` y `seguridad.ts`. Un cotizador que diga
+   un número distinto al de `/planes` destruye justo la confianza que el sitio
+   vende.
 3. **Cero jerga en el copy de cara al cliente.** Solo los nombres que el cliente
    ya reconoce: WordPress, Google, WhatsApp, GitHub, Yappy. Si una frase solo la
    entiende un programador, está mal escrita para esta página.

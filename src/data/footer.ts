@@ -22,6 +22,7 @@ export const footerColumns: FooterColumn[] = [
     title: 'Servicios',
     links: [
       { label: 'eBot — bot multicanal', href: routes.ebot },
+      { label: 'Seguridad para tu sitio', href: routes.seguridad },
       { label: 'Mantenimiento (Care)', href: anchor(routes.servicios, '#care') },
       { label: 'Diagnóstico de tu sitio', href: anchor(routes.servicios, '#diagnostico') },
       { label: 'Planes y precios', href: routes.planes },

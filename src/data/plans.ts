@@ -1,4 +1,5 @@
 import { ebot } from './ebot';
+import { securityPlans, precioCompleto } from './seguridad';
 
 export interface Plan {
   slug: string;
@@ -99,6 +100,15 @@ export const planOptions: PlanOption[] = [
   // formulario. Su precio se importa de `ebot.ts` en vez de escribirse: si algún
   // día sube, el desplegable no puede quedarse anunciando la cifra vieja.
   { value: ebot.slug, label: `${ebot.name} — ${ebot.price}` },
+  // Los tres de seguridad entran uno a uno y no como una sola entrada genérica:
+  // son tres compromisos distintos (una revisión que se paga y se acaba, y dos
+  // mensualidades), y saber cuál pulsó la persona es la mitad de la respuesta.
+  // Los precios se importan, igual que el de eBot: si suben, el desplegable no
+  // puede quedarse anunciando la cifra vieja.
+  ...securityPlans.map((p) => ({
+    value: `seguridad-${p.slug}`,
+    label: `${p.name} — ${precioCompleto(p)}`,
+  })),
   { value: 'modulos', label: 'Sistema por módulos' },
   { value: 'care', label: 'Solo mantenimiento (Care)' },
   { value: 'otro', label: 'Aún no lo sé' },

@@ -1,0 +1,752 @@
+---
+/**
+ * /seguridad/ — proteger un sitio que ya existe.
+ *
+ * Es el segundo producto del catálogo que no es «hacerte una web», y el primero
+ * que se cobra cada mes. Eso cambia dos cosas respecto a `/planes` y a `/ebot`:
+ *
+ * 1. **Lo que hay que vencer no es el precio, es la duda.** Nadie se suscribe a
+ *    proteger algo que no sabe si está roto. Por eso la revisión de pago único
+ *    va primera en la página y en el orden de las tarjetas, al revés que el
+ *    anclaje de `/planes`: es el paso barato que convierte «no creo que me pase»
+ *    en una lista de fallos con nombre.
+ * 2. **Hay que contar el procedimiento.** En seguridad, un servicio que no
+ *    explica qué va a hacer exactamente se parece demasiado a quien te llama
+ *    para decirte que tu computadora tiene un virus. De ahí la sección de los
+ *    cuatro pasos, y de ahí que «lo que no incluye» empiece por lo único que
+ *    importa: nadie puede prometerte que no te van a hackear.
+ *
+ * La tabla comparativa es el corazón y no un adorno: tres planes que se solapan
+ * no se entienden leyendo tres listas sueltas.
+ *
+ * REGLA 13 DEL PROYECTO: aquí NO va un bloque de cierre «¿Empezamos?» — ese vive
+ * solo en /proceso.
+ *
+ * Todo el contenido sale de `src/data/seguridad.ts`. Esta página no escribe una
+ * sola cifra a mano: lo que se cambie ahí cambia aquí, en el desplegable de
+ * /contacto, en el cotizador y en lo que responde el chat, en el mismo build.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Reveal from '../components/Reveal.astro';
+import SceneBg from '../components/SceneBg.astro';
+import SectionNav from '../components/SectionNav.astro';
+
+import {
+  seguridad,
+  securityPlans,
+  securityRows,
+  securityPasos,
+  seguridadIncluye,
+  seguridadNoIncluye,
+  seguridadFaq,
+  seguridadContactHref,
+  precioCompleto,
+  revision,
+  protegida,
+} from '../data/seguridad';
+import { seguridadVisual } from '../data/images';
+import { routes } from '../data/links';
+import { site, waLink } from '../data/site';
+
+const origin = Astro.site ?? new URL('http://localhost:4321');
+const seguridadUrl = new URL(routes.seguridad, origin).toString();
+
+/** El precio va como número: schema.org no acepta "$80–$150". */
+const desde = (price: string) => Number(price.replace(/,/g, '').match(/\d+/)?.[0] ?? 0);
+
+const serviceSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: `${seguridad.name} — ${site.name}`,
+  serviceType: 'Auditoría y protección de sitios web',
+  description: seguridad.summary,
+  areaServed: { '@type': 'Country', name: site.location },
+  provider: {
+    '@type': 'Organization',
+    name: site.name,
+    url: new URL(routes.home, origin).toString(),
+  },
+  /*
+   * Cada plan declara su precio MÍNIMO y su periodicidad. Un rango se publica
+   * con `priceSpecification`, no aplastando la horquilla a un solo número: en
+   * los resultados de búsqueda, «$80» a secas se leería como precio cerrado y
+   * la primera respuesta nuestra sería una corrección.
+   */
+  offers: securityPlans.map((plan) => ({
+    '@type': 'Offer',
+    name: plan.name,
+    description: plan.desc,
+    priceCurrency: 'USD',
+    priceSpecification: {
+      '@type': 'PriceSpecification',
+      minPrice: desde(plan.price),
+      maxPrice: Number(plan.price.replace(/,/g, '').match(/\d+(?!.*\d)/)?.[0] ?? 0),
+      priceCurrency: 'USD',
+      ...(plan.suffix ? { billingIncrement: 1, unitText: 'MES' } : {}),
+    },
+    url: seguridadUrl,
+    availability: 'https://schema.org/InStock',
+  })),
+};
+
+/*
+ * Las preguntas de esta página también van como datos estructurados, igual que
+ * las de /ebot y /ayuda. Ninguna se repite entre las tres: el mismo par
+ * pregunta/respuesta declarado dos veces es contenido duplicado.
+ */
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: seguridadFaq.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a },
+  })),
+};
+
+/** Marca de una fila de la tabla. El texto va aparte, para el lector de pantalla. */
+const celda = (valor: boolean | string) =>
+  typeof valor === 'string' ? valor : valor ? 'Sí' : 'No';
+---
+
+<BaseLayout
+  title={seguridad.name}
+  description={seguridad.summary}
+  activePath={routes.seguridad}
+  jsonLd={[serviceSchema, faqSchema]}
+>
+  <!-- HERO -->
+  <section class="seg-hero">
+    <SceneBg visual={seguridadVisual} side="left" />
+    <div class="container">
+      <div class="seg-hero-copy">
+        <Reveal>
+          <span class="eyebrow">{seguridad.name} · Para el sitio que ya tienes</span>
+          <h1>Que no te lo <span class="muted">hackeen.</span></h1>
+        </Reveal>
+        <Reveal delay={0.12}>
+          <p class="seg-lead">{seguridad.summary}</p>
+        </Reveal>
+        <Reveal delay={0.2}>
+          <div class="seg-hero-price">
+            <span class="seg-hero-amount">Desde {revision.price.split('–')[0]}</span>
+            <span class="seg-hero-kicker">{revision.kicker}</span>
+          </div>
+          <div class="seg-hero-actions">
+            <a class="btn btn-primary" href={seguridadContactHref(revision.slug)}>
+              <span class="dot"></span> Quiero la revisión
+            </a>
+            <a
+              class="btn btn-ghost"
+              href={waLink(`Hola ${site.name}, quiero que revisen la seguridad de mi sitio. Mi sitio es: `)}
+              target="_blank"
+              rel="noopener"
+            >
+              Preguntar por WhatsApp
+            </a>
+          </div>
+        </Reveal>
+      </div>
+    </div>
+  </section>
+
+  <!-- POR QUÉ: la historia antes que el catálogo -->
+  <section class="seg-porque">
+    <div class="container">
+      <Reveal>
+        <span class="eyebrow">Por qué existe esto</span>
+        <h2 class="section-title">No te eligieron a ti. <span class="muted">Te encontró un programa.</span></h2>
+      </Reveal>
+      <Reveal>
+        <p class="seg-intro">{seguridad.gancho}</p>
+      </Reveal>
+
+      <div class="seg-index">
+        <span class="seg-index-label">Salta a lo que viniste a ver</span>
+        <SectionNav
+          label={`Secciones de ${seguridad.name}`}
+          items={[
+            { href: '#planes', label: 'Los tres planes' },
+            { href: '#comparativa', label: 'Qué lleva cada uno' },
+            { href: '#como', label: 'Cómo se hace' },
+            { href: '#preguntas', label: 'Preguntas' },
+          ]}
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- LOS TRES PLANES -->
+  <section class="seg-planes" id="planes">
+    <div class="container">
+      <Reveal>
+        <span class="eyebrow">Los tres planes</span>
+        <h2 class="section-title">Empieza por saber <span class="muted">cómo estás.</span></h2>
+      </Reveal>
+      <Reveal>
+        <p class="seg-intro">
+          La revisión se paga una vez y no te ata a nada: te llevas el informe aunque no
+          contrates nada después. Los otros dos son mensuales, sin permanencia, y se paran el
+          día que lo digas.
+        </p>
+      </Reveal>
+
+      <div class="seg-grid">
+        {securityPlans.map((plan) => (
+          <Reveal>
+            <div class:list={['plan', { featured: plan.featured }]}>
+              <!--
+                "Recomendado", igual que en /planes, y no "el más pedido": lo
+                segundo es un dato, este servicio acaba de publicarse y la regla
+                14 del proyecto prohíbe publicar datos que nadie ha medido.
+              -->
+              {plan.featured && <span class="badge">Recomendado</span>}
+              <div class="plan-name"><strong>{plan.name}</strong></div>
+              <div class="price">
+                {plan.price}<span class="seg-suffix">{plan.suffix}</span>
+              </div>
+              <div class="delivery">{plan.kicker}</div>
+              <p class="desc">{plan.desc}</p>
+              <ul>
+                {plan.features.map((f) => <li>{f}</li>)}
+              </ul>
+              <a class="plan-cta" href={seguridadContactHref(plan.slug)}>
+                Pedir {plan.name}
+              </a>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+
+      <Reveal>
+        <p class="seg-nota">
+          ¿Tu sitio lo hicimos nosotros? Media lista de aquí no te hace falta —no llevamos
+          complementos que actualizar ni panel público por el que entrar— y te lo vamos a decir.
+          Si ya tienes <a href={`${routes.servicios}#care`}>un plan Care</a>, escríbenos antes de
+          contratar nada: te decimos qué te falta de verdad y qué estarías pagando dos veces.
+        </p>
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- COMPARATIVA -->
+  <section class="seg-tabla" id="comparativa">
+    <div class="container">
+      <Reveal>
+        <span class="eyebrow">Qué lleva cada uno</span>
+        <h2 class="section-title">Las 14 cosas, <span class="muted">y en cuál entran.</span></h2>
+      </Reveal>
+
+      <!--
+        La tabla se desplaza dentro de su caja en pantallas estrechas en vez de
+        encoger la letra: una tabla de tres columnas comprimida a 390 px no se
+        lee, se adivina. La primera columna se queda fija al desplazar, porque
+        sin ella un "Sí" suelto no dice de qué es.
+      -->
+      <div class="seg-tabla-wrap" tabindex="0" role="region" aria-label="Comparativa de los tres planes">
+        <table class="seg-table">
+          <thead>
+            <tr>
+              <th scope="col">Lo que te llevas</th>
+              {securityPlans.map((plan) => (
+                <th scope="col">
+                  <span class="seg-th-name">{plan.name}</span>
+                  <span class="seg-th-price">{precioCompleto(plan)}</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {securityRows.map((row) => (
+              <tr>
+                <th scope="row">{row.label}</th>
+                {row.values.map((valor) => (
+                  <td class:list={['seg-cell', { no: valor === false }]}>{celda(valor)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- CÓMO SE HACE -->
+  <section class="seg-como" id="como">
+    <div class="container">
+      <Reveal>
+        <span class="eyebrow">Cómo se hace</span>
+        <h2 class="section-title">Con tu permiso, <span class="muted">y sin romper nada.</span></h2>
+      </Reveal>
+
+      <div class="seg-pasos">
+        {securityPasos.map((paso) => (
+          <Reveal>
+            <div class="seg-paso">
+              <span class="seg-paso-num">{paso.num}</span>
+              <h3>{paso.title}</h3>
+              <p>{paso.desc}</p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- QUÉ SÍ Y QUÉ NO -->
+  <section class="seg-alcance">
+    <div class="container">
+      <div class="seg-alcance-grid">
+        <Reveal>
+          <div>
+            <h3 class="seg-sub">Lo que entra en la revisión</h3>
+            <ul class="seg-check">
+              {seguridadIncluye.map((item) => <li>{item}</li>)}
+            </ul>
+          </div>
+        </Reveal>
+        <Reveal delay={0.12}>
+          <div>
+            <h3 class="seg-sub">Lo que no</h3>
+            <ul class="seg-cross">
+              {seguridadNoIncluye.map((item) => <li>{item}</li>)}
+            </ul>
+          </div>
+        </Reveal>
+      </div>
+    </div>
+  </section>
+
+  <!-- PREGUNTAS -->
+  <section class="seg-faq" id="preguntas">
+    <div class="container">
+      <Reveal>
+        <span class="eyebrow">Preguntas</span>
+        <h2 class="section-title">Lo que se pregunta <span class="muted">antes de decir que sí.</span></h2>
+      </Reveal>
+
+      <div class="seg-faq-items">
+        {seguridadFaq.map((item) => (
+          <Reveal>
+            <details class="seg-faq-item">
+              <summary>
+                <span>{item.q}</span>
+                <span class="seg-mark" aria-hidden="true"></span>
+              </summary>
+              <p>{item.a}</p>
+            </details>
+          </Reveal>
+        ))}
+      </div>
+
+      <Reveal>
+        <p class="seg-faq-foot">
+          ¿Vas a estrenar sitio y quieres esto desde el primer día? El
+          <a href={routes.cotizador}>cotizador</a> lo suma: la revisión al entregar y
+          {' '}{protegida.name} cada mes, con las dos cifras separadas y a la vista.
+        </p>
+      </Reveal>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ---------- HERO ---------- */
+  /* Sin `.hero` global: esa clase trae el halo naranja del hero de la home y
+     aquí el fondo lo pone <SceneBg>. Dos fuentes de luz peleando dejan el
+     titular sin contraste. Mismo motivo que en /ebot. */
+  .seg-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 84vh;
+    padding: 168px 0 110px;
+    overflow: hidden;
+  }
+  .seg-hero .container {
+    position: relative;
+    z-index: 1;
+  }
+  /* 70ch y no los 54 de /ebot: es la caja la que manda sobre el titular, no su
+     propio `max-width`, y con 54 el titular partía en tres líneas dejando "LO"
+     solo en la del medio. El párrafo no se estira con ella —tiene su propio
+     ancho de lectura— así que lo único que crece es el titular. */
+  .seg-hero-copy {
+    max-width: 70ch;
+  }
+  .seg-hero h1 {
+    font-size: clamp(40px, 5.6vw, 78px);
+    font-weight: 600;
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+    /* Ancho de cortesía: quien manda de verdad es la caja de arriba. Con la
+       caja en 54ch el titular partía en tres líneas ("QUE NO TE / LO /
+       HACKEEN.") y la palabra suelta del medio rompía la lectura. Medido a
+       1440×900. */
+    max-width: 20ch;
+    text-shadow: 0 4px 40px rgba(16, 1, 1, 0.85);
+  }
+  .seg-hero h1 .muted {
+    color: var(--studio-gray);
+  }
+  .seg-lead {
+    margin-top: 26px;
+    max-width: 56ch;
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.65;
+    text-shadow: 0 2px 24px rgba(16, 1, 1, 0.9);
+  }
+  .seg-hero-price {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin-top: 34px;
+  }
+  .seg-hero-amount {
+    font-size: clamp(38px, 4.8vw, 60px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .seg-hero-kicker {
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--flash-orange);
+  }
+  .seg-hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 34px;
+  }
+
+  /* ---------- POR QUÉ ---------- */
+  .seg-porque {
+    padding-bottom: 90px;
+  }
+  .seg-intro {
+    max-width: 62ch;
+    margin-bottom: 44px;
+    font-size: 17px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.7;
+  }
+  .seg-index {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px 20px;
+    padding-top: 34px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .seg-index-label {
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--studio-gray);
+  }
+
+  /* Los cuatro destinos del índice necesitan margen: el nav flotante mide 110px
+     y sin esto el salto deja el titular debajo de la barra. */
+  .seg-planes,
+  .seg-tabla,
+  .seg-como,
+  .seg-faq {
+    scroll-margin-top: 110px;
+  }
+
+  /* ---------- PLANES ---------- */
+  /* Tres columnas, no las cuatro de `.plans-grid`: son tres planes y estirar la
+     retícula de /planes dejaría una columna vacía. */
+  .seg-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  /* El "/mes" no puede ir del tamaño de la cifra: a 44px se lee como parte del
+     precio y "$30/mes" pasa a parecer "$30 mes". */
+  .seg-suffix {
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--studio-gray);
+    letter-spacing: 0;
+  }
+  .seg-nota {
+    max-width: 68ch;
+    margin-top: 34px;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.7;
+  }
+  .seg-nota a {
+    color: var(--flash-orange);
+  }
+
+  /* ---------- TABLA ---------- */
+  .seg-tabla-wrap {
+    overflow-x: auto;
+    margin-top: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+  }
+  /* El foco es visible porque la caja es desplazable con teclado: sin outline,
+     quien navega con tabulador no sabría que ha entrado en ella. */
+  .seg-tabla-wrap:focus-visible {
+    outline: 2px solid var(--flash-orange);
+    outline-offset: 3px;
+  }
+  .seg-table {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  .seg-table th,
+  .seg-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    font-size: 15px;
+    font-weight: 300;
+  }
+  .seg-table thead th {
+    background: #150303;
+    font-weight: 500;
+    vertical-align: bottom;
+  }
+  .seg-th-name {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .seg-th-price {
+    display: block;
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--flash-orange);
+    white-space: nowrap;
+  }
+  .seg-table tbody th {
+    /* La columna que da sentido a los "Sí": se queda a la vista al desplazar. */
+    position: sticky;
+    left: 0;
+    background: #150303;
+    font-weight: 400;
+    color: var(--soft-white);
+    min-width: 240px;
+  }
+  .seg-table tbody tr:last-child th,
+  .seg-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .seg-cell {
+    color: var(--flash-orange);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  /* El "No" en gris y sin peso: la tabla se lee buscando lo que sí entra, y un
+     "No" del mismo color que un "Sí" obliga a leerla palabra por palabra. */
+  .seg-cell.no {
+    color: #8a8a8a;
+    font-weight: 300;
+  }
+
+  /* ---------- CÓMO SE HACE ---------- */
+  .seg-pasos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+  .seg-paso {
+    height: 100%;
+    padding: 30px 26px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: border-color 0.25s, background 0.25s;
+  }
+  .seg-paso:hover {
+    border-color: var(--flash-orange);
+    background: rgba(255, 81, 0, 0.06);
+  }
+  .seg-paso-num {
+    display: block;
+    font-size: 13px;
+    letter-spacing: 0.16em;
+    color: var(--flash-orange);
+    margin-bottom: 14px;
+  }
+  .seg-paso h3 {
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 12px;
+  }
+  .seg-paso p {
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.6;
+  }
+
+  /* ---------- ALCANCE ---------- */
+  .seg-alcance-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 44px;
+  }
+  .seg-sub {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 20px;
+  }
+  .seg-check,
+  .seg-cross {
+    list-style: none;
+  }
+  .seg-check li,
+  .seg-cross li {
+    position: relative;
+    padding: 11px 0 11px 30px;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--soft-white);
+    line-height: 1.6;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+  }
+  .seg-check li:first-child,
+  .seg-cross li:first-child {
+    border-top: none;
+  }
+  .seg-check li::before,
+  .seg-cross li::before {
+    position: absolute;
+    left: 0;
+    top: 11px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .seg-check li::before {
+    content: '+';
+    color: var(--flash-orange);
+  }
+  .seg-cross li::before {
+    content: '−';
+    color: var(--studio-gray);
+  }
+  .seg-cross li {
+    color: var(--studio-gray);
+  }
+
+  /* ---------- PREGUNTAS ---------- */
+  .seg-faq-items {
+    max-width: 860px;
+  }
+  .seg-faq-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .seg-faq-item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 22px 0;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 500;
+    list-style: none;
+  }
+  .seg-faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+  .seg-faq-item summary:focus-visible {
+    outline: 2px solid var(--flash-orange);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+  /* Cruz que gira: solo `transform`, como manda la regla 5. */
+  .seg-mark {
+    position: relative;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    transition: transform 0.25s;
+  }
+  .seg-mark::before,
+  .seg-mark::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    background: var(--flash-orange);
+  }
+  .seg-mark::before {
+    width: 16px;
+    height: 1.5px;
+  }
+  .seg-mark::after {
+    width: 1.5px;
+    height: 16px;
+  }
+  .seg-faq-item[open] .seg-mark {
+    transform: rotate(45deg);
+  }
+  .seg-faq-item p {
+    padding-bottom: 24px;
+    max-width: 72ch;
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.7;
+  }
+  .seg-faq-foot {
+    margin-top: 40px;
+    max-width: 62ch;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.7;
+  }
+  .seg-faq-foot a {
+    color: var(--flash-orange);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .seg-mark {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 1000px) {
+    .seg-grid,
+    .seg-pasos {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 780px) {
+    .seg-hero {
+      min-height: 0;
+      padding: 140px 0 80px;
+    }
+    .seg-grid,
+    .seg-pasos,
+    .seg-alcance-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .seg-alcance-grid {
+      gap: 40px;
+    }
+    .seg-table tbody th {
+      min-width: 190px;
+    }
+  }
+</style>

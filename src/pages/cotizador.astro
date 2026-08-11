@@ -45,6 +45,12 @@ import { routes } from '../data/links';
           <p class="cot-running" data-running hidden>
             <span class="cot-running-k">Va por</span>
             <span class="cot-running-v" data-running-total aria-live="polite">—</span>
+            <!--
+              La mensualidad, aparte y en otro tamaño. Pegada al total de una
+              vez se leería como parte de él; y sumarlas para enseñar un solo
+              número sería inventarse cuántos meses va a durar el cliente.
+            -->
+            <span class="cot-running-mes" data-running-mes hidden></span>
           </p>
         </div>
       </div>
@@ -72,25 +78,38 @@ import { routes } from '../data/links';
             </legend>
 
             <div class="cot-options" data-multiple={String(step.multiple)}>
-              {step.options.map((opt) => (
-                <label class="cot-opt">
-                  <input
-                    type={step.multiple ? 'checkbox' : 'radio'}
-                    name={step.id}
-                    value={opt.value}
-                  />
-                  <span class="cot-opt-body">
-                    <span class="cot-opt-label">{opt.label}</span>
-                    <span class="cot-opt-hint">{opt.hint}</span>
-                  </span>
-                  {optionPriceLabel(step.id, opt.value) && (
-                    <span class="cot-opt-price" data-opt-price={opt.value}>
-                      {optionPriceLabel(step.id, opt.value)}
+              {step.options.map((opt) => {
+                /*
+                 * La etiqueta son dos cifras, no una: lo que suma de una vez y
+                 * lo que suma cada mes. Van en dos nodos separados —y no en una
+                 * sola frase— para que ninguna de las dos pueda leerse como
+                 * parte de la otra, y para que el arnés pueda comprobarlas por
+                 * separado contra su propio total.
+                 */
+                const price = optionPriceLabel(step.id, opt.value);
+                return (
+                  <label class="cot-opt">
+                    <input
+                      type={step.multiple ? 'checkbox' : 'radio'}
+                      name={step.id}
+                      value={opt.value}
+                    />
+                    <span class="cot-opt-body">
+                      <span class="cot-opt-label">{opt.label}</span>
+                      <span class="cot-opt-hint">{opt.hint}</span>
                     </span>
-                  )}
-                  <span class="cot-tick" aria-hidden="true"></span>
-                </label>
-              ))}
+                    {price && (
+                      <span class="cot-opt-price" data-opt-price={opt.value}>
+                        <span data-opt-unico={opt.value}>{price.unico}</span>
+                        <span class="cot-opt-mes" data-opt-mes={opt.value} hidden={!price.mensual}>
+                          {price.mensual ?? ''}
+                        </span>
+                      </span>
+                    )}
+                    <span class="cot-tick" aria-hidden="true"></span>
+                  </label>
+                );
+              })}
             </div>
 
             <div class="cot-nav">
@@ -132,6 +151,10 @@ import { routes } from '../data/links';
           <div>
             <span class="cot-total-k">Total estimado</span>
             <span class="cot-total-v" data-total>—</span>
+            <span class="cot-total-mes" data-total-mes hidden></span>
+            <span class="cot-total-mes-nota" data-total-mes-nota hidden>
+              Mensualidad aparte del total. Se para cuando quieras.
+            </span>
           </div>
           <div class="cot-total-meta">
             <span data-delivery></span>
@@ -192,7 +215,10 @@ import { routes } from '../data/links';
     capabilityState,
     capabilityLabel,
     formatMoney,
+    formatMensual,
+    isZero,
     type Answers,
+    type Money,
   } from '../data/quote';
   import { routes } from '../data/links';
   import { contact } from '../data/site';
@@ -270,11 +296,18 @@ import { routes } from '../data/links';
       const a = answers();
       for (const opt of capStep.options) {
         const el = document.querySelector<HTMLElement>(`[data-opt-price="${opt.value}"]`);
+        const unico = document.querySelector<HTMLElement>(`[data-opt-unico="${opt.value}"]`);
+        const mes = document.querySelector<HTMLElement>(`[data-opt-mes="${opt.value}"]`);
         const state = capabilityState(opt.value, a);
-        if (!el || !state) continue;
+        if (!el || !unico || !state) continue;
 
         const bloqueada = state.kind === 'bloqueada';
-        el.textContent = capabilityLabel(state);
+        const label = capabilityLabel(state);
+        unico.textContent = label.unico;
+        if (mes) {
+          mes.textContent = label.mensual ?? '';
+          mes.hidden = !label.mensual;
+        }
         /*
          * La clase la decide el estado, no la primera letra del texto. Antes el
          * formato salía de un `:not([data-base^='+'])` en la hoja de estilos:
@@ -294,7 +327,26 @@ import { routes } from '../data/links';
       // lo que evita llegar al resultado con una sorpresa de cuatro dígitos.
       const q = computeQuote(a);
       running.hidden = q === null;
-      if (q) document.querySelector('[data-running-total]')!.textContent = formatMoney(q.total);
+      if (q) {
+        document.querySelector('[data-running-total]')!.textContent = formatMoney(q.total);
+        pintarMensual('[data-running-mes]', q.mensual, 'y ');
+      }
+    }
+
+    /**
+     * Escribe una cifra mensual donde toque, o la esconde si no hay ninguna.
+     *
+     * El elemento se OCULTA cuando no hay mensualidad en vez de escribir "$0":
+     * un cero es una cifra, y una cifra en pantalla se lee como un concepto que
+     * existe. Aquí la mayoría de las cotizaciones no tienen nada mensual y el
+     * hueco tiene que desaparecer entero.
+     */
+    function pintarMensual(selector: string, mensual: Money, prefijo = '') {
+      const el = document.querySelector<HTMLElement>(selector);
+      if (!el) return;
+      const hay = !isZero(mensual);
+      el.hidden = !hay;
+      el.textContent = hay ? `${prefijo}${formatMensual(mensual)}` : '';
     }
 
     function paint() {
@@ -330,15 +382,23 @@ import { routes } from '../data/links';
       for (const l of q.lines) {
         const li = document.createElement('li');
         li.className = 'cot-line';
+        // Una línea mensual lleva su "/mes" pegado a la cifra, no en la nota:
+        // el desglose se lee de arriba abajo por la columna de precios, y ahí
+        // es donde tiene que verse que esa no es como las demás.
+        const precio = l.price
+          ? l.periodo === 'mes'
+            ? formatMensual(l.price)
+            : formatMoney(l.price)
+          : 'Incluido';
         li.innerHTML =
           `<span class="cot-line-label">${l.label}<small>${l.note ?? ''}</small></span>` +
-          `<span class="cot-line-price${l.price ? '' : ' is-free'}">${
-            l.price ? formatMoney(l.price) : 'Incluido'
-          }</span>`;
+          `<span class="cot-line-price${l.price ? '' : ' is-free'}">${precio}</span>`;
         list.appendChild(li);
       }
 
       document.querySelector('[data-total]')!.textContent = formatMoney(q.total);
+      pintarMensual('[data-total-mes]', q.mensual, 'y ');
+      document.querySelector<HTMLElement>('[data-total-mes-nota]')!.hidden = isZero(q.mensual);
       document.querySelector('[data-delivery]')!.textContent = q.delivery;
 
       /*
@@ -399,9 +459,22 @@ import { routes } from '../data/links';
         `Plan: ${q.plan.name}`,
         ...q.lines
           .slice(1)
-          .map((l) => `+ ${l.label}: ${l.price ? formatMoney(l.price) : 'incluido'}`),
+          .map(
+            (l) =>
+              `+ ${l.label}: ${
+                l.price
+                  ? l.periodo === 'mes'
+                    ? formatMensual(l.price)
+                    : formatMoney(l.price)
+                  : 'incluido'
+              }`
+          ),
         '',
         `Total estimado: ${formatMoney(q.total)}`,
+        // La mensualidad va en su propia línea del mensaje y solo si existe: en
+        // WhatsApp no hay tipografía que la distinga, así que o se nombra o
+        // desaparece dentro del total.
+        isZero(q.mensual) ? null : `Mensualidad: ${formatMensual(q.mensual)}`,
         `Plazo: ${q.plan.delivery}`,
         q.urgencia ? `Lo necesito: ${q.urgencia}` : null,
         '',
@@ -592,6 +665,15 @@ import { routes } from '../data/links';
     color: var(--flash-orange);
     white-space: nowrap;
   }
+  /* La mensualidad, más pequeña y en blanco: es otra cosa, no más de lo mismo.
+     Con el mismo naranja y el mismo cuerpo las dos cifras se leerían como una
+     sola cantidad partida en dos. */
+  .cot-running-mes {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--soft-white);
+    white-space: nowrap;
+  }
 
   /* ---------- PASOS ---------- */
   .cot-step {
@@ -685,6 +767,19 @@ import { routes } from '../data/links';
     color: var(--soft-white);
     white-space: nowrap;
     text-align: right;
+  }
+  /* La parte mensual de una etiqueta: debajo, más pequeña y en gris. Es un
+     compromiso distinto al de arriba y tiene que verse que lo es antes de
+     leerlo. */
+  .cot-opt-mes {
+    display: block;
+    margin-top: 3px;
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--studio-gray);
+    white-space: normal;
+    max-width: 14ch;
+    line-height: 1.3;
   }
   .cot-opt-price.is-free {
     font-size: 12.5px;
@@ -908,6 +1003,25 @@ import { routes } from '../data/links';
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1;
+  }
+  /* Debajo del total y no al lado: al lado, en el teléfono, las dos cifras
+     acaban en la misma línea y se leen como un rango. */
+  .cot-total-mes {
+    display: block;
+    margin-top: 10px;
+    font-size: clamp(20px, 2.4vw, 26px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .cot-total-mes-nota {
+    display: block;
+    margin-top: 8px;
+    max-width: 30ch;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.5;
   }
   .cot-total-meta {
     text-align: right;

@@ -31,6 +31,7 @@ export const routes = {
   home: BASE,
   servicios: withBase('servicios/'),
   ebot: withBase('ebot/'),
+  seguridad: withBase('seguridad/'),
   proyectos: withBase('proyectos/'),
   planes: withBase('planes/'),
   proceso: withBase('proceso/'),

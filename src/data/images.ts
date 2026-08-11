@@ -100,6 +100,22 @@ export const ebotVisual: Visual = {
   dim: 0.5,
 };
 
+/**
+ * /seguridad — la escena del hero de los planes de protección.
+ *
+ * Es la misma imagen del pilar 02 de `/servicios` («Que no se caiga ni te lo
+ * hackeen»), y eso es lo que se quiere: quien llega desde ese pilar reconoce la
+ * escena y entiende sin leer que está en la versión larga de lo mismo. Va con
+ * encuadre propio —a la derecha, donde no cae el titular— y más apagada que en
+ * `/servicios`, porque aquí el texto de encima es el doble de largo.
+ */
+export const seguridadVisual: Visual = {
+  src: seguridad,
+  alt: 'Monolitos negros con circuitos rojos alzados sobre una llanura fracturada.',
+  focus: '70% 45%',
+  dim: 0.5,
+};
+
 /** /proceso — banda cinemática entre el hero y los pasos. */
 export const procesoVisual: Visual = {
   src: flujo,

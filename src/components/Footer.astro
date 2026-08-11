@@ -314,10 +314,29 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
     */
     .foot-nav {
       grid-template-columns: repeat(2, 1fr);
-      gap: 28px 18px;
+      gap: 24px 18px;
     }
     .foot-col-title {
       margin-bottom: 12px;
+    }
+    /*
+      Enlaces más juntos en teléfono. La columna de Servicios llegó a siete
+      entradas al publicarse Seguridad y con ellas el pie se pasó del tope de
+      1 300 px que vigila `medir:movil` (1 337 medidos en un iPhone SE). Se
+      recorta el respiro, no el contenido: quitar un enlace es decidir que un
+      servicio no se anuncia, y eso no lo arregla una hoja de estilos.
+
+      El objetivo táctil sigue por encima del mínimo: 15 px de texto con
+      line-height 1.4 son 21 px, más 4+4 de relleno dan 29 — sobre los 24 que
+      pide WCAG 2.5.8 AA, que es el suelo que el sitio ya cumple en las trece
+      páginas y no se toca ni por 37 píxeles.
+    */
+    .foot-col a,
+    .foot-static {
+      padding: 4px 0;
+    }
+    .foot-col ul {
+      gap: 0;
     }
     /*
       El pitch se cae en teléfono. Es palabra por palabra el mismo párrafo que
