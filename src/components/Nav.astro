@@ -17,6 +17,40 @@ const { activePath = '' } = Astro.props;
 -->
 <header class="floating-nav" transition:persist="nav">
   <div class="nav-pill">
+    <!--
+      El fondo del nav, dibujado y no pintado con CSS.
+
+      La barra tenía que abombarse sobre la pestaña activa y deslizarse a la
+      siguiente, y eso es una silueta que cambia de forma: un borde con
+      `border-radius` no puede tener un bulto en medio, y dos elementos
+      superpuestos (pill + bulto) dejan la costura a la vista justo donde se
+      unen. Una sola silueta con un solo trazo es la única forma de que el
+      contorno sea continuo.
+
+      El relleno y el borde salen de aquí, y el pill los suelta: pintar los dos
+      oscurecería el doble.
+
+      Va vacío hasta que el script mide: el ancho de cada enlace depende de la
+      fuente ya cargada, y adivinarlo en el servidor pone el bulto en el sitio
+      equivocado durante el primer segundo.
+
+      Debajo va la capa de desenfoque, recortada con este mismo contorno.
+      `backdrop-filter` solo actúa sobre la caja de un elemento, así que
+      dejándoselo al pill el bulto quedaba fuera: el fondo salía nítido justo
+      encima del borde del pill y se veía una costura recta cruzando el bulto por
+      dentro — que es exactamente el contorno que este trabajo venía a borrar.
+      Recortándola con el `<path>`, el cristal termina donde termina la forma.
+    -->
+    <span class="nav-blur is-off" aria-hidden="true" data-nav-blur></span>
+    <svg class="nav-shape is-off" aria-hidden="true" focusable="false" data-nav-shape>
+      <defs>
+        <clipPath id="nav-silueta" clipPathUnits="userSpaceOnUse">
+          <path data-nav-clip />
+        </clipPath>
+      </defs>
+      <path data-nav-path />
+    </svg>
+
     {/*
       El avatar y el wordmark viajan juntos. El <img> se sirve del mismo
       public/favicon.svg que la pestaña — cuando la marca cambia, cambian los
@@ -33,8 +67,25 @@ const { activePath = '' } = Astro.props;
           <li>
             <a
               href={link.href}
+              class={link.crown ? 'has-crown' : undefined}
               aria-current={activePath === link.href ? 'page' : undefined}
             >
+              {/*
+                La corona es decoración y no información: quien no la ve no se
+                pierde nada que no diga ya la propia página de Planes. Por eso
+                va `aria-hidden` y fuera del nombre accesible del enlace — un
+                lector de pantalla que anunciara "corona, Planes" estaría
+                leyendo un adorno como si fuera parte del destino.
+              */}
+              {link.crown && (
+                <svg class="nav-crown" viewBox="0 0 24 18" aria-hidden="true" focusable="false">
+                  <path
+                    d="M3 16 L3 3 L8.5 10.5 L12 2 L15.5 10.5 L21 3 L21 16 Z"
+                    stroke-linejoin="round"
+                    stroke-width="1.2"
+                  />
+                </svg>
+              )}
               {link.label}
             </a>
           </li>
@@ -65,6 +116,202 @@ const { activePath = '' } = Astro.props;
 </header>
 
 <script>
+  import { prefersReducedMotion } from '../scripts/motion';
+
+  /* ------------------------------------------------------------------ *
+   * La silueta del nav
+   * ------------------------------------------------------------------ */
+
+  /**
+   * Alto del bulto y ancho del enlace curvo a cada lado, en px.
+   *
+   * El filete es ancho a propósito —más que el propio bulto— porque es lo que
+   * convierte el resalte en una curva y no en un escalón: con la transición
+   * corta, la subida queda tan vertical que el ojo lee una esquina donde la
+   * geometría dice que hay una tangente horizontal.
+   */
+  const BULTO = 12;
+  const FILETE = 22;
+  /**
+   * Por debajo de esto los enlaces viven en un desplegable (ver el corte de
+   * 1100px en `global.css`): no hay ninguna pestaña sobre la que abombarse, y
+   * el bulto se apaga entero en vez de dibujarse sobre nada.
+   */
+  const DESDE = 1101;
+  /** Constante de tiempo del seguimiento, en ms. Más alto = más perezoso. */
+  const TAU = 90;
+
+  interface Silueta {
+    x1: number;
+    x2: number;
+    /** Alto del bulto ahora mismo. 0 cuando ninguna pestaña está activa. */
+    b: number;
+  }
+
+  /** Dónde está la silueta ahora. `null` = todavía no se ha dibujado nunca. */
+  let silueta: Silueta | null = null;
+  let raf = 0;
+  /**
+   * Hasta cuándo hay que seguir mirando aunque parezca que ya llegó. El nav se
+   * encoge con una transición CSS de 280 ms: durante ese rato el destino se
+   * mueve solo, y un bucle que parase al primer cuadro en el que coincide se
+   * quedaría con el bulto a media transición.
+   */
+  let vigilarHasta = 0;
+
+  const partes = () => ({
+    header: document.querySelector<HTMLElement>('.floating-nav'),
+    pill: document.querySelector<HTMLElement>('.nav-pill'),
+    svg: document.querySelector<SVGSVGElement>('[data-nav-shape]'),
+    path: document.querySelector<SVGPathElement>('[data-nav-path]'),
+    clip: document.querySelector<SVGPathElement>('[data-nav-clip]'),
+    blur: document.querySelector<HTMLElement>('[data-nav-blur]'),
+  });
+
+  /** Dónde tendría que estar el bulto, medido del DOM y no supuesto. */
+  function destino(pill: HTMLElement): Silueta | null {
+    if (window.innerWidth < DESDE) return null;
+    const caja = pill.getBoundingClientRect();
+    if (!caja.width || !caja.height) return null;
+    const activo = pill.querySelector<HTMLElement>('.nav-links a[aria-current="page"]');
+    // Sin pestaña activa (el cotizador, por ejemplo, vive en el CTA) el bulto no
+    // desaparece de golpe: se hunde en el centro y la barra vuelve a ser recta.
+    if (!activo) return { x1: caja.width / 2, x2: caja.width / 2, b: 0 };
+    const suya = activo.getBoundingClientRect();
+    return { x1: suya.left - caja.left, x2: suya.right - caja.left, b: BULTO };
+  }
+
+  /**
+   * El contorno entero: cápsula con un bulto encima.
+   *
+   * Los dos tramos curvos son cúbicas simétricas —la subida y la bajada del
+   * bulto— y se dibujan SIEMPRE, aunque el bulto mida cero. Emitir siempre los
+   * mismos comandos es lo que deja interpolar la forma sin saltos: un trazo con
+   * cuatro comandos y otro con seis no se pueden mezclar.
+   */
+  function trazo(w: number, h: number, s: Silueta, dy = 0): string {
+    const r = h / 2;
+    // El bulto no puede meterse en los casquetes: ahí el borde ya está curvando
+    // y las dos curvas se pisarían.
+    const min = r + FILETE + 2;
+    const max = w - r - FILETE - 2;
+    const x1 = Math.min(Math.max(s.x1, min), max);
+    const x2 = Math.min(Math.max(s.x2, x1), max);
+    const arriba = dy;
+    const abajo = h + dy;
+    const b = dy - s.b;
+    const f = FILETE;
+    return [
+      `M ${r},${arriba}`,
+      `L ${x1 - f},${arriba}`,
+      `C ${x1 - f * 0.45},${arriba} ${x1 - f * 0.55},${b} ${x1},${b}`,
+      `L ${x2},${b}`,
+      `C ${x2 + f * 0.55},${b} ${x2 + f * 0.45},${arriba} ${x2 + f},${arriba}`,
+      `L ${w - r},${arriba}`,
+      `A ${r},${r} 0 0 1 ${w - r},${abajo}`,
+      `L ${r},${abajo}`,
+      `A ${r},${r} 0 0 1 ${r},${arriba}`,
+      'Z',
+    ].join(' ');
+  }
+
+  function pintar(pill: HTMLElement, s: Silueta) {
+    const { svg, path, clip, blur } = partes();
+    if (!svg || !path || !clip || !blur) return;
+    const { width: w, height: h } = pill.getBoundingClientRect();
+
+    svg.setAttribute('viewBox', `0 ${-BULTO} ${w} ${h + BULTO}`);
+    svg.style.top = `${-BULTO}px`;
+    svg.style.width = `${w}px`;
+    svg.style.height = `${h + BULTO}px`;
+    path.setAttribute('d', trazo(w, h, s));
+
+    /*
+     * El recorte va en las coordenadas de la capa de desenfoque, cuyo origen
+     * está `BULTO` píxeles más arriba que el del pill. Es el mismo contorno
+     * corrido: dos siluetas distintas dejarían el cristal asomando por un lado.
+     */
+    blur.style.top = `${-BULTO}px`;
+    blur.style.height = `${h + BULTO}px`;
+    clip.setAttribute('d', trazo(w, h, s, BULTO));
+  }
+
+  let ultimo = 0;
+
+  /**
+   * Persigue el destino con suavizado exponencial en vez de reproducir una
+   * animación con principio y final.
+   *
+   * Es lo que deja cambiar de idea a mitad de camino: el destino se vuelve a
+   * medir en cada cuadro, así que si el nav se encoge mientras el bulto viaja
+   * —o si se pulsa otra pestaña— la forma se redirige sin cortes. Una animación
+   * de duración fija tendría que cancelarse y volver a arrancar, y ahí es donde
+   * se ven los saltos.
+   */
+  function bucle(ahora: number) {
+    raf = 0;
+    const { pill } = partes();
+    if (!pill || !silueta) return;
+    const meta = destino(pill);
+    if (!meta) return;
+
+    const dt = Math.min(ahora - ultimo, 64);
+    ultimo = ahora;
+    const k = 1 - Math.exp(-dt / TAU);
+    silueta = {
+      x1: silueta.x1 + (meta.x1 - silueta.x1) * k,
+      x2: silueta.x2 + (meta.x2 - silueta.x2) * k,
+      b: silueta.b + (meta.b - silueta.b) * k,
+    };
+
+    const cerca = (a: number, b: number) => Math.abs(a - b) < 0.4;
+    const llegó =
+      cerca(silueta.x1, meta.x1) && cerca(silueta.x2, meta.x2) && cerca(silueta.b, meta.b);
+    if (llegó) silueta = { ...meta };
+    pintar(pill, silueta);
+    if (!llegó || ahora < vigilarHasta) raf = requestAnimationFrame(bucle);
+  }
+
+  /**
+   * Recoloca la silueta. `inmediato` la planta en su sitio sin viaje: es lo que
+   * hace falta en la primera carga y cuando cambia el tamaño de la ventana,
+   * donde una animación se leería como un fallo y no como un gesto.
+   */
+  function sincronizarForma(inmediato = false) {
+    const { header, pill, svg, blur } = partes();
+    if (!header || !pill || !svg || !blur) return;
+
+    const meta = destino(pill);
+    if (!meta) {
+      // Móvil: el fondo vuelve a ser el del CSS de siempre.
+      svg.classList.add('is-off');
+      blur.classList.add('is-off');
+      header.classList.remove('has-shape');
+      silueta = null;
+      return;
+    }
+    svg.classList.remove('is-off');
+    blur.classList.remove('is-off');
+    header.classList.add('has-shape');
+
+    if (!silueta || inmediato || prefersReducedMotion()) {
+      silueta = { ...meta };
+      pintar(pill, silueta);
+      return;
+    }
+    ultimo = performance.now();
+    if (!raf) raf = requestAnimationFrame(bucle);
+  }
+
+  /** Mantiene el bucle vivo mientras dure una transición del propio nav. */
+  function seguirDurante(ms: number) {
+    vigilarHasta = performance.now() + ms;
+    if (!raf) {
+      ultimo = performance.now();
+      raf = requestAnimationFrame(bucle);
+    }
+  }
+
   function closeMenu(pill: HTMLElement, toggle: HTMLButtonElement) {
     pill.classList.remove('is-open');
     toggle.setAttribute('aria-expanded', 'false');
@@ -85,6 +332,32 @@ const { activePath = '' } = Astro.props;
       toggle.dataset.bound = 'true';
 
       bindShrinkOnScroll();
+
+      /*
+       * Al cambiar el ancho cambian los enlaces de sitio, así que la silueta se
+       * replanta sin viaje: verla deslizarse mientras se arrastra el borde de la
+       * ventana se lee como un fallo, no como un gesto.
+       */
+      let ticking = false;
+      window.addEventListener(
+        'resize',
+        () => {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(() => {
+            ticking = false;
+            sincronizarForma(true);
+          });
+        },
+        { passive: true }
+      );
+
+      /*
+       * Los anchos de los enlaces dependen de la fuente, y la primera medida
+       * ocurre con la de reserva. Sin esto, el bulto se queda unos píxeles
+       * corrido respecto a la pestaña hasta la primera navegación.
+       */
+      document.fonts?.ready.then(() => sincronizarForma(true));
 
       toggle.addEventListener('click', () => {
         const open = pill.classList.toggle('is-open');
@@ -111,7 +384,18 @@ const { activePath = '' } = Astro.props;
     // Tras una navegación con View Transitions el scroll vuelve a 0 pero el nav
     // persiste, así que hay que reevaluar su tamaño en cada page-load.
     syncShrink();
+    /*
+     * En la primera carga el bulto aparece ya puesto; a partir de ahí viaja.
+     * Que se deslice al llegar a la página es justo el gesto que se busca —el
+     * nav sobrevive a la navegación, así que la forma también—, pero verlo
+     * viajar desde el centro nada más abrir el sitio parecería un error de
+     * arranque.
+     */
+    sincronizarForma(primeraCarga);
+    primeraCarga = false;
   }
+
+  let primeraCarga = true;
 
   /**
    * Encoge el nav al bajar y lo devuelve a su tamaño al volver al tope.
@@ -125,6 +409,11 @@ const { activePath = '' } = Astro.props;
     const shrunk = header.classList.contains('is-scrolled');
     if (!shrunk && y > 40) header.classList.add('is-scrolled');
     else if (shrunk && y < 12) header.classList.remove('is-scrolled');
+    else return;
+    // El pill tarda 280 ms en encoger: durante ese rato los enlaces se mueven y
+    // la silueta tiene que ir detrás de ellos, o se queda con el bulto puesto
+    // sobre el sitio que la pestaña ocupaba antes.
+    seguirDurante(380);
   }
 
   function bindShrinkOnScroll() {
@@ -155,6 +444,9 @@ const { activePath = '' } = Astro.props;
       if (target === here) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
+    // La silueta se cuelga de `aria-current`, así que se recoloca justo después
+    // de moverlo y no antes: es la única señal de cuál es la pestaña de turno.
+    sincronizarForma();
   }
 
   document.addEventListener('astro:page-load', initNavToggle);

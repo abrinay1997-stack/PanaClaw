@@ -78,11 +78,23 @@ export const plans: Plan[] = [
   },
 ];
 
+/**
+ * El servicio de $49, y por qué se llama así.
+ *
+ * Se llamaba «Diagnóstico PanaClaw», que no dice qué mira. Al lado vivía la
+ * «Revisión de Seguridad», que tampoco: los dos se leían como «te revisamos el
+ * sitio» y había que explicar la diferencia cada vez que se nombraban. Ahora
+ * cada nombre lleva dentro lo que mira —**Diagnóstico de Ventas** y **Auditoría
+ * de Seguridad**— y no comparten ni la palabra ni el complemento. El `slug` no
+ * cambia: es lo que viaja en `?plan=` y en el ancla de `/servicios`, así que
+ * tocarlo rompería los enlaces ya repartidos.
+ */
 export const diagnostico = {
   slug: 'diagnostico',
-  name: 'Diagnóstico PanaClaw',
+  name: 'Diagnóstico de Ventas',
   price: '$49',
-  desc: 'Te decimos qué tan lento va tu sitio hoy, las 3 razones concretas por las que estás perdiendo clientes en él, y qué hacer con cada una. Informe y llamada de 30 minutos en 48 horas.',
+  entrega: 'Informe en 48 h',
+  desc: 'Te decimos por qué tu sitio no te trae clientes: qué tan lento va, las 3 razones concretas por las que estás perdiendo ventas en él y qué hacer con cada una. Informe y llamada de 30 minutos en 48 horas.',
 } as const;
 
 /**

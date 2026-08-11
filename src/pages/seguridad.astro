@@ -6,7 +6,7 @@
  * que se cobra cada mes. Eso cambia dos cosas respecto a `/planes` y a `/ebot`:
  *
  * 1. **Lo que hay que vencer no es el precio, es la duda.** Nadie se suscribe a
- *    proteger algo que no sabe si está roto. Por eso la revisión de pago único
+ *    proteger algo que no sabe si está roto. Por eso la auditoría de pago único
  *    va primera en la página y en el orden de las tarjetas, al revés que el
  *    anclaje de `/planes`: es el paso barato que convierte «no creo que me pase»
  *    en una lista de fallos con nombre.
@@ -136,7 +136,7 @@ const celda = (valor: boolean | string) =>
           </div>
           <div class="seg-hero-actions">
             <a class="btn btn-primary" href={seguridadContactHref(revision.slug)}>
-              <span class="dot"></span> Pedir la revisión
+              <span class="dot"></span> Pedir la auditoría
             </a>
             <a
               class="btn btn-ghost"
@@ -187,7 +187,7 @@ const celda = (valor: boolean | string) =>
       </Reveal>
       <Reveal>
         <p class="seg-intro">
-          La revisión se paga una vez y no te ata a nada: te llevas el informe aunque no
+          La auditoría se paga una vez y no te ata a nada: te llevas el informe aunque no
           contrates nada después. Los otros dos son mensuales, sin permanencia, y se paran el
           día que lo digas.
         </p>
@@ -247,10 +247,10 @@ const celda = (valor: boolean | string) =>
             </p>
           </div>
           <div class="seg-limite">
-            <span class="seg-limite-k">Esto no es el Diagnóstico</span>
+            <span class="seg-limite-k">Esto no es el Diagnóstico de Ventas</span>
             <p>
               {seguridad.fronteras.diagnostico} El
-              <a href={`${routes.servicios}#diagnostico`}>Diagnóstico</a> cuesta
+              <a href={`${routes.servicios}#diagnostico`}>{diagnostico.name}</a> cuesta
               {' '}{diagnostico.price} y mira otra cosa.
             </p>
           </div>
@@ -284,7 +284,7 @@ const celda = (valor: boolean | string) =>
         El aviso de deslizar sale SOLO en pantallas donde la tabla no cabe. Sin
         él, la única señal de que hay dos columnas más era que el encabezado
         quedaba cortado, y eso se lee como un fallo, no como una invitación:
-        quien no desliza cree que la revisión es toda la oferta.
+        quien no desliza cree que la auditoría es toda la oferta.
       -->
       <p class="seg-desliza" aria-hidden="true">Desliza para ver los tres planes →</p>
       <div class="seg-tabla-wrap" tabindex="0" role="region" aria-label="Comparativa de los tres planes">
@@ -343,7 +343,7 @@ const celda = (valor: boolean | string) =>
       <div class="seg-alcance-grid">
         <Reveal>
           <div>
-            <h3 class="seg-sub">Lo que entra en la revisión</h3>
+            <h3 class="seg-sub">Lo que entra en la auditoría</h3>
             <ul class="seg-check">
               {seguridadIncluye.map((item) => <li>{item}</li>)}
             </ul>
@@ -397,12 +397,12 @@ const celda = (valor: boolean | string) =>
           <div>
             <h3>Empieza por saber cómo estás.</h3>
             <p>
-              La revisión cuesta {revision.price} y se paga una vez. El informe es tuyo, contrates
-              después lo que contrates.
+              La {revision.name} cuesta {revision.price} y se paga una vez. El informe es tuyo,
+              contrates después lo que contrates.
             </p>
           </div>
           <a class="btn btn-primary" href={seguridadContactHref(revision.slug)}>
-            <span class="dot"></span> Pedir la revisión
+            <span class="dot"></span> Pedir la auditoría
           </a>
         </div>
       </Reveal>
@@ -410,7 +410,7 @@ const celda = (valor: boolean | string) =>
       <Reveal>
         <p class="seg-faq-foot">
           ¿Vas a estrenar sitio con nosotros y lo quieres desde el primer día? El
-          <a href={routes.cotizador}>cotizador</a> lo suma: la revisión al entregar y
+          <a href={routes.cotizador}>cotizador</a> lo suma: la auditoría al entregar y
           {' '}{protegida.name} cada mes, con las dos cifras separadas y a la vista.
         </p>
       </Reveal>

@@ -181,8 +181,9 @@ export const GET: APIRoute = () => {
     topic: 'planes',
     q: [
       'diagnostico',
+      'diagnostico de ventas',
+      'por que mi sitio no vende',
       'revisar mi sitio actual',
-      'auditoria de mi web',
       'que tan lento esta mi sitio',
       'algo mas barato para empezar',
     ],
@@ -330,7 +331,7 @@ export const GET: APIRoute = () => {
   /* ---------------- Seguridad ---------------- */
 
   /**
-   * Igual que con eBot: casi nadie va a escribir «Revisión de Seguridad».
+   * Igual que con eBot: casi nadie va a escribir «Auditoría de Seguridad».
    * Preguntan «me hackearon la página» o «mi WordPress está lleno de virus», y
    * sin estas frases de intención esas preguntas recuperan el pilar 02 de
    * servicios —comparten la palabra «hackeen»— y el bot contesta con un
@@ -443,27 +444,27 @@ export const GET: APIRoute = () => {
     id: 'seguridad-vs-diagnostico',
     topic: 'seguridad',
     q: [
-      'diferencia entre diagnostico y revision',
-      'cual me conviene diagnostico o revision',
+      'diferencia entre diagnostico y auditoria',
+      'cual me conviene diagnostico o auditoria',
       'el diagnostico revisa la seguridad',
-      'la revision me dice si mi sitio vende',
+      'la auditoria me dice si mi sitio vende',
       'quiero que revisen mi sitio',
     ],
     text:
       `${seguridad.fronteras.diagnostico} El ${diagnostico.name} cuesta ${diagnostico.price}; la ` +
       `${revision.name}, ${revision.price}. Si te preocupa que tu sitio no te traiga clientes, empieza ` +
-      `por el diagnóstico. Si te preocupa que te lo tumben o te lo roben, empieza por la revisión.`,
+      `por el diagnóstico. Si te preocupa que te lo tumben o te lo roben, empieza por la auditoría.`,
   });
 
   add({
     id: 'seguridad-revision-obligatoria',
     topic: 'seguridad',
     q: [
-      'la revision es obligatoria',
-      'puedo contratar el plan mensual sin revision',
-      'la revision viene incluida en el plan',
-      'por que pago la revision aparte',
-      'me cobran dos veces la revision',
+      'la auditoria es obligatoria',
+      'puedo contratar el plan mensual sin auditoria',
+      'la auditoria viene incluida en el plan',
+      'por que pago la auditoria aparte',
+      'me cobran dos veces la auditoria',
     ],
     text:
       `La ${revision.name} (${revision.price}) se paga una sola vez y aparte: no viene incluida en ` +
@@ -482,10 +483,12 @@ export const GET: APIRoute = () => {
       'cuanto sale la web con proteccion',
     ],
     text:
-      `Sí. En el cotizador, la opción "Que no te lo hackeen" suma la ${revision.name} ` +
-      `(${revision.price}, pago único al entregar) y ${protegida.name} ` +
-      `(${precioCompleto(protegida)}). Las dos cifras salen separadas —una de una vez y otra al mes— ` +
-      `porque no se pueden sumar en el mismo número.`,
+      `Sí, por dos caminos. Si estás haciendo un sitio nuevo, la opción "Que no te lo hackeen" ` +
+      `del paso 3 suma la ${revision.name} (${revision.price}, pago único al entregar) y ` +
+      `${protegida.name} (${precioCompleto(protegida)}). Si ya tienes sitio y solo quieres ` +
+      `revisarlo, la primera pregunta tiene "Revisar el que ya tengo": ese camino cotiza la ` +
+      `auditoría según el tamaño de tu sitio y te deja añadir protección mensual. Las cifras ` +
+      `salen separadas —una de una vez y otra al mes— porque no se pueden sumar en el mismo número.`,
   });
 
   // Las preguntas de la página entran una por una, igual que las de eBot: cada
@@ -651,7 +654,10 @@ export const GET: APIRoute = () => {
     ],
     text:
       'Nuestro cotizador te da un precio en cuatro preguntas, sin que dejes tus datos primero: ' +
-      'qué necesitas, de qué tamaño, qué tiene que hacer y para cuándo. Al final muestra el desglose y el total.',
+      'qué necesitas, de qué tamaño, qué tiene que hacer y para cuándo. Al final muestra el desglose, ' +
+      'el total y la fecha de entrega en el calendario. Si lo que tienes ya está en línea y solo ' +
+      'quieres que lo revisemos, la primera pregunta tiene "Revisar el que ya tengo" y el cotizador ' +
+      'cambia a las preguntas de la auditoría de seguridad.',
   });
 
   add({
