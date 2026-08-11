@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { steps, optionPriceLabel } from '../data/quote';
+import { steps, pasosActivos, optionPriceLabel } from '../data/quote';
 import { diagnostico } from '../data/plans';
 import { routes } from '../data/links';
 
@@ -41,7 +41,12 @@ import { routes } from '../data/links';
       <div class="cot-progress" role="group" aria-label="Progreso del cotizador">
         <div class="cot-bar"><span data-bar></span></div>
         <div class="cot-meta">
-          <p class="cot-count" aria-live="polite" data-count>Paso 1 de {steps.length}</p>
+          <!--
+            Los pasos que se recorren, no los que hay dibujados: son seis en el
+            HTML y cuatro en cualquier recorrido. Sin respuestas todavía, la
+            rama es la de siempre, que es justo lo que se ve al abrir.
+          -->
+          <p class="cot-count" aria-live="polite" data-count>Paso 1 de {pasosActivos({}).length}</p>
           <p class="cot-running" data-running hidden>
             <span class="cot-running-k">Va por</span>
             <span class="cot-running-v" data-running-total aria-live="polite">—</span>
@@ -69,12 +74,29 @@ import { routes } from '../data/links';
         </p>
       </noscript>
 
+      <!--
+        Se dibujan los SEIS pasos y el script decide cuáles se recorren: los de
+        la rama web, los de la rama de auditoría, y los dos que son de las dos.
+        Marcarlos en el servidor sería imposible —la rama la elige la primera
+        respuesta, que todavía no existe cuando esto se renderiza— y montarlos
+        con JavaScript dejaría la página sin nada que enseñar hasta que el
+        script enganche.
+      -->
       <form class="cot-form" data-quote novalidate>
         {steps.map((step, i) => (
-          <fieldset class="cot-step" data-step={step.id} hidden={i > 0}>
+          <fieldset class="cot-step" data-step={step.id} data-rama={step.rama ?? ''} hidden={i > 0}>
             <legend tabindex="-1">
               <span class="cot-q">{step.question}</span>
               <span class="cot-help">{step.help}</span>
+              {/*
+                Lo que vale para el paso entero: por qué se han apagado la mitad
+                de los tamaños, o en qué fecha del calendario cae el plazo. Solo
+                lo puede escribir el navegador —una fecha calculada en el build
+                se quedaría congelada en el HTML y el sitio prometería, semanas
+                después, una entrega ya vencida— y por eso el nodo va siempre
+                puesto y vacío.
+              */}
+              <span class="cot-aviso" data-aviso={step.id} hidden></span>
             </legend>
 
             <div class="cot-options" data-multiple={String(step.multiple)}>
@@ -85,6 +107,12 @@ import { routes } from '../data/links';
                  * sola frase— para que ninguna de las dos pueda leerse como
                  * parte de la otra, y para que el arnés pueda comprobarlas por
                  * separado contra su propio total.
+                 *
+                 * Los nodos se escriben SIEMPRE, aunque hoy vayan vacíos: lo
+                 * que cuesta una opción depende de lo ya contestado, y en el
+                 * build no hay ninguna respuesta todavía. Renderizarlos solo
+                 * cuando hay precio dejaba al paso 4 sin ningún sitio donde
+                 * escribir después que no da tiempo.
                  */
                 const price = optionPriceLabel(step.id, opt.value);
                 return (
@@ -97,15 +125,19 @@ import { routes } from '../data/links';
                     <span class="cot-opt-body">
                       <span class="cot-opt-label">{opt.label}</span>
                       <span class="cot-opt-hint">{opt.hint}</span>
+                      {/*
+                        Por qué esta opción está apagada. Va debajo de la ayuda
+                        y no en la columna de precios: no es una cifra, y en la
+                        columna de cifras compite con ellas.
+                      */}
+                      <span class="cot-opt-nota" data-opt-nota={opt.value} hidden></span>
                     </span>
-                    {price && (
-                      <span class="cot-opt-price" data-opt-price={opt.value}>
-                        <span data-opt-unico={opt.value}>{price.unico}</span>
-                        <span class="cot-opt-mes" data-opt-mes={opt.value} hidden={!price.mensual}>
-                          {price.mensual ?? ''}
-                        </span>
+                    <span class="cot-opt-price" data-opt-price={opt.value} hidden={!price}>
+                      <span data-opt-unico={opt.value}>{price?.unico ?? ''}</span>
+                      <span class="cot-opt-mes" data-opt-mes={opt.value} hidden={!price?.mensual}>
+                        {price?.mensual ?? ''}
                       </span>
-                    )}
+                    </span>
                     <span class="cot-tick" aria-hidden="true"></span>
                   </label>
                 );
@@ -116,9 +148,13 @@ import { routes } from '../data/links';
               <button type="button" class="btn btn-ghost" data-back hidden={i === 0}>
                 Atrás
               </button>
+              <!--
+                La etiqueta la pone el script: cuál es el último paso depende de
+                la rama, y en el build todavía no hay rama.
+              -->
               <button type="button" class="btn btn-primary" data-next disabled>
                 <span class="dot"></span>
-                {i === steps.length - 1 ? 'Ver mi precio' : 'Siguiente'}
+                <span data-next-label>Siguiente</span>
               </button>
               {step.multiple && (
                 <button type="button" class="cot-skip" data-skip>
@@ -158,7 +194,13 @@ import { routes } from '../data/links';
           </div>
           <div class="cot-total-meta">
             <span data-delivery></span>
-            <span class="cot-urgencia" data-urgencia hidden></span>
+            <!--
+              El plazo, otra vez, pero en días del calendario. "8–12 días" obliga
+              a hacer una cuenta que nadie hace bien de cabeza —los fines de
+              semana no cuentan— y por eso se leía como una promesa vaga.
+            -->
+            <span class="cot-fecha-res" data-fecha-res hidden></span>
+            <span class="cot-plazo-nota" data-plazo-nota hidden></span>
             <span class="cot-disclaimer">
               Estimación, no factura. La propuesta escrita confirma alcance, cronograma y cifra final.
             </span>
@@ -211,14 +253,18 @@ import { routes } from '../data/links';
 <script>
   import {
     steps,
+    pasosActivos,
     computeQuote,
-    capabilityState,
-    capabilityLabel,
+    optionState,
+    optionLabel,
+    estaBloqueada,
+    stepNotice,
     formatMoney,
     formatMensual,
     isZero,
     type Answers,
     type Money,
+    type QuoteStep,
   } from '../data/quote';
   import { routes } from '../data/links';
   import { contact } from '../data/site';
@@ -230,8 +276,6 @@ import { routes } from '../data/links';
    * de `quote.ts` no la llamaba nadie: el archivo prometía en su cabecera que
    * las dos darían el mismo resultado y solo una llegaba a ejecutarse jamás.
    */
-  const CAPACIDADES = 'capacidades';
-
   /**
    * `scrollIntoView({behavior:'smooth'})` IGNORA el `scroll-behavior:auto` que
    * la hoja de estilos pone bajo `prefers-reduced-motion`: el argumento
@@ -248,6 +292,7 @@ import { routes } from '../data/links';
     const root: HTMLFormElement = found;
 
     const stepEls = [...root.querySelectorAll<HTMLFieldSetElement>('.cot-step')];
+    const elDe = (id: string) => stepEls.find((el) => el.dataset.step === id)!;
     const result = document.querySelector<HTMLElement>('[data-result]')!;
     const bar = document.querySelector<HTMLElement>('[data-bar]')!;
     const count = document.querySelector<HTMLElement>('[data-count]')!;
@@ -266,62 +311,107 @@ import { routes } from '../data/links';
       return out;
     };
 
-    const inputDe = (value: string) =>
-      root.querySelector<HTMLInputElement>(`input[name="${CAPACIDADES}"][value="${value}"]`);
+    /**
+     * Los pasos que se recorren de verdad. La primera respuesta elige la rama,
+     * así que la lista cambia bajo los pies: se vuelve a pedir en cada pintada
+     * en vez de guardarse.
+     */
+    const activos = (): QuoteStep[] => pasosActivos(answers());
+
+    const inputDe = (stepId: string, value: string) =>
+      root.querySelector<HTMLInputElement>(`input[name="${stepId}"][value="${value}"]`);
 
     /**
-     * Pinta cada capacidad según lo que le cuesta a quien está mirando, y
-     * bloquea las que el plan ya trae.
+     * Pinta cada opción según lo que le cuesta a quien está mirando, y apaga
+     * las que no se pueden elegir.
      *
-     * Una casilla marcable que dice "Incluido" pide un clic que no decide nada:
-     * ni cambia el precio ni el plan, solo añade ruido al resultado y al
-     * mensaje de WhatsApp. Se apagan.
+     * Vale para los cuatro pasos y no solo para las capacidades. Ese era el
+     * bache: el resto de pasos enseñaba un precio escrito en el render, así que
+     * "Una sola página · Desde $295" seguía diciendo $295 después de elegir
+     * "Vender en línea", que la deja en $1,200.
      *
-     * Se desmarcan al bloquearlas, y eso es seguro por cómo está definido
-     * `capabilityState`: solo se bloquea lo que cubre el plan de los pasos 1 y
-     * 2, que ninguna capacidad puede bajar. Bloquear mirando el plan final
-     * encerraría a la persona en el plan caro — marcas "Cobrar en línea",
-     * subes a Commerce, y esa misma opción quedaría incluida, marcada y sin
-     * poder desmarcarse.
+     * Lo bloqueado se desmarca, y es seguro por cómo está definido
+     * `optionState`: lo que apaga una opción siempre vive en un paso ANTERIOR
+     * —el objetivo para los tamaños, el plan ya resuelto para los plazos— así
+     * que nunca depende de algo que se pueda tocar en esa misma pantalla.
+     * Bloquear mirando el resultado final encerraría a la persona en su
+     * elección más cara: marcas "Cobrar en línea", subes a Commerce, y esa
+     * misma opción quedaría incluida, marcada y sin poder desmarcarse.
      */
-    function refreshPrices() {
-      const capStep = steps.find((s) => s.id === CAPACIDADES)!;
+    function refreshOptions() {
+      const acts = activos();
+      const enRama = new Set(acts.map((s) => s.id));
 
-      for (const opt of capStep.options) {
-        if (capabilityState(opt.value, answers())?.kind !== 'bloqueada') continue;
-        const input = inputDe(opt.value);
-        if (input?.checked) input.checked = false;
+      /*
+       * Lo que se contestó en la otra rama se borra. Sin esto, quien empieza
+       * por "Revisar el que ya tengo" y luego se arrepiente arrastra un tamaño
+       * de sitio invisible hasta el mensaje de WhatsApp.
+       */
+      for (const step of steps) {
+        if (enRama.has(step.id)) continue;
+        root
+          .querySelectorAll<HTMLInputElement>(`input[name="${step.id}"]:checked`)
+          .forEach((i) => (i.checked = false));
+      }
+
+      for (const step of acts) {
+        for (const opt of step.options) {
+          const state = optionState(step.id, opt.value, answers());
+          if (!state || !estaBloqueada(state)) continue;
+          const input = inputDe(step.id, opt.value);
+          if (input?.checked) input.checked = false;
+        }
       }
 
       const a = answers();
-      for (const opt of capStep.options) {
-        const el = document.querySelector<HTMLElement>(`[data-opt-price="${opt.value}"]`);
-        const unico = document.querySelector<HTMLElement>(`[data-opt-unico="${opt.value}"]`);
-        const mes = document.querySelector<HTMLElement>(`[data-opt-mes="${opt.value}"]`);
-        const state = capabilityState(opt.value, a);
-        if (!el || !unico || !state) continue;
+      for (const step of acts) {
+        for (const opt of step.options) {
+          const el = document.querySelector<HTMLElement>(`[data-opt-price="${opt.value}"]`);
+          const unico = document.querySelector<HTMLElement>(`[data-opt-unico="${opt.value}"]`);
+          const mes = document.querySelector<HTMLElement>(`[data-opt-mes="${opt.value}"]`);
+          const nota = document.querySelector<HTMLElement>(`[data-opt-nota="${opt.value}"]`);
+          const state = optionState(step.id, opt.value, a);
+          const label = state ? optionLabel(state) : null;
+          const bloqueada = !!state && estaBloqueada(state);
 
-        const bloqueada = state.kind === 'bloqueada';
-        const label = capabilityLabel(state);
-        unico.textContent = label.unico;
-        if (mes) {
-          mes.textContent = label.mensual ?? '';
-          mes.hidden = !label.mensual;
+          if (el && unico) {
+            // Sin etiqueta no se enseña una casilla de precio vacía: el hueco
+            // desaparece entero. Es lo que pasa en el paso 4 cuando el plazo sí
+            // da tiempo — no hay nada que decir, y decir nada es la respuesta.
+            el.hidden = !label;
+            unico.textContent = label?.unico ?? '';
+            if (mes) {
+              mes.textContent = label?.mensual ?? '';
+              mes.hidden = !label?.mensual;
+            }
+            /*
+             * La clase la decide el estado, no la primera letra del texto. Antes
+             * el formato salía de un `:not([data-base^='+'])` en la hoja de
+             * estilos: cambiar "Desde" por otra palabra lo rompía sin que nada
+             * avisara.
+             */
+            const kind = state?.kind;
+            el.className =
+              'cot-opt-price' +
+              (kind === 'bloqueada' || kind === 'gratis' ? ' is-free' : '') +
+              (kind === 'no-alcanza' || kind === 'no-da-tiempo' ? ' is-no' : '') +
+              (kind === 'sube-plan' ? ' is-delta' : '') +
+              // Cuando la mensualidad es el único precio de la opción, deja de
+              // ser una coletilla del de arriba: no hay ninguno arriba.
+              (kind === 'mensual' ? ' is-solo-mes' : '');
+          }
+          if (nota) {
+            nota.textContent = label?.motivo ?? '';
+            nota.hidden = !label?.motivo;
+          }
+
+          const input = inputDe(step.id, opt.value);
+          if (input) input.disabled = bloqueada;
+          input?.closest('.cot-opt')?.classList.toggle('is-locked', bloqueada);
         }
-        /*
-         * La clase la decide el estado, no la primera letra del texto. Antes el
-         * formato salía de un `:not([data-base^='+'])` en la hoja de estilos:
-         * cambiar "Desde" por otra palabra lo rompía sin que nada avisara.
-         */
-        el.className =
-          'cot-opt-price' +
-          (bloqueada || state.kind === 'gratis' ? ' is-free' : '') +
-          (state.kind === 'sube-plan' ? ' is-delta' : '');
-
-        const input = inputDe(opt.value);
-        if (input) input.disabled = bloqueada;
-        input?.closest('.cot-opt')?.classList.toggle('is-locked', bloqueada);
       }
+
+      pintarAvisos(acts, a);
 
       // El total aparece en cuanto hay plan, no al final: ver la cifra subir es
       // lo que evita llegar al resultado con una sorpresa de cuatro dígitos.
@@ -330,6 +420,27 @@ import { routes } from '../data/links';
       if (q) {
         document.querySelector('[data-running-total]')!.textContent = formatMoney(q.total);
         pintarMensual('[data-running-mes]', q.mensual, 'y ');
+      }
+    }
+
+    /**
+     * Los avisos que valen para un paso entero.
+     *
+     * Dos hoy. El del paso 2 explica UNA vez por qué se apagaron varios tamaños
+     * —repetido opción por opción era un muro de texto naranja que tapaba lo
+     * que sí se podía elegir—. El del paso 4 traduce el plazo a fechas: "8–12
+     * días" obliga a una cuenta que nadie hace bien de cabeza, porque los fines
+     * de semana no cuentan, y sin la fecha elegir "Ya" era pedir algo sin saber
+     * contra qué se comparaba.
+     */
+    function pintarAvisos(acts: QuoteStep[], a: Answers) {
+      const hoy = new Date();
+      for (const step of acts) {
+        const el = document.querySelector<HTMLElement>(`[data-aviso="${step.id}"]`);
+        if (!el) continue;
+        const texto = stepNotice(step.id, a, hoy);
+        el.hidden = !texto;
+        el.textContent = texto;
       }
     }
 
@@ -350,31 +461,47 @@ import { routes } from '../data/links';
     }
 
     function paint() {
-      stepEls.forEach((el, i) => (el.hidden = i !== current));
-      const pct = ((current + 1) / stepEls.length) * 100;
+      /*
+       * Primero se repinta y se limpia, y solo después se mira si el paso
+       * actual tiene respuesta. Al revés, un "Siguiente" habilitado sobrevivía
+       * al desmarcado que acababa de hacer `refreshOptions` y dejaba avanzar
+       * sin haber contestado.
+       */
+      refreshOptions();
+
+      const acts = activos();
+      current = Math.max(0, Math.min(acts.length - 1, current));
+      const visible = acts[current]!;
+      stepEls.forEach((el) => (el.hidden = el.dataset.step !== visible.id));
+
+      const pct = ((current + 1) / acts.length) * 100;
       bar.style.transform = `scaleX(${pct / 100})`;
-      count.textContent = `Paso ${current + 1} de ${stepEls.length}`;
+      count.textContent = `Paso ${current + 1} de ${acts.length}`;
+
       // Un paso obligatorio no avanza hasta que haya respuesta; los múltiples sí
-      const step = steps[current]!;
-      const chosen = root.querySelectorAll(`input[name="${step.id}"]:checked`).length;
-      const next = stepEls[current]!.querySelector<HTMLButtonElement>('button[data-next]')!;
-      next.disabled = !step.multiple && chosen === 0;
-      refreshPrices();
+      const el = elDe(visible.id);
+      const chosen = root.querySelectorAll(`input[name="${visible.id}"]:checked`).length;
+      el.querySelector<HTMLButtonElement>('button[data-next]')!.disabled =
+        !visible.multiple && chosen === 0;
+      // Cuál es el último paso depende de la rama, así que la etiqueta del
+      // botón no se puede escribir en el render.
+      el.querySelector<HTMLElement>('[data-next-label]')!.textContent =
+        current === acts.length - 1 ? 'Ver mi precio' : 'Siguiente';
     }
 
     function go(to: number) {
-      current = Math.max(0, Math.min(stepEls.length - 1, to));
+      current = Math.max(0, Math.min(activos().length - 1, to));
       paint();
       // Mover el foco al enunciado: sin esto, quien navega con teclado se queda
       // en un botón que ya no existe en pantalla.
-      stepEls[current]!.querySelector<HTMLElement>('legend')?.focus();
+      elDe(activos()[current]!.id).querySelector<HTMLElement>('legend')?.focus();
     }
 
     function show() {
       const q = computeQuote(answers());
       if (!q) return;
 
-      document.querySelector('[data-plan-name]')!.textContent = q.plan.name;
+      document.querySelector('[data-plan-name]')!.textContent = q.titulo;
       document.querySelector('[data-reason]')!.textContent = q.reason;
 
       const list = document.querySelector('[data-lines]')!;
@@ -399,18 +526,22 @@ import { routes } from '../data/links';
       document.querySelector('[data-total]')!.textContent = formatMoney(q.total);
       pintarMensual('[data-total-mes]', q.mensual, 'y ');
       document.querySelector<HTMLElement>('[data-total-mes-nota]')!.hidden = isZero(q.mensual);
-      document.querySelector('[data-delivery]')!.textContent = q.delivery;
+      document.querySelector('[data-delivery]')!.textContent = q.plazo;
 
       /*
-       * El paso de urgencia dice que no cambia el precio, y es verdad, pero
-       * tampoco cambiaba nada visible: se podía pedir "esta semana" y recibir
-       * un plazo de 15–20 días sin una palabra. El aviso solo constata la
-       * tensión —no promete prioridad, que es una decisión comercial y no del
-       * cotizador.
+       * El plazo, otra vez, pero en fechas. Antes el paso de urgencia no
+       * cambiaba nada visible: se podía pedir "esta semana" y recibir un plazo
+       * de 15–20 días sin una palabra. Ahora ese "Ya" ni siquiera se puede
+       * marcar cuando no cabe, y lo que queda aquí es la fecha concreta contra
+       * la que se decidió.
        */
-      const aviso = document.querySelector<HTMLElement>('[data-urgencia]')!;
-      aviso.hidden = !q.urgenciaAviso;
-      aviso.textContent = q.urgenciaAviso ?? '';
+      const fecha = document.querySelector<HTMLElement>('[data-fecha-res]')!;
+      fecha.hidden = !q.fecha;
+      fecha.textContent = q.fecha ? `Si arrancamos hoy, ${q.fecha}.` : '';
+
+      const nota = document.querySelector<HTMLElement>('[data-plazo-nota]')!;
+      nota.hidden = !q.plazoNota;
+      nota.textContent = q.plazoNota ?? '';
 
       root.hidden = true;
       progress.hidden = true;
@@ -456,7 +587,7 @@ import { routes } from '../data/links';
       const txt = [
         `Hola PanaClaw, usé el cotizador y esto me salió:`,
         '',
-        `Plan: ${q.plan.name}`,
+        `${q.rama === 'auditoria' ? 'Servicio' : 'Plan'}: ${q.titulo}`,
         ...q.lines
           .slice(1)
           .map(
@@ -475,7 +606,9 @@ import { routes } from '../data/links';
         // WhatsApp no hay tipografía que la distinga, así que o se nombra o
         // desaparece dentro del total.
         isZero(q.mensual) ? null : `Mensualidad: ${formatMensual(q.mensual)}`,
-        `Plazo: ${q.plan.delivery}`,
+        // El plazo va con su fecha: en WhatsApp, "8–12 días" leído tres días
+        // después ya no significa lo mismo que cuando se calculó.
+        `Plazo: ${q.plazo}${q.fecha ? ` (si arrancamos hoy, ${q.fecha})` : ''}`,
         q.urgencia ? `Lo necesito: ${q.urgencia}` : null,
         '',
         `Nombre: ${nombre}`,
@@ -526,9 +659,29 @@ import { routes } from '../data/links';
       location.href = tab ? routes.gracias : url;
     }
 
-    const avanzar = () => (current === stepEls.length - 1 ? show() : go(current + 1));
+    const avanzar = () => (current === activos().length - 1 ? show() : go(current + 1));
 
-    root.addEventListener('change', paint);
+    root.addEventListener('change', (e) => {
+      /*
+       * Dos opciones que se excluyen se comportan como una sola elección: marcar
+       * una desmarca la otra. Hoy son los dos planes mensuales de seguridad, y
+       * Blindada ya lleva dentro todo lo de Protegida — con las dos marcadas, el
+       * cotizador cobraría dos veces lo mismo. Apagar la segunda en vez de
+       * desmarcarla obligaría a desmarcar antes de poder cambiar de idea, que es
+       * la clase de trámite que hace abandonar un formulario.
+       */
+      const input = e.target as HTMLInputElement | null;
+      if (input?.name && input.checked) {
+        const opt = steps
+          .find((s) => s.id === input.name)
+          ?.options.find((o) => o.value === input.value);
+        for (const otro of opt?.excluye ?? []) {
+          const el = inputDe(input.name, otro);
+          if (el) el.checked = false;
+        }
+      }
+      paint();
+    });
     root.addEventListener('click', (e) => {
       const t = e.target as HTMLElement;
       if (t.closest('[data-skip]')) {
@@ -540,7 +693,7 @@ import { routes } from '../data/links';
          * escritas en el mensaje de WhatsApp. Un botón que dice "ninguna" y
          * cobra dos es peor que no tener el botón.
          */
-        const step = steps[current]!;
+        const step = activos()[current]!;
         root
           .querySelectorAll<HTMLInputElement>(`input[name="${step.id}"]:checked`)
           .forEach((input) => (input.checked = false));
@@ -781,6 +934,38 @@ import { routes } from '../data/links';
     max-width: 14ch;
     line-height: 1.3;
   }
+  /* Lo que no se puede elegir: gris, en minúscula y sin peso. No es un precio
+     —no hay ninguno que dar— y con el formato de los demás competiría con las
+     cifras de verdad que hay al lado. */
+  .cot-opt-price.is-no {
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8a8a8a;
+    white-space: normal;
+    max-width: 12ch;
+    line-height: 1.3;
+  }
+  /* Por qué está apagada. Debajo de la ayuda y no en la columna de precios: es
+     una frase, y en la columna de cifras se leería como una. */
+  .cot-opt-nota {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--flash-orange);
+    line-height: 1.4;
+  }
+  /* La mensualidad como precio principal y no como apostilla. */
+  .cot-opt-price.is-solo-mes .cot-opt-mes {
+    margin-top: 0;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--soft-white);
+    max-width: none;
+  }
   .cot-opt-price.is-free {
     font-size: 12.5px;
     font-weight: 500;
@@ -879,12 +1064,30 @@ import { routes } from '../data/links';
     color: var(--flash-orange);
   }
 
-  .cot-urgencia {
+  /* El aviso del paso. Va pegado al enunciado y no al pie: es contra esto contra
+     lo que se elige, así que tiene que leerse antes de decidir y no después. */
+  .cot-aviso {
     display: block;
-    margin-top: 8px;
-    font-size: 13px;
-    font-weight: 400;
+    margin-top: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--flash-orange);
+    line-height: 1.4;
+  }
+  .cot-fecha-res {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
     color: var(--soft-white);
+  }
+  .cot-plazo-nota {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.5;
   }
 
   .cot-nav {

@@ -168,7 +168,7 @@ Todo esto es programable aquí y ninguna pieza necesita dinero.
 | 15 | **`/planes` tiene 13 acciones compitiendo** en el cuerpo (medido 2026-08-03). Cuando todo es prioritario, nada lo es. Que las 7 tarjetas de capacidad sean una lista con un solo CTA al cierre. | `[código]` |
 | 16 | **Sin señal de progreso en `/proceso`** (6 713 px en móvil). `/planes` y `/ayuda` ya llevan índice con `<SectionNav>`. En `/proceso` se dejó a propósito para después: su destino más buscado es el bloque de quiénes están detrás, que sigue vacío (punto 4), y un índice que lleva a una sección en blanco resta en vez de sumar. | `[código]` |
 | 17 | **El envío del cotizador solo sale por WhatsApp.** En escritorio sin WhatsApp Web el flujo se corta. `/contacto` ya no depende de eso. | `[tuyo]` + `[cuenta]` |
-| 18 | **Revisar el mapeo respuesta → plan del cotizador.** Los precios son tuyos; las reglas que deciden qué plan corresponde a cada respuesta son una propuesta mía, no una decisión tomada. Vive entero en `src/data/quote.ts`. | `[tuyo]` |
+| 18 | **Revisar el mapeo respuesta → plan del cotizador.** Los precios son tuyos; las reglas que deciden qué plan corresponde a cada respuesta son una propuesta mía, no una decisión tomada. Vive entero en `src/data/quote.ts`. Desde el 2026-08-11 esas reglas además APAGAN opciones —«Rehacer el que tengo» deja fuera «Una sola página», por ejemplo—, así que revisarlas ya no es solo cosmético. | `[tuyo]` |
 | 19 | **Comprobar que los envíos del formulario llegan.** `formDestination` vale `'netlify'`: los envíos caen en Netlify Forms. Falta verlo en el panel, activar la notificación por correo y hacer un envío de prueba. | `[tuyo]` |
 | 31 | **Commerce cobra $650 por el panel que `/planes` dice que incluye.** El plan se vende con «Panel para gestionar tus pedidos» y el módulo «Panel de control» se cobra igual: Commerce + panel = $1,850. Rompe la regla 2. **Decisión tuya:** ¿son la misma cosa? Si lo son, `panel` gana `includedFrom: 'commerce'`; si no, los dos nombres tienen que dejar de ser la misma palabra. | `[tuyo]` |
 | 32 | **«Un sistema a medida» cotiza $850 pelado.** Su propio texto promete reservas, portal y panel —$2,000 en módulos— y si no se marcan en el paso 3 sale Corporate a secas, con la etiqueta «Total estimado». **Decisión tuya:** ¿premarcar esas tres capacidades al elegirlo, o solo advertir? | `[tuyo]` |
@@ -538,9 +538,10 @@ chat, compuestas de `seguridad.fronteras` y no reescritas en cada sitio:
   ilegible la diferencia. La tabla comparativa lo dice en una fila propia
   («Mantenimiento, copias y actualizaciones → Eso es Care»).
 - **Seguridad no es el Diagnóstico.** El Diagnóstico de $49 mira el negocio; la
-  Revisión mira la seguridad. Se parecen en la forma —los dos son «te revisamos
-  el sitio»— y en nada más.
-- **La Revisión no va incluida en ningún plan mensual, y es obligatoria.** Se
+  Auditoría mira la seguridad. Se parecen en la forma —los dos son «te revisamos
+  el sitio»— y en nada más. (Desde el 2026-08-11 los nombres también se
+  distinguen solos: ver el bloque de abajo.)
+- **La Auditoría no va incluida en ningún plan mensual, y es obligatoria.** Se
   paga siempre y aparte, y hay que pasar por ella antes de contratar un mensual.
   Regalarla dentro del plan significa revisar gratis a quien luego no contrata;
   proteger sin revisar es proteger a ciegas. Las tarjetas mensuales llevan el
@@ -556,7 +557,77 @@ respuesta ante incidente.
 |---|---|---|
 | 54 | **El precio de Web Blindada no se ha revisado después de perder el mantenimiento.** Sigue en $70–$120/mes, que era el precio cuando incluía actualizaciones, uptime y soporte. Hoy lo que añade sobre Web Protegida es revisión mensual, vigilancia de cambios y respuesta ante incidente. **Decisión tuya:** o el precio baja, o el plan gana algo más. | `[tuyo]` |
 | 49 | **Los precios, el alcance y los plazos de seguridad son una propuesta mía, no una decisión tomada.** Las cifras salen del documento tal cual (en dólares en vez de euros) y «informe en 5 días» o «respuesta en 24–48 h» son promesas que tienes que poder cumplir un martes ocupado. Se revisan enteras en `src/data/seguridad.ts`. Es el mismo pendiente que el 46 tiene para eBot. | `[tuyo]` |
-| 52 | **La revisión no tiene un camino de compra propio para tráfico frío.** Es la oferta más barata del catálogo después del Diagnóstico de $49 —y las dos se parecen mucho: las dos son «te decimos qué está mal por poco dinero»—. Hoy conviven sin explicar en qué se diferencian: una mira la velocidad y la otra la seguridad. Es el punto 13 visto desde aquí, y probablemente sean un solo producto con dos mitades. | `[tuyo]` |
+
+**Hecho el 2026-08-11 (la barra dice dónde estás, y Planes va delante).** En el
+nav, **Planes** pasa por delante de Proyectos y lleva una corona. Estaba al
+revés con este argumento: quien duda del precio suele estar dudando de si
+sabemos hacerlo, así que la prueba tiene que llegar antes que la cifra. Sigue
+siendo verdad para quien lee la barra de izquierda a derecha, y casi nadie la
+lee así — a la barra se viene a buscar, y lo que se busca es el precio.
+
+Y la pestaña activa ya no se marca con un fondo gris: **el propio contorno del
+nav se abomba sobre ella y se desliza a la siguiente** al cambiar de página. Es
+un solo `<path>` que dibuja la cápsula entera con el bulto dentro, porque dos
+elementos superpuestos dejan la costura a la vista justo en la unión. El
+desenfoque va en una capa aparte recortada con ese mismo contorno: `backdrop-filter`
+solo actúa sobre la caja de un elemento, así que dejándoselo al pill el cristal
+terminaba en línea recta cruzando el bulto por dentro. Lo de encogerse al hacer
+scroll no se ha tocado; solo baja 4 px menos que antes (14 en vez de 10), porque
+si no el bulto se salía de la pantalla por arriba. Las dos desviaciones que esto
+introduce respecto a las reglas 5 y 6 del proyecto están escritas en
+[`convenciones.md`](convenciones.md), no escondidas.
+
+**Hecho el 2026-08-11 (los dos nombres, y el cotizador para quien ya tiene
+sitio).** Cierra el pendiente 52 y la mitad del 18.
+
+Los dos servicios que empiezan por «te revisamos el sitio» se llamaban
+«Diagnóstico PanaClaw» y «Revisión de Seguridad»: ninguno de los dos nombres
+decía qué miraba, así que la diferencia había que explicarla cada vez que se
+nombraban —y se nombran en seis sitios—. Ahora son **Diagnóstico de Ventas** y
+**Auditoría de Seguridad**: ni la palabra ni el complemento se repiten, y no
+queda nada que desambiguar. Los `slug` no cambian (`diagnostico`, `revision`):
+son lo que viaja en `?plan=` y en el ancla de `/servicios`, y tocarlos rompería
+los enlaces ya repartidos.
+
+Y la auditoría ya tiene su camino de compra: la primera pregunta del cotizador
+tiene una quinta respuesta, **«Revisar el que ya tengo»**, que abre una rama
+propia de cuatro preguntas (tamaño del sitio → protección mensual y diagnóstico
+→ para cuándo). El precio sale de tres tramos nuevos en `seguridad.ts`, y el
+rango publicado en `/seguridad` (`$80–$150`) se COMPONE de esos tramos en vez de
+escribirse: la cifra de la página y la del cotizador no pueden divergir. Web
+Protegida y Web Blindada se excluyen entre sí —Blindada ya lleva dentro todo lo
+de Protegida— y marcar una desmarca la otra.
+
+El cotizador tenía además dos baches que se veían pero no se medían:
+
+- **El paso 2 anunciaba precios imposibles.** «Vender en línea» + «Una sola
+  página · Desde $295» cotizaba $1,200. El motor siempre acertó el plan; era la
+  etiqueta la que prometía otra cosa, porque los pasos 1 y 2 enseñaban un precio
+  escrito en el render mientras el paso 3 ya sabía calcular el suyo en contexto.
+  Ahora los cuatro pasos pasan por el mismo `optionState`: lo que se queda por
+  debajo de lo que pidió el paso 1 sale apagado, y el porqué se dice **una vez**
+  debajo de la pregunta (repetido opción por opción era un muro naranja que
+  tapaba lo que sí se podía elegir).
+- **El paso 4 dejaba pedir lo imposible.** Se podía marcar «Ya, esta semana»
+  sobre un Corporate de 8–12 días y lo único que pasaba era una nota al pie.
+  Ahora esa opción sale apagada cuando el plazo no cabe, y el paso traduce el
+  plazo a fechas de calendario («Entrega 8–12 días. Si arrancamos hoy, del 21 al
+  25 de agosto») — que es contra lo que de verdad se elige, porque nadie
+  descuenta los fines de semana de cabeza. La fecha la calcula solo el navegador:
+  una calculada en el build se congelaría en el HTML y el sitio prometería,
+  semanas después, una entrega ya vencida.
+
+`medir:cotizador` sube de ocho comprobaciones a once (I, J y K) y vigila las
+tres cosas: que el paso 2 apague exactamente lo que debe y avise, que el paso 4
+no acepte un plazo imposible y sí enseñe una fecha, y que la rama de auditoría
+cuente la misma cifra por los tres caminos. Las listas de lo que debe salir
+apagado están escritas a mano, igual que `BLOQUEADAS_ESPERADAS`: derivarlas de
+los datos haría la comprobación circular.
+
+| # | Pendiente | Quién |
+|---|---|---|
+| 55 | **Los módulos no declaran cuánto tiempo suman.** El cotizador ya da una fecha de entrega, pero solo del plan: si marcas tres capacidades, la fecha sigue siendo la del plan y debajo pone «más el plazo de cada capacidad, que va en la propuesta». Con un plazo por módulo en `modules.ts` la fecha sería la de verdad. **Decisión tuya:** cuántos días suma cada uno. | `[tuyo]` |
+| 56 | **«Ya» apagado no ofrece salida.** Cuando el plan no cabe en una semana, la opción se apaga y se explica — pero no hay nada que ofrecer a quien de verdad tiene prisa. Una entrega express con recargo es la respuesta obvia y es una decisión comercial, no del cotizador. **Decisión tuya:** si existe, a qué precio y con qué plazo. | `[tuyo]` |
 
 ## Bloque 10 — El plan de claridad
 

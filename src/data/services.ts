@@ -74,6 +74,11 @@ export const procesoSteps: ProcesoStep[] = [
 export interface NavLink {
   href: string;
   label: string;
+  /**
+   * Corona sobre el enlace. Es la única distinción de la barra y por eso hay
+   * una sola: dos coronas no destacan el doble, dejan de destacar.
+   */
+  crown?: boolean;
 }
 
 export const navLinks: NavLink[] = [
@@ -90,10 +95,23 @@ export const navLinks: NavLink[] = [
   // también por el dolor —«me hackearon»— y ese camino ya está cubierto desde
   // /servicios, /planes y el chat; eBot no tiene ningún otro.
   { href: routes.seguridad, label: 'Seguridad' },
-  // Va antes de Planes a propósito: quien duda del precio suele estar dudando
-  // de si sabemos hacerlo. La prueba tiene que llegarle antes que la cifra.
+  /*
+   * Planes va delante de Proyectos, y con corona.
+   *
+   * Estuvo al revés, con este argumento: quien duda del precio suele estar
+   * dudando de si sabemos hacerlo, así que la prueba tiene que llegarle antes
+   * que la cifra. Sigue siendo verdad para quien navega la barra de izquierda a
+   * derecha; el problema es que casi nadie la navega así. A la barra se viene a
+   * BUSCAR, y lo que se busca es el precio: es la pregunta con la que llega la
+   * gente y la única que el sitio promete contestar sin pedir datos. Ponerla
+   * antes no es discutirle el argumento a la prueba social — es dejar de
+   * esconder la respuesta que trajo a la persona.
+   *
+   * La corona hace lo mismo con menos palabras: entre nueve enlaces del mismo
+   * tamaño no hay ninguno que llame, y este tiene que llamar.
+   */
+  { href: routes.planes, label: 'Planes', crown: true },
   { href: routes.proyectos, label: 'Proyectos' },
-  { href: routes.planes, label: 'Planes' },
   { href: routes.proceso, label: 'Proceso' },
   { href: routes.ayuda, label: 'Ayuda' },
   { href: routes.contacto, label: 'Contacto' },

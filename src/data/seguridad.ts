@@ -14,12 +14,18 @@
  *     es ciberseguridad: quién entra, por dónde, y qué se hace para impedirlo.
  *     Por eso ningún plan de aquí ofrece actualizaciones ni copias — cuando esa
  *     línea se cruzó, los dos productos dejaron de entenderse.
- *  2. **Seguridad no es el Diagnóstico.** El Diagnóstico de $49 mira el negocio:
- *     por qué el sitio no vende y cómo convertir más. La Revisión mira la
- *     seguridad: cómo está montado, si funciona como debe y por dónde podrían
- *     entrar. Se parecen en la forma —los dos son «te revisamos el sitio»— y no
- *     se parecen en nada en el fondo.
- *  3. **La Revisión no va incluida en ningún plan mensual, y es obligatoria.**
+ *  2. **La Auditoría no es el Diagnóstico de Ventas.** El Diagnóstico de $49
+ *     mira el negocio: por qué el sitio no vende y cómo convertir más. La
+ *     Auditoría mira la seguridad: cómo está montado, si funciona como debe y
+ *     por dónde podrían entrar. Se parecen en la forma —los dos son «te
+ *     revisamos el sitio»— y no se parecen en nada en el fondo.
+ *
+ *     Los dos se llamaban casi igual («Diagnóstico PanaClaw» y «Revisión de
+ *     Seguridad») y eso obligaba a explicar la diferencia cada vez que se
+ *     nombraban. Ahora cada uno lleva en el nombre lo que mira: **Auditoría de
+ *     Seguridad** y **Diagnóstico de Ventas**. Ni la palabra ni el complemento
+ *     se repiten, así que no hay nada que desambiguar.
+ *  3. **La Auditoría no va incluida en ningún plan mensual, y es obligatoria.**
  *     Se paga siempre y aparte. No es una decisión cosmética: regalarla dentro
  *     del mensual significa revisar gratis a quien luego no contrata, y proteger
  *     sin haber revisado es proteger a ciegas.
@@ -58,7 +64,7 @@ export const seguridad = {
    * que responde el chat: si cambia, cambia en los tres a la vez.
    */
   summary:
-    'Revisamos cómo está montado tu sitio y por dónde podrían entrar, te lo entregamos por escrito y lo cerramos. La revisión cuesta desde $80 y se paga una vez; si además quieres que quede protegido mes a mes, desde $30 al mes.',
+    'Revisamos cómo está montado tu sitio y por dónde podrían entrar, te lo entregamos por escrito y lo cerramos. La auditoría cuesta desde $80 y se paga una vez; si además quieres que quede protegido mes a mes, desde $30 al mes.',
   /** Lo que dispara la venta: no es el precio, es la historia de al lado. */
   gancho:
     'Un negocio monta su web, pasan unos meses y un día aparece caída, redirigiendo a una página de pastillas o pidiendo un rescate. Casi siempre es lo mismo: un complemento sin actualizar y una contraseña que nunca cambió.',
@@ -71,9 +77,74 @@ export const seguridad = {
   fronteras: {
     care: 'Care mantiene la infraestructura —dominio, copias, actualizaciones y los cambios del mes—. Esto es ciberseguridad: quién entra, por dónde y qué se hace para impedirlo.',
     diagnostico:
-      'El Diagnóstico mira tu negocio: por qué tu sitio no vende y cómo hacer que convierta. La Revisión mira tu seguridad. Se parecen en la forma y en nada más.',
+      'El Diagnóstico de Ventas mira tu negocio: por qué tu sitio no vende y cómo hacer que convierta. La Auditoría de Seguridad mira por dónde te pueden entrar. Se parecen en la forma y en nada más.',
   },
 } as const;
+
+/* ------------------------------------------------------------------ *
+ * Los tres tamaños de auditoría
+ * ------------------------------------------------------------------ */
+
+/**
+ * Por qué la auditoría cuesta un rango y no una cifra.
+ *
+ * `porQueRango` lo explica con palabras desde el primer día —«no cuesta lo mismo
+ * revisar una página de cinco secciones que una tienda con cuentas, pagos y tres
+ * años de complementos encima»—, pero el rango seguía siendo una respuesta a
+ * medias: quien quiere saber cuánto le toca a ÉL no lo sabe hasta que escribe.
+ * Estos son esos tres casos con su cifra, y son lo que pregunta el cotizador.
+ *
+ * El rango publicado (`revision.price`) se COMPONE de aquí, no se escribe: así
+ * los tramos del cotizador y la cifra de `/seguridad` no pueden divergir nunca.
+ * Añadir un tramo más caro sube el «hasta» de la página sola.
+ */
+export interface RevisionTramo {
+  slug: string;
+  /** Cómo lo reconoce quien tiene el sitio, no cuántas páginas cuenta. */
+  label: string;
+  hint: string;
+  price: number;
+}
+
+export const revisionTramos: RevisionTramo[] = [
+  {
+    slug: 'chico',
+    label: 'Una página o unas pocas secciones',
+    hint: 'Informativo: quién eres, qué haces y cómo te escriben.',
+    price: 80,
+  },
+  {
+    slug: 'medio',
+    label: 'Varias páginas, blog o formularios',
+    hint: 'Un gestor de contenidos con complementos y más de una persona con llaves.',
+    price: 110,
+  },
+  {
+    slug: 'tienda',
+    label: 'Una tienda o un sistema con cuentas',
+    hint: 'Cobros, usuarios y años de complementos encima.',
+    price: 150,
+  },
+];
+
+/** '$80–$150' compuesto de los tramos. Mismo formato que `plans.ts` para que lo parsee el cotizador. */
+export const revisionRango = (() => {
+  const p = revisionTramos.map((t) => t.price);
+  return `$${Math.min(...p)}–$${Math.max(...p)}`;
+})();
+
+/** Cuánto tarda el informe. Se usa en el kicker y en el plazo del cotizador. */
+export const revisionEntrega = 'Informe en 5 días';
+
+/**
+ * El nombre, como constante y no como literal repetido.
+ *
+ * Lo nombran los otros dos planes en su `requisito`, y esos objetos se escriben
+ * antes de que exista `revision` (que sale de buscar en el propio array). Sin
+ * esto, renombrar el producto dejaba dos fichas pidiendo un servicio que ya no
+ * se llama así.
+ */
+const NOMBRE_AUDITORIA = 'Auditoría de Seguridad';
 
 /* ------------------------------------------------------------------ *
  * Los tres planes
@@ -100,20 +171,20 @@ export interface SecurityPlan {
 }
 
 /**
- * Orden de venta: la revisión primero, y no por estética.
+ * Orden de venta: la auditoría primero, y no por estética.
  *
  * Es lo contrario del anclaje de `/planes` (donde Corporate va primero) porque
  * aquí lo que hay que vencer no es el precio, es que nadie se suscribe a
  * proteger algo que todavía no sabe si está roto. Además es el orden real de
- * compra: sin revisión no hay plan mensual.
+ * compra: sin auditoría no hay plan mensual.
  */
 export const securityPlans: SecurityPlan[] = [
   {
     slug: 'revision',
-    name: 'Revisión de Seguridad',
-    price: '$80–$150',
+    name: NOMBRE_AUDITORIA,
+    price: revisionRango,
     suffix: '',
-    kicker: 'Pago único · Informe en 5 días',
+    kicker: `Pago único · ${revisionEntrega}`,
     desc: 'El punto de partida, y no se salta: miramos cómo está montado tu sitio, si funciona como debe y por dónde podrían entrar. Se paga una vez y el informe es tuyo, contrates después lo que contrates.',
     features: [
       'Cómo está montado y dónde vive: alojamiento, dominio y certificados',
@@ -130,7 +201,7 @@ export const securityPlans: SecurityPlan[] = [
     price: '$30–$60',
     suffix: '/mes',
     kicker: 'Al mes · Sin permanencia',
-    requisito: 'Empieza con la Revisión de Seguridad',
+    requisito: `Empieza con la ${NOMBRE_AUDITORIA}`,
     featured: true,
     desc: 'La protección del día a día, una vez sabemos cómo estás: un filtro delante, las puertas cerradas y alguien mirando cada mes. Para el sitio que trabaja — si te entra clientela por ahí, un mes caído cuesta más que un año de esto.',
     features: [
@@ -148,7 +219,7 @@ export const securityPlans: SecurityPlan[] = [
     price: '$70–$120',
     suffix: '/mes',
     kicker: 'Al mes · Respuesta en 24–48 h',
-    requisito: 'Empieza con la Revisión de Seguridad',
+    requisito: `Empieza con la ${NOMBRE_AUDITORIA}`,
     desc: 'Lo mismo, pero sin esperar a que pase algo: revisamos el sitio entero cada mes, vigilamos si alguien mete o cambia cosas, y si hay un incidente entramos nosotros a contenerlo.',
     features: [
       'Todo lo de Web Protegida',
@@ -239,7 +310,7 @@ export interface SecurityPaso {
 }
 
 /**
- * Los cuatro pasos de la revisión.
+ * Los cuatro pasos de la auditoría.
  *
  * Van publicados porque en seguridad la objeción no es el precio, es «¿y qué me
  * vas a hacer exactamente?». Un servicio que no cuenta su procedimiento se
@@ -274,7 +345,7 @@ export const securityPasos: SecurityPaso[] = [
  * ------------------------------------------------------------------ */
 
 /**
- * El alcance de la revisión, y punto.
+ * El alcance de la auditoría, y punto.
  *
  * Antes esta lista contaba una cosa y la ficha del plan otra —una decía que solo
  * miramos, la otra que además cerramos— y «¿arreglan o solo me dicen qué está
@@ -283,7 +354,7 @@ export const securityPasos: SecurityPaso[] = [
  */
 export const seguridadIncluye: string[] = [
   'El escaneo entero y el informe, aunque no contrates ningún plan después',
-  'Cerrar lo que se pueda cerrar sin rehacer el sitio, dentro de la misma revisión',
+  'Cerrar lo que se pueda cerrar sin rehacer el sitio, dentro de la misma auditoría',
   'Dejarte la entrada con verificación en dos pasos y las contraseñas cambiadas',
   'Una llamada para explicarte lo que no se entienda del informe',
 ];
@@ -314,8 +385,8 @@ export interface SecurityFaq {
 /** Las que frenan la compra, no las que se preguntan primero. */
 export const seguridadFaq: SecurityFaq[] = [
   {
-    q: '¿Por qué tengo que pagar la revisión si voy a contratar el plan mensual?',
-    a: 'Porque son dos trabajos distintos y el segundo no se puede hacer bien sin el primero. La revisión es mirar tu sitio entero una vez —cómo está montado, quién tiene llaves, por dónde se entra— y eso lleva horas que no se repiten cada mes. El plan mensual es lo que viene después: el filtro, las puertas cerradas y alguien mirando. Proteger sin haber revisado es proteger a ciegas, y no lo hacemos.',
+    q: '¿Por qué tengo que pagar la auditoría si voy a contratar el plan mensual?',
+    a: 'Porque son dos trabajos distintos y el segundo no se puede hacer bien sin el primero. La auditoría es mirar tu sitio entero una vez —cómo está montado, quién tiene llaves, por dónde se entra— y eso lleva horas que no se repiten cada mes. El plan mensual es lo que viene después: el filtro, las puertas cerradas y alguien mirando. Proteger sin haber revisado es proteger a ciegas, y no lo hacemos.',
   },
   {
     q: 'Mi sitio es pequeño, ¿quién va a querer atacarlo?',
@@ -327,7 +398,7 @@ export const seguridadFaq: SecurityFaq[] = [
   },
   {
     q: '¿Y del Diagnóstico de $49?',
-    a: `${seguridad.fronteras.diagnostico} Si lo que te preocupa es que tu sitio no te trae clientes, empieza por el Diagnóstico. Si lo que te preocupa es que te lo tumben o te lo roben, empieza por la Revisión.`,
+    a: `${seguridad.fronteras.diagnostico} Si lo que te preocupa es que tu sitio no te trae clientes, empieza por el Diagnóstico de Ventas. Si lo que te preocupa es que te lo tumben o te lo roben, empieza por la Auditoría de Seguridad.`,
   },
   {
     q: '¿Van a romper mi sitio revisándolo?',
@@ -335,7 +406,7 @@ export const seguridadFaq: SecurityFaq[] = [
   },
   {
     q: 'Si el sitio me lo hicieron ustedes, ¿también lo necesito?',
-    a: 'La mitad de esta lista no, y te lo vamos a decir: lo que construimos no lleva complementos que actualizar ni panel público por el que entrar, que es por donde se cuelan casi todos. Lo que sí suma en cualquier sitio es la revisión de cómo está montado, la verificación en dos pasos, el filtro delante y el aviso de cookies y datos personales.',
+    a: 'La mitad de esta lista no, y te lo vamos a decir: lo que construimos no lleva complementos que actualizar ni panel público por el que entrar, que es por donde se cuelan casi todos. Lo que sí suma en cualquier sitio es la auditoría de cómo está montado, la verificación en dos pasos, el filtro delante y el aviso de cookies y datos personales.',
   },
   {
     q: 'Ya me hackearon. ¿Esto me sirve?',
@@ -355,14 +426,14 @@ export const seguridadFaq: SecurityFaq[] = [
  * La capacidad «Que no te lo hackeen» del paso 3, compuesta aquí y no escrita
  * en `quote.ts`.
  *
- * Son dos cifras y no una porque son dos compromisos: la revisión se paga una
+ * Son dos cifras y no una porque son dos compromisos: la auditoría se paga una
  * vez y la protección cada mes. El cotizador las suma en dos totales distintos
  * —nunca en el mismo— y por eso cada parte trae su nota: un total que mezclara
  * «$375» de sitio con «$45 al mes» de vigilancia sería exactamente la cifra
  * inventada que el resto del cotizador evita.
  *
  * Las dos van juntas y no se pueden separar aquí porque el mensual **exige** la
- * revisión: ofrecer en el cotizador la mitad barata sería vender algo que luego
+ * auditoría: ofrecer en el cotizador la mitad barata sería vender algo que luego
  * no se puede contratar.
  */
 export const seguridadCotizador = {

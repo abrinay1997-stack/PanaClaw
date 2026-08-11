@@ -26,6 +26,11 @@
  * corre a mano. El script lo busca instalado en el proyecto o en el sistema:
  *
  *   npm i -D playwright && npx playwright install chromium
+ *
+ * Si ya hay un Chromium en la máquina y no quieres que Playwright se descargue
+ * otro, se le pasa por `PW_CHROME`:
+ *
+ *   PW_CHROME=/ruta/al/chrome npm run medir:movil
  */
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -364,7 +369,7 @@ async function main() {
     process.exitCode = 1;
   }
 
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(process.env.PW_CHROME ? { executablePath: process.env.PW_CHROME } : {});
   try {
     await checkNav(browser, base);
     await checkNavInterior(browser, base);

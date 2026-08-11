@@ -38,7 +38,7 @@ export const faqGroups: FaqGroup[] = [
       },
       {
         q: 'Ya tengo una web, pero va mal. ¿Qué hago?',
-        a: 'Empieza por el Diagnóstico ($49). Te decimos qué tan lenta va de verdad, las tres razones concretas por las que estás perdiendo clientes en ella y qué hacer con cada una. Si después decides rehacerla con nosotros, ya sabrás exactamente qué estás arreglando y por qué.',
+        a: 'Empieza por el Diagnóstico de Ventas ($49). Te decimos qué tan lenta va de verdad, las tres razones concretas por las que estás perdiendo clientes en ella y qué hacer con cada una. Si después decides rehacerla con nosotros, ya sabrás exactamente qué estás arreglando y por qué.',
       },
       {
         q: '¿Trabajan con negocios fuera de la ciudad de Panamá?',
@@ -61,7 +61,7 @@ export const faqGroups: FaqGroup[] = [
       },
       {
         q: '¿Cómo se paga?',
-        a: 'La mitad al empezar, para reservar tu lugar en la agenda, y la otra mitad al entregar, antes de publicar el sitio y de pasarte el código. El Diagnóstico de $49 se paga completo por adelantado porque se entrega en 48 horas.',
+        a: 'La mitad al empezar, para reservar tu lugar en la agenda, y la otra mitad al entregar, antes de publicar el sitio y de pasarte el código. El Diagnóstico de Ventas de $49 se paga completo por adelantado porque se entrega en 48 horas.',
       },
       {
         q: '¿Qué no está incluido en el precio?',

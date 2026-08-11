@@ -33,12 +33,25 @@
  *   G. `prefers-reduced-motion` apaga el scroll animado — midiendo también el
  *      caso contrario, para que la comprobación no pase por accidente.
  *   H. Desde el resultado se puede corregir una respuesta sin perder las otras.
+ *   I. El paso 2 no ofrece tamaños que el paso 1 ya descartó, y dice por qué —
+ *      "Vender en línea" + "Una sola página · Desde $295" acababa cobrando
+ *      $1,200, y la etiqueta lo había prometido más barato.
+ *   J. El paso 4 no deja pedir un plazo que el plan no puede cumplir, y traduce
+ *      el plazo a fechas de calendario.
+ *   K. La rama de auditoría (quien ya tiene sitio) cotiza, sigue siendo de
+ *      cuatro preguntas, no deja contratar los dos planes mensuales a la vez y
+ *      dice la misma cifra por los tres caminos.
  *
  * Sale con código 1 si algo falla, así que sirve tal cual en CI.
  *
  * PLAYWRIGHT NO ES DEPENDENCIA DEL PROYECTO a propósito:
  *
  *   npm i -D playwright && npx playwright install chromium
+ *
+ * Si ya hay un Chromium en la máquina y no quieres que Playwright se descargue
+ * otro, se le pasa por `PW_CHROME`:
+ *
+ *   PW_CHROME=/ruta/al/chrome npm run medir:cotizador
  */
 import { stat } from 'node:fs/promises';
 import { DIST, loadPlaywright, serveDist } from './_harness.mjs';
@@ -50,12 +63,6 @@ const mark = (ok) => (ok ? 'ok' : 'FALLA');
 /* ------------------------------------------------------------------ *
  * Recorrer el cotizador
  * ------------------------------------------------------------------ */
-
-/** Índice del paso visible, leído de la propia página y no supuesto. */
-async function pasoActual(page) {
-  const txt = await page.locator('[data-count]').textContent();
-  return Number(txt.match(/Paso (\d+)/)[1]) - 1;
-}
 
 /**
  * Se pulsa la ETIQUETA, no la casilla.
@@ -81,15 +88,18 @@ async function abrirCotizador(page, base) {
   await page.waitForSelector('[data-quote][data-bound="true"]', { timeout: 5000 });
 }
 
-async function siguiente(page) {
-  const i = await pasoActual(page);
-  await page.locator('.cot-step').nth(i).locator('button[data-next]').click();
-}
+/**
+ * El paso que se ve, y no el que toca por posición.
+ *
+ * La plantilla dibuja los SEIS pasos —los de la rama web, los de la rama de
+ * auditoría y los dos comunes— y enseña cuatro. Buscarlos por índice del DOM
+ * pulsaba el botón de un paso escondido, que Playwright espera treinta segundos
+ * antes de rendirse.
+ */
+const visible = (page) => page.locator('.cot-step:not([hidden])');
 
-async function ninguna(page) {
-  const i = await pasoActual(page);
-  await page.locator('.cot-step').nth(i).locator('button[data-skip]').click();
-}
+const siguiente = (page) => visible(page).locator('button[data-next]').click();
+const ninguna = (page) => visible(page).locator('button[data-skip]').click();
 
 const totales = (t) => t.replace(/\s+/g, ' ').trim();
 
@@ -342,20 +352,29 @@ async function hastaCapacidades(page, base, { objetivo, alcance }) {
   await siguiente(page);
 }
 
-async function estadoDeCapacidades(page) {
-  return page.evaluate(() =>
-    [...document.querySelectorAll('input[name="capacidades"]')].map((input) => ({
-      value: input.value,
-      // La etiqueta son dos nodos: lo que suma de una vez y lo que suma al mes.
-      // Se leen por separado porque cada una tiene que cuadrar con SU total.
-      etiqueta: document.querySelector(`[data-opt-unico="${input.value}"]`)?.textContent.trim() ?? '',
-      etiquetaMes: document.querySelector(`[data-opt-mes="${input.value}"]`)?.textContent.trim() ?? '',
-      bloqueada: input.disabled,
-      marcada: input.checked,
-      apagada: !!input.closest('.cot-opt')?.classList.contains('is-locked'),
-    }))
+async function estadoDePaso(page, name) {
+  return page.evaluate(
+    (n) =>
+      [...document.querySelectorAll(`input[name="${n}"]`)].map((input) => ({
+        value: input.value,
+        // La etiqueta son dos nodos: lo que suma de una vez y lo que suma al mes.
+        // Se leen por separado porque cada una tiene que cuadrar con SU total.
+        etiqueta:
+          document.querySelector(`[data-opt-unico="${input.value}"]`)?.textContent.trim() ?? '',
+        etiquetaMes:
+          document.querySelector(`[data-opt-mes="${input.value}"]`)?.textContent.trim() ?? '',
+        // Por qué está apagada. Una opción bloqueada sin motivo es una puerta
+        // cerrada sin cartel: la persona no sabe qué tocar para abrirla.
+        motivo: document.querySelector(`[data-opt-nota="${input.value}"]`)?.textContent.trim() ?? '',
+        bloqueada: input.disabled,
+        marcada: input.checked,
+        apagada: !!input.closest('.cot-opt')?.classList.contains('is-locked'),
+      })),
+    name
   );
 }
+
+const estadoDeCapacidades = (page) => estadoDePaso(page, 'capacidades');
 
 /*
  * Qué tiene que salir bloqueado con cada plan base.
@@ -500,7 +519,7 @@ async function medirSalto(browser, opts) {
   await siguiente(page);
   await siguiente(page);
   await marcar(page, 'ya');
-  await page.locator('.cot-step').nth(3).locator('button[data-next]').click();
+  await siguiente(page);
   await page.waitForTimeout(50);
   const aMitad = await page.evaluate(() => window.scrollY);
   await page.waitForTimeout(1200);
@@ -572,6 +591,239 @@ async function checkSalidas(browser, base) {
   await ctx.close();
 }
 
+/* ------------------------------------------------------------------ *
+ * I · El paso 2 no ofrece tamaños que el paso 1 ya descartó
+ * ------------------------------------------------------------------ */
+
+/**
+ * Qué tamaños quedan por debajo de lo que pide cada objetivo.
+ *
+ * Escrito a mano y no derivado, por el mismo motivo que `BLOQUEADAS_ESPERADAS`:
+ * derivarlo de los datos haría la comprobación circular y pasaría también con
+ * la función desactivada.
+ *
+ * Este es el bache que abrió el trabajo: se podía elegir "Vender en línea" y
+ * después "Una sola página · Desde $295", y acabar pagando $1,200. El motor
+ * siempre acertó el plan; era la etiqueta la que anunciaba un precio imposible.
+ */
+const NO_ALCANZAN = {
+  nuevo: [],
+  rehacer: ['una'],
+  sistema: ['landing', 'una'],
+  vender: ['landing', 'multi', 'una'],
+};
+
+async function checkTamanos(browser, base) {
+  console.log('\nI. El paso 2 apaga los tamaños que el objetivo ya dejó atrás');
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+
+  for (const [objetivo, esperadas] of Object.entries(NO_ALCANZAN)) {
+    await abrirCotizador(page, base);
+    await marcar(page, objetivo);
+    await siguiente(page);
+    const estado = await estadoDePaso(page, 'alcance');
+
+    const bloqueadas = estado.filter((o) => o.bloqueada).map((o) => o.value).sort();
+    const coincide = bloqueadas.join(',') === esperadas.join(',');
+    // La etiqueta, el bloqueo y el apagado tienen que contar lo mismo.
+    const incoherentes = estado.filter(
+      (o) => o.bloqueada !== o.apagada || o.bloqueada !== (o.etiqueta === 'No alcanza')
+    );
+    /*
+     * Y el paso no puede quedarse callado: sin el aviso, la persona no sabe que
+     * la culpa la tiene su primera respuesta y no el cotizador. Va UNA vez
+     * debajo de la pregunta y no opción por opción —el motivo es el mismo para
+     * todas— así que lo que se exige es que exista cuando hay algo apagado y
+     * que no exista cuando no lo hay.
+     */
+    const aviso = totales((await page.locator('[data-aviso="alcance"]').textContent()) ?? '');
+    const explica = esperadas.length ? aviso.length > 0 : aviso.length === 0;
+    // Un paso sin ninguna salida sería un callejón.
+    const libres = estado.filter((o) => !o.bloqueada).length;
+    const ok = coincide && !incoherentes.length && explica && libres > 0;
+
+    if (!coincide)
+      fail(`"${objetivo}": se apagan [${bloqueadas.join(', ') || '—'}] y se esperaba [${esperadas.join(', ') || '—'}]`);
+    if (incoherentes.length)
+      fail(`"${objetivo}": ${incoherentes.map((o) => o.value).join(', ')} dicen una cosa y hacen otra`);
+    if (!explica)
+      fail(
+        esperadas.length
+          ? `"${objetivo}": apaga tamaños sin decir por qué`
+          : `"${objetivo}": no apaga nada y aun así avisa ("${aviso}")`
+      );
+    if (!libres) fail(`"${objetivo}": no queda ningún tamaño elegible`);
+
+    console.log(
+      `   ${objetivo.padEnd(9)} apagados: ${String(bloqueadas.length)} (${bloqueadas.join(', ') || '—'})`.padEnd(38) +
+        `${aviso ? 'con aviso' : 'sin aviso'}`.padEnd(11) +
+        mark(ok)
+    );
+  }
+  await ctx.close();
+}
+
+/* ------------------------------------------------------------------ *
+ * J · El paso 4 no deja pedir un plazo imposible
+ * ------------------------------------------------------------------ */
+
+/**
+ * Qué urgencias no caben en cada plan. "Ya" son 7 días: Corporate (8–12) y
+ * Commerce (15–20) no llegan, y antes se podían pedir igual — el cotizador
+ * respondía con una nota al pie y una fecha que nadie iba a cumplir.
+ */
+const NO_DAN_TIEMPO = [
+  { plan: 'PanaClaw Start', objetivo: 'nuevo', alcance: 'una', esperadas: [] },
+  { plan: 'PanaClaw Launch', objetivo: 'rehacer', alcance: 'landing', esperadas: [] },
+  { plan: 'PanaClaw Corporate', objetivo: 'sistema', alcance: 'multi', esperadas: ['ya'] },
+  { plan: 'PanaClaw Commerce', objetivo: 'vender', alcance: 'catalogo', esperadas: ['ya'] },
+];
+
+async function checkPlazos(browser, base) {
+  console.log('\nJ. El paso 4 apaga lo que no da tiempo, y enseña la fecha');
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+
+  for (const caso of NO_DAN_TIEMPO) {
+    await hastaCapacidades(page, base, caso);
+    await siguiente(page); // sin capacidades: al paso de urgencia
+    const estado = await estadoDePaso(page, 'urgencia');
+    const fecha = totales((await page.locator('[data-aviso="urgencia"]').textContent()) ?? '');
+
+    const bloqueadas = estado.filter((o) => o.bloqueada).map((o) => o.value).sort();
+    const coincide = bloqueadas.join(',') === caso.esperadas.join(',');
+    const mudas = estado.filter((o) => o.bloqueada && !o.motivo);
+    /*
+     * La fecha tiene que ser una fecha, no el plazo repetido. Se exige un
+     * número de día y un mes escrito: sin esto, un plazo que se quedara sin
+     * traducir a calendario pasaría en verde y la persona seguiría teniendo que
+     * hacer la cuenta de cabeza, que es justo lo que nadie hace bien.
+     */
+    const hayFecha = /\d+ de [a-záéíóú]+/i.test(fecha);
+    const ok = coincide && !mudas.length && hayFecha;
+
+    if (!coincide)
+      fail(`${caso.plan}: se apagan [${bloqueadas.join(', ') || '—'}] y se esperaba [${caso.esperadas.join(', ') || '—'}]`);
+    if (mudas.length) fail(`${caso.plan}: ${mudas.map((o) => o.value).join(', ')} se apagan sin decir por qué`);
+    if (!hayFecha) fail(`${caso.plan}: el paso 4 no enseña ninguna fecha de calendario ("${fecha}")`);
+
+    console.log(
+      `   ${caso.plan.padEnd(20)} apagadas: ${(bloqueadas.join(', ') || '—').padEnd(6)} ${fecha.slice(0, 46).padEnd(48)} ${mark(ok)}`
+    );
+  }
+  await ctx.close();
+}
+
+/* ------------------------------------------------------------------ *
+ * K · La rama de auditoría
+ * ------------------------------------------------------------------ */
+
+/**
+ * El camino de quien YA tiene sitio y solo quiere saber si está abierto de par
+ * en par. Antes no existía: se le mandaba a cotizar una web que no quería.
+ *
+ * Se comprueba lo mismo que en la rama web —que la cifra no cambia por el
+ * camino— porque es la única propiedad que de verdad protege, y además que la
+ * rama se abre, que sigue siendo de cuatro preguntas y que los dos planes
+ * mensuales no se pueden contratar a la vez (Blindada ya lleva dentro todo lo
+ * de Protegida: las dos marcadas es cobrar dos veces lo mismo).
+ */
+async function checkAuditoria(browser, base) {
+  console.log('\nK. La rama de auditoría cotiza, y cuenta lo mismo por los tres caminos');
+  const ctx = await browser.newContext();
+  await ctx.route('**://wa.me/**', (r) =>
+    r.fulfill({ status: 200, contentType: 'text/html', body: '<h1>wa.me</h1>' })
+  );
+  const page = await ctx.newPage();
+  const abiertas = [];
+  page.on('popup', (p) => abiertas.push(p));
+
+  await abrirCotizador(page, base);
+  await marcar(page, 'auditar');
+  await siguiente(page);
+
+  const segundoPaso = await visible(page).getAttribute('data-step');
+  const abre = segundoPaso === 'sitio';
+  if (!abre) fail(`"Revisar el que ya tengo" no abre su rama: el paso 2 sigue siendo "${segundoPaso}"`);
+
+  await marcar(page, 'tienda');
+  await siguiente(page);
+
+  // Excluyentes: marcar una desmarca la otra, sin dejar a nadie encerrado.
+  await marcar(page, 'blindada');
+  await marcar(page, 'protegida');
+  const blindadaFuera = !(await page.locator('input[value="blindada"]').isChecked());
+  await marcar(page, 'blindada');
+  const protegidaFuera = !(await page.locator('input[value="protegida"]').isChecked());
+  const excluyentes = blindadaFuera && protegidaFuera;
+  if (!excluyentes) fail('los dos planes mensuales de seguridad se pueden marcar a la vez: se cobra dos veces lo mismo');
+
+  await marcar(page, 'diagnostico');
+  const corriente = await corrientes(page);
+  await siguiente(page);
+
+  const cuenta = totales(await page.locator('[data-count]').textContent());
+  const cuatro = /de 4$/.test(cuenta);
+  if (!cuatro) fail(`la rama de auditoría dice "${cuenta}" y se esperaban cuatro preguntas`);
+
+  await marcar(page, 'flexible');
+  await siguiente(page);
+
+  const resultado = await ambasCifras(page, '[data-total]', '[data-total-mes]');
+  const lineas = await page.locator('.cot-line').count();
+
+  await page.fill('#cot-nombre', 'Prueba');
+  await page.fill('#cot-contacto', 'prueba@ejemplo.com');
+  await page.locator('[data-send]').click();
+  await page.waitForTimeout(600);
+
+  const wa = abiertas.find((p) => p.url().includes('wa.me'));
+  const texto = wa ? decodeURIComponent(new URL(wa.url()).searchParams.get('text') ?? '') : '';
+  const enMensaje = {
+    unico: totales(texto.match(/Total estimado: (.+)/)?.[1] ?? '(no aparece)'),
+    mes: totales(texto.match(/Mensualidad: (.+)/)?.[1] ?? '(no aparece)'),
+  };
+
+  const mismoImporte = (a, b) => {
+    const x = cifras(a);
+    const y = cifras(b);
+    return x.min === y.min && x.max === y.max;
+  };
+  const okUnico =
+    mismoImporte(corriente.unico, resultado.unico) && mismoImporte(resultado.unico, enMensaje.unico);
+  const okMes =
+    corriente.mes !== '' &&
+    mismoImporte(corriente.mes, resultado.mes) &&
+    mismoImporte(resultado.mes, enMensaje.mes);
+  // Auditoría + mensual + diagnóstico: tres líneas y ni una menos.
+  const okLineas = lineas === 3;
+
+  if (!okUnico)
+    fail(
+      `auditoría · el total de una vez cambia por el camino: corriente ${corriente.unico}, ` +
+        `resultado ${resultado.unico}, mensaje ${enMensaje.unico}`
+    );
+  if (!okMes)
+    fail(
+      `auditoría · la mensualidad cambia por el camino (o no aparece): corriente "${corriente.mes}", ` +
+        `resultado "${resultado.mes}", mensaje "${enMensaje.mes}"`
+    );
+  if (!okLineas) fail(`auditoría · el desglose trae ${lineas} líneas y se esperaban 3`);
+
+  console.log(`   abre su rama        ${String(segundoPaso).padEnd(24)} ${mark(abre)}`);
+  console.log(`   mensuales excluyentes ${(excluyentes ? 'sí' : 'NO').padEnd(22)} ${mark(excluyentes)}`);
+  console.log(`   preguntas           ${cuenta.padEnd(24)} ${mark(cuatro)}`);
+  console.log(`   líneas del desglose ${String(lineas).padEnd(24)} ${mark(okLineas)}`);
+  console.log(
+    `   de una vez  ${corriente.unico.padEnd(12)} ${resultado.unico.padEnd(12)} ${enMensaje.unico.padEnd(12)} ${mark(okUnico)}`
+  );
+  console.log(
+    `   al mes      ${corriente.mes.padEnd(12)} ${resultado.mes.padEnd(12)} ${enMensaje.mes.padEnd(12)} ${mark(okMes)}`
+  );
+  await ctx.close();
+}
+
 /* ------------------------------------------------------------------ */
 async function main() {
   try {
@@ -585,7 +837,7 @@ async function main() {
   const { server, port } = await serveDist();
   const base = `http://127.0.0.1:${port}`;
 
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(process.env.PW_CHROME ? { executablePath: process.env.PW_CHROME } : {});
   try {
     await checkEnvio(browser, base);
     await checkNinguna(browser, base);
@@ -595,6 +847,9 @@ async function main() {
     await checkEtiquetasHonestas(browser, base);
     await checkReducedMotion(browser, base);
     await checkSalidas(browser, base);
+    await checkTamanos(browser, base);
+    await checkPlazos(browser, base);
+    await checkAuditoria(browser, base);
   } finally {
     await browser.close();
     server.close();
