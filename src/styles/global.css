@@ -598,17 +598,22 @@ h2.section-title .muted{color:var(--studio-gray);}
   .care-grid{grid-template-columns:1fr;}
   .proceso-grid{grid-template-columns:1fr;}
 }
-/* El nav colapsa antes que el resto del layout (1000px, no 900) y por eso tiene
+/* El nav colapsa antes que el resto del layout (1100px, no 900) y por eso tiene
    su propia consulta.
    Con siete enlaces el pill ya se desbordaba 18px a 901px; con el octavo (eBot)
-   el desborde llegaba a 77px y cubría toda la franja 901–999px. No se veía:
+   el desborde llegaba a 77px en toda la franja 901–999px, y con el noveno
+   (Seguridad) son 75px a 1001px que no se van hasta los 1080. No se ve:
    `body{overflow-x:hidden}` se traga el sobrante, así que los enlaces se
-   comprimían contra el CTA sin que ninguna medición del proyecto lo delatara —
-   `medir:movil` mira el centrado del pill, no lo que pasa dentro.
-   Medido a 901, 920, 960, 1000, 1024, 1100, 1180, 1280 y 1440 px: a partir de
-   1001 el contenido entra con aire de sobra, y por debajo manda el desplegable.
-   Si algún día entra un noveno enlace, hay que volver a medir esta franja. */
-@media(max-width:1000px){
+   comprimen contra el CTA sin que la página parezca rota.
+   Medido enlace a enlace el 2026-08-11, a 1000, 1001, 1024, 1060, 1070, 1075,
+   1080, 1085, 1090, 1095, 1099, 1100, 1140, 1180, 1280, 1440 y 1920 px: el
+   contenido deja de desbordarse a partir de 1080, con los mismos 14px de
+   holgura contra la marca que el sitio ya aceptaba antes. El colapso se pone en
+   1100 y no en 1080 para no vivir pegado al límite: entre los dos hay 20px de
+   margen para que una fuente que caiga distinta no lo tumbe.
+   Esto ya NO depende de que alguien se acuerde: `medir:movil` lo comprueba
+   (comprobación A2) en toda la franja. */
+@media(max-width:1100px){
   /* Nav flotante colapsa: pill se convierte en menu dropdown */
   .nav-pill{padding:8px;}
   .nav-pill nav{

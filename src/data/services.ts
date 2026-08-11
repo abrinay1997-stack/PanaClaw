@@ -84,6 +84,12 @@ export const navLinks: NavLink[] = [
   // con él temprano o no lo verá nunca. El nombre va solo, sin explicación — la
   // barra no da para una frase y la página entera es la explicación.
   { href: routes.ebot, label: 'eBot' },
+  // Seguridad va pegada a eBot por el mismo motivo: los dos son productos que
+  // no son una web, y quien llega buscando «sitios» no los va a encontrar si
+  // están al final. Y va DESPUÉS de eBot, no antes, porque a este se llega
+  // también por el dolor —«me hackearon»— y ese camino ya está cubierto desde
+  // /servicios, /planes y el chat; eBot no tiene ningún otro.
+  { href: routes.seguridad, label: 'Seguridad' },
   // Va antes de Planes a propósito: quien duda del precio suele estar dudando
   // de si sabemos hacerlo. La prueba tiene que llegarle antes que la cifra.
   { href: routes.proyectos, label: 'Proyectos' },

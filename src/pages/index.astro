@@ -6,6 +6,8 @@ import SceneBg from '../components/SceneBg.astro';
 
 import { site, waLink } from '../data/site';
 import { plans } from '../data/plans';
+import { ebot } from '../data/ebot';
+import { seguridad, revision } from '../data/seguridad';
 import { services } from '../data/services';
 import { projects } from '../data/projects';
 import { procesoVisual } from '../data/images';
@@ -34,10 +36,20 @@ import { routes } from '../data/links';
           no al nuestro. Desde $295, en {site.location}.
         </p>
       </Reveal>
+      <!--
+        La acción principal de la home es cotizar, no «ver planes».
+
+        Las dos llevan al precio, pero por caminos muy distintos: /planes enseña
+        cuatro cifras y deja al visitante decidiendo solo; el cotizador le da SU
+        cifra en cuatro respuestas y termina en un mensaje ya redactado. Es el
+        camino que mejor convierte del sitio (está medido en el bloque 6) y hasta
+        ahora la portada no lo ofrecía ni una vez: solo lo llevaba el botón del
+        nav. Los cuatro precios siguen abajo, a un scroll.
+      -->
       <Reveal delay={0.35}>
         <div class="hero-actions">
-          <a class="btn btn-primary" href={routes.planes}>
-            <span class="dot"></span> Ver planes
+          <a class="btn btn-primary" href={routes.cotizador}>
+            <span class="dot"></span> Cotizar mi sitio
           </a>
           <a class="btn btn-ghost" href={waLink()} target="_blank" rel="noopener">
             Hablar por WhatsApp
@@ -63,15 +75,20 @@ import { routes } from '../data/links';
     <div class="container">
       <div class="proof-inner">
         <span class="eyebrow" id="proof-title">Trabajo publicado</span>
+        <!--
+          Los dominios van en texto, no enlazados, y es deliberado.
+          Enlazados eran cuatro salidas a sitios ajenos en la primera pantalla
+          de la portada, sin ninguna vuelta: el visitante se iba a bukoflow y la
+          visita terminaba ahí. Siguen escritos porque un dominio se puede
+          teclear y comprobar —que es el argumento entero de esta banda—, pero
+          la puerta para abrirlos es /proyectos, donde cada ficha ya tiene su
+          camino de regreso.
+        -->
         <ul class="proof-list">
-          {projects.map((project) => (
-            <li>
-              <a href={project.url} target="_blank" rel="noopener">{project.domain}</a>
-            </li>
-          ))}
+          {projects.map((project) => <li>{project.domain}</li>)}
         </ul>
         <a class="proof-link" href={routes.proyectos}>
-          Ver los proyectos <span aria-hidden="true">→</span>
+          Ábrelos uno a uno <span aria-hidden="true">→</span>
         </a>
       </div>
     </div>
@@ -93,14 +110,20 @@ import { routes } from '../data/links';
           </a>
         </Reveal>
       </div>
+      <!--
+        Las tres tarjetas ya NO son enlaces. Las tres llevaban a la misma
+        página que el «Ver todo» de arriba, así que eran cuatro clics para un
+        solo destino: cuatro acciones contadas, una decisión real. Son un
+        argumento —el porqué—, y un argumento no necesita ser un botón.
+      -->
       <div class="service-list">
         {services.map((s) => (
           <Reveal>
-            <a class="service-card" href={routes.servicios}>
+            <div class="service-card">
               <span class="idx">{s.idx}</span>
               <h3>{s.title}</h3>
               <p>{s.desc}</p>
-            </a>
+            </div>
           </Reveal>
         ))}
       </div>
@@ -117,11 +140,11 @@ import { routes } from '../data/links';
             <h2 class="section-title">Precios fijos. <span class="muted">Cero letra chica.</span></h2>
           </Reveal>
         </div>
-        <Reveal delay={0.15}>
-          <a class="section-link" href={routes.planes}>
-            Ver planes en detalle <span aria-hidden="true">→</span>
-          </a>
-        </Reveal>
+        <!--
+          Sin «Ver planes en detalle» aquí: las cuatro tarjetas de abajo ya
+          llevan al mismo sitio, y un quinto enlace al mismo destino no añade
+          un camino, añade ruido.
+        -->
       </div>
       <div class="plans-preview-grid">
         {plans.map((plan) => (
@@ -134,6 +157,56 @@ import { routes } from '../data/links';
             </a>
           </Reveal>
         ))}
+      </div>
+    </div>
+  </section>
+
+  <!--
+    NO SOLO WEBS.
+
+    eBot y Seguridad llevaban meses existiendo sin aparecer en la portada: solo
+    estaban en la barra, en el pie y en el chat, así que quien entraba por aquí y
+    no miraba el menú no se enteraba de que existen. Y son justo los dos
+    productos que nadie viene buscando —quien llega busca una web—, o sea los que
+    más dependen de que la portada los nombre.
+
+    Van después de los planes a propósito: primero lo que trae a la gente, y
+    cuando ya tiene el precio de su sitio en la cabeza, lo que puede sumarle.
+  -->
+  <section class="extras">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Y además</span>
+          <Reveal>
+            <h2 class="section-title">No solo hacemos webs. <span class="muted">Esto también.</span></h2>
+          </Reveal>
+        </div>
+        <!--
+          Sin enlace de sección: las dos tarjetas ya son los dos destinos, y el
+          «Ver todo →» de los pilares, tres secciones más arriba, lleva a la
+          misma página. Dos enlaces al mismo sitio en una portada que ya tenía
+          diecisiete acciones es exactamente lo que se está quitando.
+        -->
+      </div>
+
+      <div class="extras-grid">
+        <Reveal>
+          <a class="extra" href={routes.ebot}>
+            <span class="extra-k">{ebot.name}</span>
+            <span class="extra-price">{ebot.price}</span>
+            <p>{ebot.tagline} Contesta por WhatsApp, Instagram, Messenger y Telegram a cualquier hora, con un panel donde ves cada conversación.</p>
+            <span class="extra-go" aria-hidden="true">→</span>
+          </a>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <a class="extra" href={routes.seguridad}>
+            <span class="extra-k">{seguridad.name}</span>
+            <span class="extra-price">Desde {revision.price.split('–')[0]}</span>
+            <p>{seguridad.tagline} Revisamos el sitio que ya tienes, te decimos por dónde podrían entrar y lo cerramos.</p>
+            <span class="extra-go" aria-hidden="true">→</span>
+          </a>
+        </Reveal>
       </div>
     </div>
   </section>
@@ -284,23 +357,15 @@ import { routes } from '../data/links';
     list-style: none;
     flex: 1;
   }
-  /* El padding vertical no es estético: un enlace de 15px mide 16px de alto, y
-     WCAG 2.5.8 (AA) pide 24px de objetivo táctil. Mismo arreglo que ya llevan
-     .brand del nav y .foot-static del footer. Si algún día se toca el
-     font-size, hay que volver a comprobar que el total siga pasando de 24. */
-  .proof-list a {
-    display: inline-block;
+  /* Los dominios ya no son enlaces (ver el comentario de la plantilla), así que
+     tampoco necesitan objetivo táctil: son texto. El aire vertical se queda
+     porque la banda se lee mejor con él. */
+  .proof-list li {
     padding-block: 6px;
     font-size: 15px;
     font-weight: 500;
     letter-spacing: 0.01em;
     color: var(--studio-gray);
-    transition: color 0.25s;
-  }
-  .proof-list a:hover {
-    color: var(--soft-white);
-    text-decoration: underline;
-    text-underline-offset: 4px;
   }
   .proof-link {
     display: inline-block;
@@ -345,7 +410,76 @@ import { routes } from '../data/links';
     background: rgba(255, 81, 0, 0.1);
     border-color: var(--flash-orange);
   }
-  .service-card { display: block; cursor: pointer; }
+  /* Ya no es un enlace: bloque, sin cursor de mano. */
+  .service-card { display: block; }
+
+  /* ---------- NO SOLO WEBS ---------- */
+  .extras {
+    padding-top: 0;
+  }
+  .extras-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  .extra {
+    position: relative;
+    display: block;
+    height: 100%;
+    padding: 34px 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: border-color 0.25s, background 0.25s, transform 0.25s;
+  }
+  .extra:hover {
+    border-color: var(--flash-orange);
+    background: rgba(255, 81, 0, 0.05);
+    transform: translateY(-4px);
+  }
+  .extra-k {
+    display: block;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .extra-price {
+    display: block;
+    margin: 6px 0 14px;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--flash-orange);
+  }
+  .extra p {
+    max-width: 46ch;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.6;
+  }
+  .extra-go {
+    position: absolute;
+    top: 34px;
+    right: 30px;
+    font-size: 20px;
+    color: var(--studio-gray);
+    transition: transform 0.25s, color 0.25s;
+  }
+  .extra:hover .extra-go {
+    color: var(--flash-orange);
+    transform: translateX(4px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .extra,
+    .extra-go {
+      transition: none;
+    }
+    .extra:hover {
+      transform: none;
+    }
+  }
 
   /* La cita se apoya sobre la textura líquida a sangre */
   .quote {
@@ -431,5 +565,6 @@ import { routes } from '../data/links';
   }
   @media (max-width: 640px) {
     .plans-preview-grid { grid-template-columns: 1fr; }
+    .extras-grid { grid-template-columns: 1fr; }
   }
 </style>

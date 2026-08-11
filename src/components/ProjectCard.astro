@@ -11,6 +11,7 @@
 import { Image } from 'astro:assets';
 import type { Project } from '../data/projects';
 import { publishedMetrics } from '../data/projects';
+import { routes } from '../data/links';
 
 interface Props {
   project: Project;
@@ -94,9 +95,23 @@ const tags = [project.sector, project.year].filter(Boolean);
       </ul>
     )}
 
-    <a class="proj-visit" href={project.url} target="_blank" rel="noopener">
-      {project.domain} <span aria-hidden="true">↗</span>
-    </a>
+    <!--
+      La salida y la vuelta, juntas.
+
+      Cada ficha manda al visitante a un sitio ajeno —que es justo la prueba que
+      esta página vende: «no te lo contamos, ábrelos»— y hasta ahora no le daba
+      ninguna forma de volver. El único camino de regreso vivía al final de la
+      página, o sea donde no llega quien se fue en la primera tarjeta. Por eso la
+      vuelta va DENTRO de la ficha y no en el cierre.
+    -->
+    <div class="proj-actions">
+      <a class="proj-visit" href={project.url} target="_blank" rel="noopener">
+        {project.domain} <span aria-hidden="true">↗</span>
+      </a>
+      <a class="proj-back" href={routes.cotizador}>
+        ¿Quieres uno así? <span aria-hidden="true">→</span>
+      </a>
+    </div>
   </div>
 </article>
 
@@ -267,17 +282,39 @@ const tags = [project.sector, project.year].filter(Boolean);
     border-radius: 999px;
   }
 
-  .proj-visit {
+  .proj-actions {
     margin-top: auto;
-    padding-top: 6px;
+    padding-top: 14px;
+    width: 100%;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .proj-visit {
     font-size: 14px;
     letter-spacing: 0.04em;
     color: var(--flash-orange);
     word-break: break-all;
   }
-  .proj-visit:hover {
+  /* La vuelta en gris y la salida en naranja: la prueba es lo que esta página
+     vende, así que el enlace al sitio del cliente sigue mandando. Lo que se
+     arregla no es la jerarquía, es que antes no había vuelta. */
+  .proj-back {
+    font-size: 13.5px;
+    font-weight: 400;
+    color: var(--studio-gray);
+    white-space: nowrap;
+  }
+  .proj-visit:hover,
+  .proj-back:hover {
     text-decoration: underline;
     text-underline-offset: 4px;
+  }
+  .proj-back:hover {
+    color: var(--soft-white);
   }
 
   @media (prefers-reduced-motion: reduce) {

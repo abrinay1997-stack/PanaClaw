@@ -412,6 +412,14 @@ export const GET: APIRoute = () => {
       'configuración se quedan contigo.',
   });
 
+  /*
+   * Las dos fronteras del catálogo, palabra por palabra desde `seguridad.ts`.
+   *
+   * Son la respuesta a la confusión más cara que tiene el sitio: tres productos
+   * que en la forma se parecen —«te revisamos el sitio»— y en el fondo no se
+   * parecen en nada. Si el bot las improvisa, improvisa justo donde el cliente
+   * está decidiendo entre pagar una cosa o dos.
+   */
   add({
     id: 'seguridad-vs-care',
     topic: 'seguridad',
@@ -421,12 +429,47 @@ export const GET: APIRoute = () => {
       'necesito care y seguridad',
       'estoy pagando dos veces',
       'ya tengo care',
+      'el plan de seguridad actualiza mi sitio',
+      'la seguridad hace copias de seguridad',
     ],
     text:
-      `Care mantiene el sitio que hicimos nosotros: cambios, actualizaciones, vigilancia y copias. ` +
-      `${seguridad.name} protege un sitio cualquiera, sea de quien sea: lo escanea, cierra por donde se ` +
-      `entra y pone un filtro delante. Si ya tienes Care, escríbenos antes de contratar seguridad: ` +
-      `te decimos qué te falta de verdad y qué estarías pagando dos veces.`,
+      `${seguridad.fronteras.care} Puedes tener una sin la otra: ningún plan de ${seguridad.name} ` +
+      `incluye actualizaciones, copias ni vigilancia de caídas, y ningún plan de Care escanea ` +
+      `vulnerabilidades ni pone un filtro contra ataques. Si ya tienes Care, escríbenos antes de ` +
+      `contratar seguridad: te decimos qué te falta de verdad y qué estarías pagando dos veces.`,
+  });
+
+  add({
+    id: 'seguridad-vs-diagnostico',
+    topic: 'seguridad',
+    q: [
+      'diferencia entre diagnostico y revision',
+      'cual me conviene diagnostico o revision',
+      'el diagnostico revisa la seguridad',
+      'la revision me dice si mi sitio vende',
+      'quiero que revisen mi sitio',
+    ],
+    text:
+      `${seguridad.fronteras.diagnostico} El ${diagnostico.name} cuesta ${diagnostico.price}; la ` +
+      `${revision.name}, ${revision.price}. Si te preocupa que tu sitio no te traiga clientes, empieza ` +
+      `por el diagnóstico. Si te preocupa que te lo tumben o te lo roben, empieza por la revisión.`,
+  });
+
+  add({
+    id: 'seguridad-revision-obligatoria',
+    topic: 'seguridad',
+    q: [
+      'la revision es obligatoria',
+      'puedo contratar el plan mensual sin revision',
+      'la revision viene incluida en el plan',
+      'por que pago la revision aparte',
+      'me cobran dos veces la revision',
+    ],
+    text:
+      `La ${revision.name} (${revision.price}) se paga una sola vez y aparte: no viene incluida en ` +
+      `ningún plan mensual, y hay que pasar por ella antes de contratar uno. Son dos trabajos ` +
+      `distintos —mirar tu sitio entero una vez, y protegerlo cada mes— y proteger sin haber ` +
+      `revisado es proteger a ciegas. El informe es tuyo aunque después no contrates nada.`,
   });
 
   add({

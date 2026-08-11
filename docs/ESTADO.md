@@ -91,7 +91,8 @@ npm i -D playwright && npx playwright install chromium
 npm run build && npm run medir:movil && npm run medir:cotizador
 ```
 
-`npm run medir:movil` vigila el navbar, el espacio muerto tras el footer, el
+`npm run medir:movil` vigila el navbar —dónde está y, desde el 2026-08-11,
+también si su contenido cabe dentro—, el espacio muerto tras el footer, el
 alto del footer en móvil y que el panel del chat no se corte — los cuatro
 nacieron de fallos reales. Las medidas de la tabla de arriba (altos, acciones,
 encabezados, animaciones) salen de `document.getAnimations()` y
@@ -429,15 +430,15 @@ primer lugar, igual que «¿pueden contestar mis mensajes de Instagram?».
 **El navbar se desbordaba y nadie lo sabía.** Con siete enlaces el pill ya se
 salía 18 px a 901 px de ancho; con el octavo el desborde llegó a 77 px en toda
 la franja 901–999 px. No se veía porque `body{overflow-x:hidden}` se traga el
-sobrante y `medir:movil` mide el centrado del pill, no lo que pasa dentro. El nav
-colapsa ahora a 1000 px en vez de a 900. **Si algún día entra un noveno enlace,
-hay que volver a medir esa franja** — y la comprobación todavía no está en
-`medir:movil`, así que hoy depende de que alguien se acuerde.
+sobrante y `medir:movil` medía el centrado del pill, no lo que pasa dentro. El
+nav colapsó entonces a 1000 px en vez de a 900, y quedó escrito que un noveno
+enlace obligaría a medir esa franja otra vez a mano. **Pasó el 2026-08-11 con
+Seguridad, y ya no depende de que nadie se acuerde:** la comprobación A2 de
+`medir:movil` mide lo que pasa dentro del pill.
 
 | # | Pendiente | Quién |
 |---|---|---|
 | 46 | **El alcance y el plazo de eBot son una propuesta mía, no una decisión tomada.** «Entrega en 48 horas», qué entra por los $70 y qué no (las cinco líneas de cada lista) salieron de lo que el producto hace, no de lo que tú te comprometes a hacer. Se revisan enteros en `src/data/ebot.ts`; una promesa que no puedas cumplir un martes ocupado es peor que no publicarla. | `[tuyo]` |
-| 47 | **eBot no aparece en la home.** Está en la barra, en el pie y en el chat, pero quien entra por la portada y no mira el menú no se entera de que existe. No se metió a propósito: la home ya tiene 17 acciones compitiendo y meter una decimoctava sin decidir qué sale es empeorar el punto 15. | `[código]` + `[tuyo]` |
 | 48 | **En un iPhone SE, la pastilla de eBot queda bajo el pliegue del propio chat.** El panel abierto solo deja ver la primera —le pasaba igual a las cuatro de antes, así que no lo trajo eBot—, y quien no desplaza dentro del chat solo ve «¿Cuánto cuesta un sitio?». Cabrían las cinco recortando el mensaje de bienvenida, que ocupa cuatro líneas en esa pantalla. Medido el 2026-08-09 con `medir:movil` (el panel entero entra y no se corta; lo que no entra es el contenido de su lista). | `[código]` |
 
 ## Bloque 9 — Seguridad web, el servicio para sitios ajenos
@@ -506,13 +507,130 @@ columna de Servicios subió el footer a 1 337 px en un iPhone SE, con el tope en
 quitando un enlace: el objetivo táctil queda en 29 px, por encima de los 24 que
 pide la norma, y el pie baja a 1 249. `medir:movil` en verde.
 
+**Hecho el 2026-08-11 (entra en la barra, y el nav deja de vigilarse a mano).**
+Seguridad es el noveno enlace del nav, pegado a eBot: los dos son productos que
+no son una web, y quien llega buscando «sitios» no los encuentra si están al
+final. Con nueve enlaces el pill se desbordaba **75 px entre 1001 y 1079 px** —
+otra vez invisible, porque `body{overflow-x:hidden}` se lo traga— así que el nav
+colapsa ahora a **1100 px** en vez de a 1000. Medido enlace a enlace en 17
+anchos de 1000 a 1920: el contenido deja de desbordarse a partir de 1080 con los
+mismos 14 px de holgura que el sitio ya aceptaba; el colapso se pone 20 px por
+encima para no vivir pegado al límite.
+
+Y lo que importa más que el arreglo: **la comprobación A2 de `medir:movil` ya
+mide lo que pasa DENTRO del pill**, que es lo que las tres veces anteriores no
+miraba nadie. Verificada rompiéndola —devolver el colapso a 1000 px la tumba en
+1001, 1024 y 1060— y con un cepo propio para que no se vuelva un adorno: si
+todos los anchos salieran colapsados, falla en vez de pasar en verde sin haber
+medido nada. El menú desplegable con nueve entradas mide 438 px y entra en un
+iPhone SE (568 px) sin recortarse.
+
+**Hecho el 2026-08-11 (las tres fronteras del catálogo).** El repaso de claridad
+encontró que Seguridad, Care y el Diagnóstico se leían como el mismo producto
+contado tres veces. Las fronteras están decididas y ahora se publican con las
+**mismas palabras** en `/seguridad`, en `/servicios` y en lo que responde el
+chat, compuestas de `seguridad.fronteras` y no reescritas en cada sitio:
+
+- **Seguridad no es Care.** Care mantiene la infraestructura (dominio, copias,
+  actualizaciones, uptime, cambios); Seguridad es ciberseguridad (quién entra,
+  por dónde, y qué se hace para impedirlo). Ningún plan de seguridad ofrece ya
+  actualizaciones ni copias: el tercero las tenía y era exactamente lo que hacía
+  ilegible la diferencia. La tabla comparativa lo dice en una fila propia
+  («Mantenimiento, copias y actualizaciones → Eso es Care»).
+- **Seguridad no es el Diagnóstico.** El Diagnóstico de $49 mira el negocio; la
+  Revisión mira la seguridad. Se parecen en la forma —los dos son «te revisamos
+  el sitio»— y en nada más.
+- **La Revisión no va incluida en ningún plan mensual, y es obligatoria.** Se
+  paga siempre y aparte, y hay que pasar por ella antes de contratar un mensual.
+  Regalarla dentro del plan significa revisar gratis a quien luego no contrata;
+  proteger sin revisar es proteger a ciegas. Las tarjetas mensuales llevan el
+  requisito debajo del precio, no en la letra pequeña.
+
+Con eso, el tercer plan pasa a llamarse **Web Blindada** (antes «Web Protegida
+Total»): dos nombres que se distinguían en una palabra, y el que más prometía
+—«Total»— añadía mantenimiento, o sea lo que ya no vende. Ahora añade lo que sí
+es suyo: revisión mensual en vez de trimestral, vigilancia de cambios y
+respuesta ante incidente.
+
 | # | Pendiente | Quién |
 |---|---|---|
+| 54 | **El precio de Web Blindada no se ha revisado después de perder el mantenimiento.** Sigue en $70–$120/mes, que era el precio cuando incluía actualizaciones, uptime y soporte. Hoy lo que añade sobre Web Protegida es revisión mensual, vigilancia de cambios y respuesta ante incidente. **Decisión tuya:** o el precio baja, o el plan gana algo más. | `[tuyo]` |
 | 49 | **Los precios, el alcance y los plazos de seguridad son una propuesta mía, no una decisión tomada.** Las cifras salen del documento tal cual (en dólares en vez de euros) y «informe en 5 días» o «respuesta en 24–48 h» son promesas que tienes que poder cumplir un martes ocupado. Se revisan enteras en `src/data/seguridad.ts`. Es el mismo pendiente que el 46 tiene para eBot. | `[tuyo]` |
-| 50 | **Web Protegida Total se pisa con Care Pro.** El tercer plan incluye mantenimiento, actualizaciones, vigilancia y soporte prioritario por $70–$120/mes; Care Pro cuesta $75/mes y hace casi lo mismo sobre un sitio nuestro. Hoy se sostiene con una distinción escrita —Care mantiene lo que construimos, Seguridad protege cualquier sitio— y con la nota que manda a escribirnos antes de contratar los dos. **Decisión tuya:** o se funden, o el tercer plan deja de ofrecer mantenimiento, o Care deja de ofrecer vigilancia. Es el mismo choque que eBot tuvo con «Respuestas automáticas con IA», y aquel se resolvió quitando uno de los dos. | `[tuyo]` |
-| 51 | **Seguridad no está en la barra de navegación.** Está en el pie, en `/planes`, en `/servicios`, en el cotizador y en el chat, pero no en el nav. No se metió porque sería el **noveno** enlace y el bloque 8 dejó escrito que la franja de 1000 a 1100 px hay que volver a medirla con cada enlace nuevo — y esa comprobación todavía no está en `medir:movil`, así que hoy depende de que alguien se acuerde. Meterlo obliga a medir esa franja o a decidir qué sale. | `[código]` + `[tuyo]` |
 | 52 | **La revisión no tiene un camino de compra propio para tráfico frío.** Es la oferta más barata del catálogo después del Diagnóstico de $49 —y las dos se parecen mucho: las dos son «te decimos qué está mal por poco dinero»—. Hoy conviven sin explicar en qué se diferencian: una mira la velocidad y la otra la seguridad. Es el punto 13 visto desde aquí, y probablemente sean un solo producto con dos mitades. | `[tuyo]` |
-| 53 | **El chat no sabe recomendar entre Care y Seguridad más allá de un hecho.** Está escrito `seguridad-vs-care` y responde la pregunta directa, pero la comparación fina —«tengo WordPress y ustedes no lo hicieron, ¿qué contrato?»— depende de que se cierre el punto 50. | `[código]` |
+
+## Bloque 10 — El plan de claridad
+
+**De dónde sale (2026-08-11).** Un repaso del sitio entero —las diez páginas,
+mirando estructura, texto, acciones por página y el recorrido completo— dejó un
+diagnóstico incómodo y útil: *el catálogo creció más rápido que la arquitectura
+que tiene que ordenarlo.* Se vendían 18 cosas distintas, el desplegable de
+`/contacto` tenía 12 opciones y la barra 9 enlaces, en un sitio que sigue en beta,
+sin dominio propio y sin un solo testimonio. Lo que el visitante lee no es «estos
+saben lo que hacen», es «estos hacen de todo».
+
+Notas de aquel repaso, para poder comparar la próxima vez: coherencia visual 9,
+claridad del texto 8, arquitectura 5, embudo 6, credibilidad 4.
+
+**Ya hecho:** las tres fronteras del bloque 9 (Seguridad / Care / Diagnóstico),
+que eran el nudo más caro, y la puerta del catálogo.
+
+**Hecho el 2026-08-11 (punto 55, `/servicios` deja de ser Care disfrazada).** La
+página abre con las **seis cosas que se venden**, cada una con su precio, su
+forma de cobro y —lo que de verdad orienta— la situación del cliente en vez de
+la categoría del producto: «ya tienes sitio y no sabes si está abierto de par en
+par» encuentra a más gente que «auditoría de seguridad». Care baja de `<h1>` a
+una entrada más de la lista, y eBot y Seguridad por fin están donde alguien los
+busca. La lista sale de `catalogo.ts`, que **compone cada cifra de la fuente de
+su producto**: es la única pantalla donde se ven todos los precios juntos, y una
+lista comparativa con una cifra vieja hace más daño que no tener lista.
+
+Con eso se cierra también el desequilibrio del viejo punto 59: `/servicios` pasa
+de 563 palabras y **2** acciones a 935 y **10**. Sigue por debajo de las 16 de
+`/planes`, que es lo que se buscaba — ahora es una página desde la que se puede
+llegar a algo.
+
+**Lo que queda, por orden de lo que rinde:**
+
+
+**Hecho el 2026-08-11 (puntos 56, 57 y 58).** La portada baja de **17 acciones a
+11** y por fin nombra eBot y Seguridad, en un bloque propio («No solo hacemos
+webs») colocado después de los planes: primero lo que trae a la gente, y con el
+precio de su sitio ya en la cabeza, lo que puede sumarle.
+
+De dónde salieron las seis acciones que se fueron, porque ninguna era contenido:
+los tres pilares eran tres enlaces a la misma página que su propio «Ver todo» —
+cuatro clics para un destino, y un argumento no necesita ser un botón—; el
+«Ver planes en detalle» repetía lo que ya hacen las cuatro tarjetas de precio; y
+los cuatro dominios de la banda de prueba eran cuatro salidas a sitios ajenos en
+la primera pantalla, sin ninguna vuelta. Los dominios siguen escritos —se pueden
+teclear y comprobar, que es el argumento entero de esa banda— pero la puerta para
+abrirlos es ahora `/proyectos`, donde cada ficha ya tiene su regreso.
+
+**La acción principal de la portada pasa a ser cotizar** en vez de «Ver planes».
+Las dos llevan al precio por caminos distintos: `/planes` enseña cuatro cifras y
+deja a la persona decidiendo sola; el cotizador le da SU cifra en cuatro
+respuestas y termina en un mensaje redactado. Es el camino que mejor convierte
+(bloque 6) y la portada no lo ofrecía ni una vez. **Es una propuesta comercial
+mía y se revierte en una línea** si prefieres lo contrario.
+
+**Cada ficha de `/proyectos` tiene su vuelta** («¿Quieres uno así? →» al
+cotizador), dentro de la tarjeta y no en el cierre de la página: quien se iba en
+la primera tarjeta nunca llegaba al cierre. La página sube de 10 a 14 acciones y
+está bien — son dos destinos por ficha, su sitio y el nuestro, y antes solo
+existía el primero.
+
+**Un solo verbo en todo el sitio:** «Pedir» para contratar algo concreto,
+«Cotizar» para pedir precio a medida, «Hablar por WhatsApp» para escribir y
+«Ver» para navegar. Se cambiaron «Quiero eBot» → «Pedir eBot», «Quiero la
+revisión» → «Pedir la revisión», «Ver mi precio en 4 preguntas» → «Cotizar en
+cuatro preguntas» y «Escribir por WhatsApp» → «Hablar por WhatsApp». De paso cayó
+un voseo suelto en `/contacto` («Chateá con nosotros»), que era la única frase del
+sitio que no hablaba de tú.
+
+**Y lo que pesa más que los cinco juntos:** nada de esto se arregla programando.
+Un desconocido que ve $850 por adelantado no duda del diseño — duda de quién está
+detrás. Eso es el bloque 2 (quién eres, datos legales, testimonios, reversión de
+riesgo) y sigue entero sin hacer. **El sitio está más pulido que respaldado.**
 
 ---
 
