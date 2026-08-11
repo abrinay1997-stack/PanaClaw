@@ -86,8 +86,6 @@ a{color:inherit;text-decoration:none;}
   grid-template-columns:1fr auto 1fr;
   align-items:center;
   gap:14px;
-  /* Carril de la silueta: el <svg> del fondo se posiciona contra esta caja. */
-  position:relative;
   /* Padding simétrico a propósito: con el lado izquierdo más ancho, la caja de
      contenido se descentra y los enlaces dejan de caer sobre el eje del
      viewport. El aire de la marca se da con su propio padding. */
@@ -144,45 +142,6 @@ a{color:inherit;text-decoration:none;}
 }
 .floating-nav.is-scrolled .nav-crown{top:-1px;}
 
-/* ---------- LA SILUETA ---------- */
-/* El fondo del nav pasa a ser un <path> cuando hay enlaces visibles: es lo
-   único que puede tener un bulto sobre la pestaña activa con el contorno
-   continuo. El pill suelta fondo, borde y desenfoque —los tres pasan a la
-   silueta y a la capa recortada— o se pintarían dos veces. */
-/* Arrancan apagadas: el <path> lo escribe el script cuando ya puede medir dónde
-   cae cada enlace, y hasta entonces el fondo lo sigue poniendo el pill. En
-   móvil no se encienden nunca. */
-.nav-shape.is-off,.nav-blur.is-off{display:none;}
-.nav-shape,.nav-blur{
-  position:absolute;
-  left:0;
-  width:100%;
-  z-index:0;
-  pointer-events:none;
-}
-/* El trazo se dibuja centrado sobre la línea, así que medio píxel cae fuera de
-   la caja del <svg>. */
-.nav-shape{overflow:visible;}
-/* El desenfoque va recortado con la misma silueta que el borde: sin el recorte,
-   el cristal terminaba en el borde recto del pill y dejaba una costura dentro
-   del bulto. */
-.nav-blur{
-  backdrop-filter:blur(26px) saturate(150%);
-  -webkit-backdrop-filter:blur(26px) saturate(150%);
-  clip-path:url(#nav-silueta);
-  -webkit-clip-path:url(#nav-silueta);
-}
-.nav-shape path{
-  fill:rgba(9,1,1,.88);
-  stroke:rgba(255,255,255,.10);
-  stroke-width:1;
-  transition:fill .28s ease;
-}
-/* El contenido, por encima del fondo. */
-.nav-pill > .brand,
-.nav-pill > nav,
-.nav-pill > .nav-cta,
-.nav-pill > .nav-toggle{position:relative;z-index:1;}
 .brand{
   /* Alineación al centro (no a la baseline): el logo no tiene línea de base y
      con `baseline` se hundía respecto al texto. `gap` es el aire entre el
@@ -209,6 +168,13 @@ a{color:inherit;text-decoration:none;}
   transition:font-size .28s ease;
 }
 .brand .dot{color:var(--flash-orange);}
+/* Blanco sobre el naranja, y negro cuando el botón se pone blanco (que es como
+   el nav dice "ya estás en el cotizador").
+   El contraste del blanco sobre #FF5100 es 3.1:1 y AA pide 4.5:1 a este cuerpo
+   de letra — queda anotado y es una decisión de marca tomada a sabiendas, no un
+   descuido. Para cumplirlo con blanco haría falta bajar el naranja del botón a
+   ~#D64200, y eso ya es tocar el acento de la marca. El estado activo sí cumple
+   de sobra: negro sobre blanco. */
 .nav-cta{
   display:inline-flex;
   align-items:center;
@@ -216,17 +182,17 @@ a{color:inherit;text-decoration:none;}
   padding:11px 22px;
   border-radius:999px;
   background:var(--flash-orange);
-  color:var(--deep-black);
+  color:var(--soft-white);
   font-size:13px;
   font-weight:600;
   letter-spacing:.06em;
   text-transform:uppercase;
   white-space:nowrap;
-  transition:background .2s, transform .2s, box-shadow .25s, padding .28s ease, font-size .28s ease;
+  transition:background .2s, color .2s, transform .2s, box-shadow .25s, padding .28s ease, font-size .28s ease;
   flex-shrink:0;
 }
 .nav-cta:hover{background:#ff6a1a;transform:translateY(-1px);box-shadow:0 6px 18px rgba(255,81,0,.35);}
-.nav-cta[aria-current="page"]{background:var(--soft-white);}
+.nav-cta[aria-current="page"]{background:var(--soft-white);color:var(--deep-black);}
 
 /* Toggle móvil: oculto por defecto */
 .nav-toggle{
@@ -271,35 +237,8 @@ a{color:inherit;text-decoration:none;}
 .floating-nav.is-scrolled .nav-links a{padding:8px 13px;}
 .floating-nav.is-scrolled .nav-cta{padding:9px 18px;font-size:12px;}
 
-/* Van DESPUÉS del bloque de `.is-scrolled` a propósito: `.floating-nav.is-scrolled
-   .nav-pill` y `.floating-nav.has-shape .nav-pill` valen exactamente lo mismo,
-   así que quien gana es quien va último. */
-.floating-nav.has-shape .nav-pill,
-.floating-nav.is-scrolled.has-shape .nav-pill{
-  background:transparent;
-  border-color:transparent;
-  /* El desenfoque pasa a la capa recortada: dejándolo también aquí, el bulto
-     seguiría teniendo su propio borde recto de cristal por dentro. */
-  backdrop-filter:none;
-  -webkit-backdrop-filter:none;
-  /* La sombra proyectada se queda (a 48px de difuminado nadie ve que sigue el
-     rectángulo y no el bulto); el brillo interior se va, porque dibujaba una
-     línea recta cruzando justo por la base del bulto. */
-  box-shadow:0 14px 48px rgba(0,0,0,.55);
-}
-.floating-nav.is-scrolled .nav-shape path{fill:rgba(9,1,1,.93);}
-/* Encogido, el nav se pega a 10px del borde y el bulto (12px) se salía de la
-   pantalla por arriba: la pestaña activa se quedaba sin resalte justo al hacer
-   scroll, que es cuando más se mira la barra. Cuatro píxeles más abajo lo
-   devuelven entero sin tocar el gesto de encoger, que sigue viniendo del ancho
-   y de los paddings. */
-.floating-nav.is-scrolled.has-shape{top:14px;}
-/* Con el bulto encima, el fondo del enlace activo sobra: dos señales para la
-   misma cosa, y la de dentro le quita fuerza a la de fuera. */
-.floating-nav.has-shape .nav-links a[aria-current="page"]{background:transparent;}
-
 @media(prefers-reduced-motion:reduce){
-  .floating-nav,.nav-pill,.brand,.nav-links a,.nav-cta,.nav-crown,.nav-shape path{transition:none;}
+  .floating-nav,.nav-pill,.brand,.nav-links a,.nav-cta,.nav-crown{transition:none;}
 }
 
 /* ---------- HERO ---------- */

@@ -558,24 +558,29 @@ respuesta ante incidente.
 | 54 | **El precio de Web Blindada no se ha revisado después de perder el mantenimiento.** Sigue en $70–$120/mes, que era el precio cuando incluía actualizaciones, uptime y soporte. Hoy lo que añade sobre Web Protegida es revisión mensual, vigilancia de cambios y respuesta ante incidente. **Decisión tuya:** o el precio baja, o el plan gana algo más. | `[tuyo]` |
 | 49 | **Los precios, el alcance y los plazos de seguridad son una propuesta mía, no una decisión tomada.** Las cifras salen del documento tal cual (en dólares en vez de euros) y «informe en 5 días» o «respuesta en 24–48 h» son promesas que tienes que poder cumplir un martes ocupado. Se revisan enteras en `src/data/seguridad.ts`. Es el mismo pendiente que el 46 tiene para eBot. | `[tuyo]` |
 
-**Hecho el 2026-08-11 (la barra dice dónde estás, y Planes va delante).** En el
+**Hecho el 2026-08-11 (Planes va delante, y el CTA cambia de color).** En el
 nav, **Planes** pasa por delante de Proyectos y lleva una corona. Estaba al
 revés con este argumento: quien duda del precio suele estar dudando de si
 sabemos hacerlo, así que la prueba tiene que llegar antes que la cifra. Sigue
 siendo verdad para quien lee la barra de izquierda a derecha, y casi nadie la
-lee así — a la barra se viene a buscar, y lo que se busca es el precio.
+lee así — a la barra se viene a buscar, y lo que se busca es el precio. La
+corona hace lo mismo con menos palabras: entre nueve enlaces del mismo tamaño no
+hay ninguno que llame, y este tiene que llamar.
 
-Y la pestaña activa ya no se marca con un fondo gris: **el propio contorno del
-nav se abomba sobre ella y se desliza a la siguiente** al cambiar de página. Es
-un solo `<path>` que dibuja la cápsula entera con el bulto dentro, porque dos
-elementos superpuestos dejan la costura a la vista justo en la unión. El
-desenfoque va en una capa aparte recortada con ese mismo contorno: `backdrop-filter`
-solo actúa sobre la caja de un elemento, así que dejándoselo al pill el cristal
-terminaba en línea recta cruzando el bulto por dentro. Lo de encogerse al hacer
-scroll no se ha tocado; solo baja 4 px menos que antes (14 en vez de 10), porque
-si no el bulto se salía de la pantalla por arriba. Las dos desviaciones que esto
-introduce respecto a las reglas 5 y 6 del proyecto están escritas en
-[`convenciones.md`](convenciones.md), no escondidas.
+El botón «Cotizar» pasa a llevar la letra **blanca** sobre el naranja, y negra
+solo cuando el botón se pone blanco (que es como el nav dice que ya estás en el
+cotizador). Queda anotado que el blanco sobre `#FF5100` da 3.1:1 y AA pide 4.5:1
+a ese cuerpo de letra: es una decisión de marca tomada a sabiendas. Cumplirlo con
+blanco exigiría bajar el naranja del botón a ~`#D64200`, o sea tocar el acento de
+la marca; el estado activo (negro sobre blanco) cumple de sobra.
+
+**Probado y descartado el 2026-08-11: el contorno del nav abombándose sobre la
+pestaña activa.** Estuvo hecho y funcionando —un solo `<path>` con la cápsula y
+el bulto dentro, el desenfoque en una capa recortada con ese mismo contorno, y el
+bulto persiguiendo la pestaña con suavizado exponencial— y se quitó entero
+porque no gustó cómo se veía. La marca de la pestaña activa vuelve a ser el fondo
+gris de siempre. Queda escrito para que no se vuelva a proponer como idea nueva:
+el problema no era técnico. Está en el historial de git si algún día se retoma.
 
 **Hecho el 2026-08-11 (los dos nombres, y el cotizador para quien ya tiene
 sitio).** Cierra el pendiente 52 y la mitad del 18.
