@@ -572,17 +572,30 @@ Notas de aquel repaso, para poder comparar la próxima vez: coherencia visual 9,
 claridad del texto 8, arquitectura 5, embudo 6, credibilidad 4.
 
 **Ya hecho:** las tres fronteras del bloque 9 (Seguridad / Care / Diagnóstico),
-que eran el nudo más caro.
+que eran el nudo más caro, y la puerta del catálogo.
+
+**Hecho el 2026-08-11 (punto 55, `/servicios` deja de ser Care disfrazada).** La
+página abre con las **seis cosas que se venden**, cada una con su precio, su
+forma de cobro y —lo que de verdad orienta— la situación del cliente en vez de
+la categoría del producto: «ya tienes sitio y no sabes si está abierto de par en
+par» encuentra a más gente que «auditoría de seguridad». Care baja de `<h1>` a
+una entrada más de la lista, y eBot y Seguridad por fin están donde alguien los
+busca. La lista sale de `catalogo.ts`, que **compone cada cifra de la fuente de
+su producto**: es la única pantalla donde se ven todos los precios juntos, y una
+lista comparativa con una cifra vieja hace más daño que no tener lista.
+
+Con eso se cierra también el desequilibrio del viejo punto 59: `/servicios` pasa
+de 563 palabras y **2** acciones a 935 y **10**. Sigue por debajo de las 16 de
+`/planes`, que es lo que se buscaba — ahora es una página desde la que se puede
+llegar a algo.
 
 **Lo que queda, por orden de lo que rinde:**
 
 | # | Pendiente | Quién |
 |---|---|---|
-| 55 | **`/servicios` es la página peor nombrada del sitio.** Su `<h1>` es «Tu sitio, cuidado todos los meses»: es la página de Care disfrazada de Servicios, y los dos servicios que sí lo son —eBot y Seguridad— ni siquiera están ahí. Convertirla en la puerta del catálogo: una línea por producto, con lo que resuelve, su precio de entrada y su enlace. Care baja a ser una sección. Es también la única forma de que exista **una** página donde se vea todo lo que cuesta algo; hoy hacen falta cinco. | `[código]` |
 | 56 | **La home son 17 acciones y 196 palabras.** Es un índice, no una portada: muchos botones y casi ningún argumento. Y es donde eBot y Seguridad **no aparecen** (el viejo punto 47), o sea que los dos productos que nadie viene buscando son invisibles justo donde cae el tráfico frío. Bajar a ~10 acciones metiendo esos dos y quitando las redundantes. | `[código]` |
 | 57 | **`/proyectos` echa al visitante y no lo devuelve.** Sus 10 acciones son enlaces a sitios de clientes; la prueba es fortísima («no te lo contamos, ábrelos») pero quien los abre no vuelve. Cada ficha necesita su vuelta. | `[código]` |
 | 58 | **Cuatro caminos compiten por el mismo clic.** El CTA del nav va al cotizador, el hero ofrece «Ver planes» y WhatsApp, el chat flota en todas las páginas y `/contacto` tiene formulario + «vía rápida» + enlace al cotizador. Regla a aplicar: **una acción principal por página**, las demás secundarias. De paso, un solo verbo — hoy conviven «Cotizar», «Ver planes», «Pedir» y «Quiero». | `[código]` |
-| 59 | **`/servicios` tiene 563 palabras y 2 acciones; `/planes` 609 y 16.** La página que argumenta casi no deja actuar y la que hace actuar casi no argumenta. Se equilibra al hacer el 55 y el 58. | `[código]` |
 
 **Y lo que pesa más que los cinco juntos:** nada de esto se arregla programando.
 Un desconocido que ve $850 por adelantado no duda del diseño — duda de quién está

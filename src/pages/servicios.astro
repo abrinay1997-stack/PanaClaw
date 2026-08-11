@@ -7,29 +7,89 @@ import { services } from '../data/services';
 import { carePlans, careNote } from '../data/care';
 import { diagnostico } from '../data/plans';
 import { seguridad, revision } from '../data/seguridad';
+import { catalogo } from '../data/catalogo';
 import { serviceVisuals } from '../data/images';
 import { routes } from '../data/links';
 
 /**
- * La página abre con Care y con el Diagnóstico, no con el discurso.
+ * La puerta del catálogo.
  *
- * Mismo criterio que en /planes: quien entra a "Servicios" viene a ver qué se
- * contrata y cuánto cuesta. Los tres pilares son el porqué, y el porqué se lee
- * después de lo que se compra, no antes.
+ * Hasta el 2026-08-11 esta página era Care disfrazada de Servicios: su `<h1>`
+ * decía «Tu sitio, cuidado todos los meses», o sea que quien pulsaba «Servicios»
+ * para saber qué hacemos aterrizaba en una suscripción mensual. Y los dos
+ * servicios que más falta hacía encontrar —eBot y Seguridad— ni siquiera
+ * estaban: tenían entrada propia en la barra y esta página los ignoraba.
+ *
+ * Ahora abre con las seis cosas que se venden, con su precio y su forma de
+ * cobro, y Care baja a ser una de ellas. La lista sale de `catalogo.ts`, que
+ * compone cada cifra de la fuente de su producto: esta es la única pantalla
+ * donde se ven todos los precios juntos, y una lista comparativa con una cifra
+ * vieja hace más daño que no tener lista.
+ *
+ * Los tres pilares siguen al final: son el porqué, y el porqué se lee después de
+ * lo que se compra, no antes.
  */
 ---
 
 <BaseLayout
   title="Servicios"
-  description="Mantenimiento mensual desde $35, diagnóstico de tu sitio actual por $49 y las tres razones por las que un sitio PanaClaw rinde distinto."
+  description="Todo lo que hacemos y lo que cuesta: sitios web desde $295, seguridad desde $80, eBot por $70, mantenimiento desde $35/mes y el diagnóstico de tu sitio actual por $49."
   activePath={routes.servicios}
 >
-  <!-- CARE: lo primero que se ve -->
+  <!-- EL CATÁLOGO: todo lo que se vende, en una pantalla -->
+  <section class="cat">
+    <div class="container">
+      <div class="cat-head">
+        <span class="eyebrow">Servicios</span>
+        <h1>Todo lo que hacemos. <span class="muted">Y lo que cuesta.</span></h1>
+        <p class="cat-lead">
+          Seis cosas, ni una más. Cada una con su precio publicado y su forma de cobro — porque
+          «desde $35» y «desde $35 al mes» no son lo mismo, y la mitad de las agencias solo te
+          dice la primera mitad.
+        </p>
+      </div>
+
+      <!--
+        Una fila por producto y la primera columna es «para quién», no el
+        nombre: casi nadie sabe cómo se llama lo que necesita, pero todo el
+        mundo sabe en qué situación está.
+      -->
+      <ul class="cat-list">
+        {catalogo.map((item) => (
+          <Reveal>
+            <li class="cat-item">
+              <a class="cat-link" href={item.href}>
+                <span class="cat-main">
+                  <span class="cat-name">{item.name}</span>
+                  <span class="cat-para">{item.paraQuien}</span>
+                  <span class="cat-desc">{item.desc}</span>
+                </span>
+                <span class="cat-money">
+                  <span class="cat-price">{item.price}</span>
+                  <span class="cat-cobro">{item.cobro}</span>
+                </span>
+                <span class="cat-arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          </Reveal>
+        ))}
+      </ul>
+
+      <Reveal>
+        <p class="cat-foot">
+          ¿No sabes cuál es lo tuyo? El <a href={routes.cotizador}>cotizador</a> te da un precio en
+          cuatro preguntas, sin dejar tus datos.
+        </p>
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- CARE -->
   <section class="care-lead" id="care">
     <div class="container">
       <div class="care-head">
-        <span class="eyebrow">Servicios · PanaClaw Care</span>
-        <h1>Tu sitio, <span class="muted">cuidado todos los meses.</span></h1>
+        <span class="eyebrow">PanaClaw Care</span>
+        <h2 class="care-title">Tu sitio, <span class="muted">cuidado todos los meses.</span></h2>
         <p class="care-lead-text">
           Care es opcional y tu sitio funciona sin él. Lo que decides no es si sigue en pie, sino
           quién se ocupa de que siga: las copias de seguridad, la vigilancia y los cambios del mes
@@ -134,14 +194,16 @@ import { routes } from '../data/links';
 
 <style>
   /* ---------- CARE ---------- */
-  .care-lead {
+  /* ---------- CATÁLOGO ---------- */
+  /* Sin hero: el nav flotante necesita su aire arriba, igual que en /planes. */
+  .cat {
     padding-top: 168px;
-    padding-bottom: 90px;
+    padding-bottom: 80px;
   }
-  .care-head {
-    margin-bottom: 54px;
+  .cat-head {
+    margin-bottom: 50px;
   }
-  .care-head h1 {
+  .cat-head h1 {
     font-size: clamp(38px, 5.6vw, 72px);
     font-weight: 600;
     line-height: 1;
@@ -149,7 +211,122 @@ import { routes } from '../data/links';
     text-transform: uppercase;
     max-width: 18ch;
   }
-  .care-head h1 .muted {
+  .cat-head h1 .muted {
+    color: var(--studio-gray);
+  }
+  .cat-lead {
+    margin-top: 22px;
+    max-width: 62ch;
+    font-size: 17px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.7;
+  }
+
+  .cat-list {
+    list-style: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  /* Toda la fila es el enlace: en una lista de seis, obligar a apuntar al
+     nombre convierte una decisión en puntería. */
+  .cat-link {
+    display: grid;
+    grid-template-columns: 1fr auto 28px;
+    align-items: center;
+    gap: 30px;
+    padding: 26px 8px 26px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: background 0.25s, padding-left 0.25s;
+  }
+  .cat-link:hover {
+    background: rgba(255, 81, 0, 0.05);
+    padding-left: 14px;
+  }
+  .cat-link:focus-visible {
+    outline: 2px solid var(--flash-orange);
+    outline-offset: -2px;
+  }
+  .cat-name {
+    display: block;
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  /* La situación del cliente, en naranja: es la línea por la que se reconoce a
+     sí mismo, y es lo que decide el clic. */
+  .cat-para {
+    display: block;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--flash-orange);
+    margin-bottom: 10px;
+  }
+  .cat-desc {
+    display: block;
+    max-width: 62ch;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.6;
+  }
+  .cat-money {
+    text-align: right;
+  }
+  .cat-price {
+    display: block;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+  /* Cómo se cobra, del mismo tamaño que una nota pero SIEMPRE presente: es la
+     mitad del precio que casi nadie publica. */
+  .cat-cobro {
+    display: block;
+    margin-top: 5px;
+    font-size: 12.5px;
+    font-weight: 300;
+    color: var(--studio-gray);
+  }
+  .cat-arrow {
+    font-size: 20px;
+    color: var(--studio-gray);
+    transition: transform 0.25s, color 0.25s;
+  }
+  .cat-link:hover .cat-arrow {
+    color: var(--flash-orange);
+    transform: translateX(4px);
+  }
+  .cat-foot {
+    margin-top: 34px;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--studio-gray);
+  }
+  .cat-foot a {
+    color: var(--flash-orange);
+  }
+
+  /* ---------- CARE ---------- */
+  .care-lead {
+    padding-top: 40px;
+    padding-bottom: 90px;
+    scroll-margin-top: 110px;
+  }
+  .care-head {
+    margin-bottom: 54px;
+  }
+  .care-title {
+    font-size: clamp(32px, 4.4vw, 56px);
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    max-width: 18ch;
+  }
+  .care-title .muted {
     color: var(--studio-gray);
   }
   .care-otro {
@@ -287,8 +464,28 @@ import { routes } from '../data/links';
   }
 
   @media (max-width: 900px) {
-    .care-lead {
+    .cat {
       padding-top: 140px;
+    }
+    /* El precio baja debajo del texto, no encoge: en una lista de compra, la
+       cifra apretada contra el borde en dos líneas es lo primero que deja de
+       leerse. La flecha se va — en un teléfono no hay hover que la explique. */
+    .cat-link {
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 24px 0;
+    }
+    .cat-link:hover {
+      padding-left: 0;
+    }
+    .cat-money {
+      text-align: left;
+    }
+    .cat-price {
+      font-size: 22px;
+    }
+    .cat-arrow {
+      display: none;
     }
     .diag-card {
       grid-template-columns: 1fr;
