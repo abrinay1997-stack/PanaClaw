@@ -439,7 +439,6 @@ Seguridad, y ya no depende de que nadie se acuerde:** la comprobación A2 de
 | # | Pendiente | Quién |
 |---|---|---|
 | 46 | **El alcance y el plazo de eBot son una propuesta mía, no una decisión tomada.** «Entrega en 48 horas», qué entra por los $70 y qué no (las cinco líneas de cada lista) salieron de lo que el producto hace, no de lo que tú te comprometes a hacer. Se revisan enteros en `src/data/ebot.ts`; una promesa que no puedas cumplir un martes ocupado es peor que no publicarla. | `[tuyo]` |
-| 47 | **eBot no aparece en la home.** Está en la barra, en el pie y en el chat, pero quien entra por la portada y no mira el menú no se entera de que existe. No se metió a propósito: la home ya tiene 17 acciones compitiendo y meter una decimoctava sin decidir qué sale es empeorar el punto 15. | `[código]` + `[tuyo]` |
 | 48 | **En un iPhone SE, la pastilla de eBot queda bajo el pliegue del propio chat.** El panel abierto solo deja ver la primera —le pasaba igual a las cuatro de antes, así que no lo trajo eBot—, y quien no desplaza dentro del chat solo ve «¿Cuánto cuesta un sitio?». Cabrían las cinco recortando el mensaje de bienvenida, que ocupa cuatro líneas en esa pantalla. Medido el 2026-08-09 con `medir:movil` (el panel entero entra y no se corta; lo que no entra es el contenido de su lista). | `[código]` |
 
 ## Bloque 9 — Seguridad web, el servicio para sitios ajenos
@@ -526,12 +525,69 @@ todos los anchos salieran colapsados, falla en vez de pasar en verde sin haber
 medido nada. El menú desplegable con nueve entradas mide 438 px y entra en un
 iPhone SE (568 px) sin recortarse.
 
+**Hecho el 2026-08-11 (las tres fronteras del catálogo).** El repaso de claridad
+encontró que Seguridad, Care y el Diagnóstico se leían como el mismo producto
+contado tres veces. Las fronteras están decididas y ahora se publican con las
+**mismas palabras** en `/seguridad`, en `/servicios` y en lo que responde el
+chat, compuestas de `seguridad.fronteras` y no reescritas en cada sitio:
+
+- **Seguridad no es Care.** Care mantiene la infraestructura (dominio, copias,
+  actualizaciones, uptime, cambios); Seguridad es ciberseguridad (quién entra,
+  por dónde, y qué se hace para impedirlo). Ningún plan de seguridad ofrece ya
+  actualizaciones ni copias: el tercero las tenía y era exactamente lo que hacía
+  ilegible la diferencia. La tabla comparativa lo dice en una fila propia
+  («Mantenimiento, copias y actualizaciones → Eso es Care»).
+- **Seguridad no es el Diagnóstico.** El Diagnóstico de $49 mira el negocio; la
+  Revisión mira la seguridad. Se parecen en la forma —los dos son «te revisamos
+  el sitio»— y en nada más.
+- **La Revisión no va incluida en ningún plan mensual, y es obligatoria.** Se
+  paga siempre y aparte, y hay que pasar por ella antes de contratar un mensual.
+  Regalarla dentro del plan significa revisar gratis a quien luego no contrata;
+  proteger sin revisar es proteger a ciegas. Las tarjetas mensuales llevan el
+  requisito debajo del precio, no en la letra pequeña.
+
+Con eso, el tercer plan pasa a llamarse **Web Blindada** (antes «Web Protegida
+Total»): dos nombres que se distinguían en una palabra, y el que más prometía
+—«Total»— añadía mantenimiento, o sea lo que ya no vende. Ahora añade lo que sí
+es suyo: revisión mensual en vez de trimestral, vigilancia de cambios y
+respuesta ante incidente.
+
 | # | Pendiente | Quién |
 |---|---|---|
+| 54 | **El precio de Web Blindada no se ha revisado después de perder el mantenimiento.** Sigue en $70–$120/mes, que era el precio cuando incluía actualizaciones, uptime y soporte. Hoy lo que añade sobre Web Protegida es revisión mensual, vigilancia de cambios y respuesta ante incidente. **Decisión tuya:** o el precio baja, o el plan gana algo más. | `[tuyo]` |
 | 49 | **Los precios, el alcance y los plazos de seguridad son una propuesta mía, no una decisión tomada.** Las cifras salen del documento tal cual (en dólares en vez de euros) y «informe en 5 días» o «respuesta en 24–48 h» son promesas que tienes que poder cumplir un martes ocupado. Se revisan enteras en `src/data/seguridad.ts`. Es el mismo pendiente que el 46 tiene para eBot. | `[tuyo]` |
-| 50 | **Web Protegida Total se pisa con Care Pro.** El tercer plan incluye mantenimiento, actualizaciones, vigilancia y soporte prioritario por $70–$120/mes; Care Pro cuesta $75/mes y hace casi lo mismo sobre un sitio nuestro. Hoy se sostiene con una distinción escrita —Care mantiene lo que construimos, Seguridad protege cualquier sitio— y con la nota que manda a escribirnos antes de contratar los dos. **Decisión tuya:** o se funden, o el tercer plan deja de ofrecer mantenimiento, o Care deja de ofrecer vigilancia. Es el mismo choque que eBot tuvo con «Respuestas automáticas con IA», y aquel se resolvió quitando uno de los dos. | `[tuyo]` |
 | 52 | **La revisión no tiene un camino de compra propio para tráfico frío.** Es la oferta más barata del catálogo después del Diagnóstico de $49 —y las dos se parecen mucho: las dos son «te decimos qué está mal por poco dinero»—. Hoy conviven sin explicar en qué se diferencian: una mira la velocidad y la otra la seguridad. Es el punto 13 visto desde aquí, y probablemente sean un solo producto con dos mitades. | `[tuyo]` |
-| 53 | **El chat no sabe recomendar entre Care y Seguridad más allá de un hecho.** Está escrito `seguridad-vs-care` y responde la pregunta directa, pero la comparación fina —«tengo WordPress y ustedes no lo hicieron, ¿qué contrato?»— depende de que se cierre el punto 50. | `[código]` |
+
+## Bloque 10 — El plan de claridad
+
+**De dónde sale (2026-08-11).** Un repaso del sitio entero —las diez páginas,
+mirando estructura, texto, acciones por página y el recorrido completo— dejó un
+diagnóstico incómodo y útil: *el catálogo creció más rápido que la arquitectura
+que tiene que ordenarlo.* Se vendían 18 cosas distintas, el desplegable de
+`/contacto` tenía 12 opciones y la barra 9 enlaces, en un sitio que sigue en beta,
+sin dominio propio y sin un solo testimonio. Lo que el visitante lee no es «estos
+saben lo que hacen», es «estos hacen de todo».
+
+Notas de aquel repaso, para poder comparar la próxima vez: coherencia visual 9,
+claridad del texto 8, arquitectura 5, embudo 6, credibilidad 4.
+
+**Ya hecho:** las tres fronteras del bloque 9 (Seguridad / Care / Diagnóstico),
+que eran el nudo más caro.
+
+**Lo que queda, por orden de lo que rinde:**
+
+| # | Pendiente | Quién |
+|---|---|---|
+| 55 | **`/servicios` es la página peor nombrada del sitio.** Su `<h1>` es «Tu sitio, cuidado todos los meses»: es la página de Care disfrazada de Servicios, y los dos servicios que sí lo son —eBot y Seguridad— ni siquiera están ahí. Convertirla en la puerta del catálogo: una línea por producto, con lo que resuelve, su precio de entrada y su enlace. Care baja a ser una sección. Es también la única forma de que exista **una** página donde se vea todo lo que cuesta algo; hoy hacen falta cinco. | `[código]` |
+| 56 | **La home son 17 acciones y 196 palabras.** Es un índice, no una portada: muchos botones y casi ningún argumento. Y es donde eBot y Seguridad **no aparecen** (el viejo punto 47), o sea que los dos productos que nadie viene buscando son invisibles justo donde cae el tráfico frío. Bajar a ~10 acciones metiendo esos dos y quitando las redundantes. | `[código]` |
+| 57 | **`/proyectos` echa al visitante y no lo devuelve.** Sus 10 acciones son enlaces a sitios de clientes; la prueba es fortísima («no te lo contamos, ábrelos») pero quien los abre no vuelve. Cada ficha necesita su vuelta. | `[código]` |
+| 58 | **Cuatro caminos compiten por el mismo clic.** El CTA del nav va al cotizador, el hero ofrece «Ver planes» y WhatsApp, el chat flota en todas las páginas y `/contacto` tiene formulario + «vía rápida» + enlace al cotizador. Regla a aplicar: **una acción principal por página**, las demás secundarias. De paso, un solo verbo — hoy conviven «Cotizar», «Ver planes», «Pedir» y «Quiero». | `[código]` |
+| 59 | **`/servicios` tiene 563 palabras y 2 acciones; `/planes` 609 y 16.** La página que argumenta casi no deja actuar y la que hace actuar casi no argumenta. Se equilibra al hacer el 55 y el 58. | `[código]` |
+
+**Y lo que pesa más que los cinco juntos:** nada de esto se arregla programando.
+Un desconocido que ve $850 por adelantado no duda del diseño — duda de quién está
+detrás. Eso es el bloque 2 (quién eres, datos legales, testimonios, reversión de
+riesgo) y sigue entero sin hacer. **El sitio está más pulido que respaldado.**
 
 ---
 

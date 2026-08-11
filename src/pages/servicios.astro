@@ -6,6 +6,7 @@ import CareCard from '../components/CareCard.astro';
 import { services } from '../data/services';
 import { carePlans, careNote } from '../data/care';
 import { diagnostico } from '../data/plans';
+import { seguridad, revision } from '../data/seguridad';
 import { serviceVisuals } from '../data/images';
 import { routes } from '../data/links';
 
@@ -56,11 +57,18 @@ import { routes } from '../data/links';
         insinuada: son dos servicios con dos precios y confundirlos termina en
         alguien pagando dos veces lo mismo.
       -->
+      <!--
+        La frontera, con las mismas palabras que usa /seguridad y que responde
+        el chat: se compone de `seguridad.fronteras`, no se reescribe aquí. Dos
+        productos mensuales que se cuentan distinto en cada página se leen como
+        el mismo producto contado mal.
+      -->
       <Reveal>
         <p class="care-otro">
-          ¿El sitio no lo hicimos nosotros? Care no lo cubre, pero
-          <a href={routes.seguridad}>Seguridad web</a> sí: lo revisamos, cerramos por donde podrían
-          entrar y lo dejamos vigilado, desde $80 la revisión.
+          {seguridad.fronteras.care} Son cosas distintas y puedes tener una sin la otra:
+          <a href={routes.seguridad}>Seguridad web</a> empieza en {revision.price} y no incluye
+          actualizaciones ni copias; Care no escanea vulnerabilidades ni pone un filtro contra
+          ataques.
         </p>
       </Reveal>
     </div>
@@ -75,6 +83,17 @@ import { routes } from '../data/links';
             <span class="eyebrow">¿Ya tienes sitio?</span>
             <h2>{diagnostico.name}</h2>
             <p>{diagnostico.desc}</p>
+            <!--
+              Los dos productos que empiezan por «te revisamos el sitio» se
+              distinguen aquí mismo, no en una FAQ: el que llega buscando una
+              revisión no sabe cuál de los dos quiere hasta que se le dice en
+              qué se diferencian.
+            -->
+            <p class="diag-frontera">
+              Mira tu negocio, no tu seguridad: por qué no vende y cómo hacer que convierta. Si lo
+              que te preocupa es que te lo tumben o te lo roben, eso es la
+              <a href={routes.seguridad}>{revision.name}</a> ({revision.price}).
+            </p>
             <a class="btn btn-primary" href={`${routes.contacto}?plan=${diagnostico.slug}`}>
               <span class="dot"></span> Pedir mi diagnóstico
             </a>
@@ -173,6 +192,20 @@ import { routes } from '../data/links';
     letter-spacing: -0.02em;
     line-height: 1.05;
     margin: 6px 0 16px;
+  }
+  /* Con `.diag-copy` delante a propósito: la regla `.diag-copy p` de abajo tiene
+     más especificidad y se comía el tamaño y el color de esta nota. Es la
+     trampa que `convenciones.md` documenta para `.container`. */
+  .diag-copy .diag-frontera {
+    margin-top: 14px;
+    max-width: 58ch;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.6;
+  }
+  .diag-copy .diag-frontera a {
+    color: var(--flash-orange);
   }
   .diag-copy p {
     max-width: 58ch;

@@ -41,9 +41,11 @@ import {
   seguridadFaq,
   seguridadContactHref,
   precioCompleto,
+  porQueRango,
   revision,
   protegida,
 } from '../data/seguridad';
+import { diagnostico } from '../data/plans';
 import { seguridadVisual } from '../data/images';
 import { routes } from '../data/links';
 import { site, waLink } from '../data/site';
@@ -206,6 +208,13 @@ const celda = (valor: boolean | string) =>
                 {plan.price}<span class="seg-suffix">{plan.suffix}</span>
               </div>
               <div class="delivery">{plan.kicker}</div>
+              <!--
+                El requisito va debajo del precio y no en la letra pequeña:
+                enterarse después de decidir de que hacía falta contratar otra
+                cosa primero es exactamente la sorpresa que el resto del sitio
+                promete no dar.
+              -->
+              {plan.requisito && <p class="seg-requisito">{plan.requisito}</p>}
               <p class="desc">{plan.desc}</p>
               <ul>
                 {plan.features.map((f) => <li>{f}</li>)}
@@ -218,12 +227,41 @@ const celda = (valor: boolean | string) =>
         ))}
       </div>
 
+      <!--
+        Las dos fronteras y el porqué del rango, aquí y no en la FAQ: los tres
+        son lo que se pregunta MIRANDO los precios, y contestarlos cuatro
+        pantallas más abajo es contestarlos después de decidir.
+      -->
+      <Reveal>
+        <div class="seg-limites">
+          <div class="seg-limite">
+            <span class="seg-limite-k">¿Por qué un rango y no un precio?</span>
+            <p>{porQueRango}</p>
+          </div>
+          <div class="seg-limite">
+            <span class="seg-limite-k">Esto no es mantenimiento</span>
+            <p>
+              {seguridad.fronteras.care} De eso se ocupa
+              <a href={`${routes.servicios}#care`}>Care</a>, y son cosas distintas: puedes tener
+              una sin la otra.
+            </p>
+          </div>
+          <div class="seg-limite">
+            <span class="seg-limite-k">Esto no es el Diagnóstico</span>
+            <p>
+              {seguridad.fronteras.diagnostico} El
+              <a href={`${routes.servicios}#diagnostico`}>Diagnóstico</a> cuesta
+              {' '}{diagnostico.price} y mira otra cosa.
+            </p>
+          </div>
+        </div>
+      </Reveal>
+
       <Reveal>
         <p class="seg-nota">
           ¿Tu sitio lo hicimos nosotros? Media lista de aquí no te hace falta —no llevamos
-          complementos que actualizar ni panel público por el que entrar— y te lo vamos a decir.
-          Si ya tienes <a href={`${routes.servicios}#care`}>un plan Care</a>, escríbenos antes de
-          contratar nada: te decimos qué te falta de verdad y qué estarías pagando dos veces.
+          complementos que actualizar ni panel público por el que entrar— y te lo vamos a decir
+          antes de cobrarte.
         </p>
       </Reveal>
     </div>
@@ -234,7 +272,7 @@ const celda = (valor: boolean | string) =>
     <div class="container">
       <Reveal>
         <span class="eyebrow">Qué lleva cada uno</span>
-        <h2 class="section-title">Las 14 cosas, <span class="muted">y en cuál entran.</span></h2>
+        <h2 class="section-title">Todo lo que miramos, <span class="muted">y en cuál entra.</span></h2>
       </Reveal>
 
       <!--
@@ -242,7 +280,13 @@ const celda = (valor: boolean | string) =>
         encoger la letra: una tabla de tres columnas comprimida a 390 px no se
         lee, se adivina. La primera columna se queda fija al desplazar, porque
         sin ella un "Sí" suelto no dice de qué es.
+
+        El aviso de deslizar sale SOLO en pantallas donde la tabla no cabe. Sin
+        él, la única señal de que hay dos columnas más era que el encabezado
+        quedaba cortado, y eso se lee como un fallo, no como una invitación:
+        quien no desliza cree que la revisión es toda la oferta.
       -->
+      <p class="seg-desliza" aria-hidden="true">Desliza para ver los tres planes →</p>
       <div class="seg-tabla-wrap" tabindex="0" role="region" aria-label="Comparativa de los tres planes">
         <table class="seg-table">
           <thead>
@@ -258,7 +302,7 @@ const celda = (valor: boolean | string) =>
           </thead>
           <tbody>
             {securityRows.map((row) => (
-              <tr>
+              <tr class:list={{ 'is-frontera': row.frontera }}>
                 <th scope="row">{row.label}</th>
                 {row.values.map((valor) => (
                   <td class:list={['seg-cell', { no: valor === false }]}>{celda(valor)}</td>
@@ -339,9 +383,33 @@ const celda = (valor: boolean | string) =>
         ))}
       </div>
 
+      <!--
+        Un cierre con acción, no un enlace de texto.
+
+        Quien llega hasta aquí ha bajado 7 000 px y es el lector más interesado
+        de la página; hasta ahora su única salida era subir a buscar un botón.
+        NO es el bloque «¿Empezamos?» de la regla 13 —ese vive solo en /proceso y
+        pide lo mismo con un titular genérico—: esto nombra el primer paso
+        concreto de este producto, que es siempre el mismo.
+      -->
+      <Reveal>
+        <div class="seg-cierre">
+          <div>
+            <h3>Empieza por saber cómo estás.</h3>
+            <p>
+              La revisión cuesta {revision.price} y se paga una vez. El informe es tuyo, contrates
+              después lo que contrates.
+            </p>
+          </div>
+          <a class="btn btn-primary" href={seguridadContactHref(revision.slug)}>
+            <span class="dot"></span> Pedir la revisión
+          </a>
+        </div>
+      </Reveal>
+
       <Reveal>
         <p class="seg-faq-foot">
-          ¿Vas a estrenar sitio y quieres esto desde el primer día? El
+          ¿Vas a estrenar sitio con nosotros y lo quieres desde el primer día? El
           <a href={routes.cotizador}>cotizador</a> lo suma: la revisión al entregar y
           {' '}{protegida.name} cada mes, con las dos cifras separadas y a la vista.
         </p>
@@ -477,6 +545,49 @@ const celda = (valor: boolean | string) =>
     color: var(--studio-gray);
     letter-spacing: 0;
   }
+  /* El requisito: en naranja y pegado al precio, no en gris al fondo de la
+     tarjeta. Es una condición de compra, no un detalle. */
+  .seg-requisito {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--soft-white);
+  }
+  .seg-requisito::before {
+    content: '↑ ';
+    color: var(--flash-orange);
+  }
+
+  /* Las tres respuestas que se hacen MIRANDO los precios. Van en tres columnas
+     justo bajo las tarjetas, sin caja: son texto de apoyo, no otra oferta. */
+  .seg-limites {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 40px;
+    padding-top: 34px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .seg-limite-k {
+    display: block;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--flash-orange);
+    margin-bottom: 10px;
+  }
+  .seg-limite p {
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.65;
+  }
+  .seg-limite a {
+    color: var(--soft-white);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
   .seg-nota {
     max-width: 68ch;
     margin-top: 34px;
@@ -490,6 +601,21 @@ const celda = (valor: boolean | string) =>
   }
 
   /* ---------- TABLA ---------- */
+  /* El aviso de deslizar solo existe donde la tabla no cabe: en escritorio
+     sobra sitio y decirlo sería ruido. El ancho del corte es el mismo
+     `min-width` de la tabla más el carril del contenedor. */
+  .seg-desliza {
+    display: none;
+    margin-bottom: 12px;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    color: var(--flash-orange);
+  }
+  @media (max-width: 820px) {
+    .seg-desliza {
+      display: block;
+    }
+  }
   .seg-tabla-wrap {
     overflow-x: auto;
     margin-top: 10px;
@@ -555,6 +681,15 @@ const celda = (valor: boolean | string) =>
   .seg-cell.no {
     color: #8a8a8a;
     font-weight: 300;
+  }
+  /* La fila que dice dónde termina el producto no compara nada: se separa con
+     una línea y se apaga, para que no se lea como una prestación más. */
+  .seg-table tbody tr.is-frontera th,
+  .seg-table tbody tr.is-frontera td {
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    color: var(--studio-gray);
+    font-weight: 300;
+    font-style: italic;
   }
 
   /* ---------- CÓMO SE HACE ---------- */
@@ -706,6 +841,32 @@ const celda = (valor: boolean | string) =>
     color: var(--studio-gray);
     line-height: 1.7;
   }
+  .seg-cierre {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 44px;
+    padding: 30px 32px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 81, 0, 0.35);
+    background: linear-gradient(120deg, rgba(255, 81, 0, 0.14), rgba(238, 0, 0, 0.05));
+  }
+  .seg-cierre h3 {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  .seg-cierre p {
+    max-width: 52ch;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--studio-gray);
+    line-height: 1.6;
+  }
+
   .seg-faq-foot {
     margin-top: 40px;
     max-width: 62ch;
@@ -726,7 +887,8 @@ const celda = (valor: boolean | string) =>
 
   @media (max-width: 1000px) {
     .seg-grid,
-    .seg-pasos {
+    .seg-pasos,
+    .seg-limites {
       grid-template-columns: repeat(2, 1fr);
     }
   }
@@ -738,9 +900,16 @@ const celda = (valor: boolean | string) =>
     }
     .seg-grid,
     .seg-pasos,
-    .seg-alcance-grid {
+    .seg-alcance-grid,
+    .seg-limites {
       grid-template-columns: 1fr;
       gap: 16px;
+    }
+    .seg-limites {
+      gap: 26px;
+    }
+    .seg-cierre {
+      padding: 26px 22px;
     }
     .seg-alcance-grid {
       gap: 40px;
