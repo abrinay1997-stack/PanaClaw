@@ -24,8 +24,15 @@ export const contact = {
    * «WhatsApp» sin dígitos. Decisión de marca — el número solo aparece
    * cuando el usuario ya está adentro del chat, no como reclamo público.
    */
-  whatsapp: '+507 6227 3096',
-  whatsappRaw: '50762273096',
+  /*
+   * Cambiado el 2026-08-11. Las dos formas del mismo número: la legible es la
+   * que se emite en el JSON-LD y la que ve el chat; la cruda es la que compone
+   * cada `wa.me`, y va SIN símbolos —ni +, ni espacios, ni paréntesis— porque
+   * WhatsApp los rechaza y el enlace fallaría en silencio, abriendo una
+   * conversación con nadie.
+   */
+  whatsapp: '+1 (940) 604-6565',
+  whatsappRaw: '19406046565',
   whatsappDefaultMsg: 'Hola PanaClaw, quiero cotizar mi sitio web',
   horario: 'Lun–Vie · 9:00 – 18:00',
   timezone: 'Hora de Panamá (GMT-5)',
