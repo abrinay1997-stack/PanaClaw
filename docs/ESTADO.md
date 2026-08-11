@@ -91,7 +91,8 @@ npm i -D playwright && npx playwright install chromium
 npm run build && npm run medir:movil && npm run medir:cotizador
 ```
 
-`npm run medir:movil` vigila el navbar, el espacio muerto tras el footer, el
+`npm run medir:movil` vigila el navbar —dónde está y, desde el 2026-08-11,
+también si su contenido cabe dentro—, el espacio muerto tras el footer, el
 alto del footer en móvil y que el panel del chat no se corte — los cuatro
 nacieron de fallos reales. Las medidas de la tabla de arriba (altos, acciones,
 encabezados, animaciones) salen de `document.getAnimations()` y
@@ -429,10 +430,11 @@ primer lugar, igual que «¿pueden contestar mis mensajes de Instagram?».
 **El navbar se desbordaba y nadie lo sabía.** Con siete enlaces el pill ya se
 salía 18 px a 901 px de ancho; con el octavo el desborde llegó a 77 px en toda
 la franja 901–999 px. No se veía porque `body{overflow-x:hidden}` se traga el
-sobrante y `medir:movil` mide el centrado del pill, no lo que pasa dentro. El nav
-colapsa ahora a 1000 px en vez de a 900. **Si algún día entra un noveno enlace,
-hay que volver a medir esa franja** — y la comprobación todavía no está en
-`medir:movil`, así que hoy depende de que alguien se acuerde.
+sobrante y `medir:movil` medía el centrado del pill, no lo que pasa dentro. El
+nav colapsó entonces a 1000 px en vez de a 900, y quedó escrito que un noveno
+enlace obligaría a medir esa franja otra vez a mano. **Pasó el 2026-08-11 con
+Seguridad, y ya no depende de que nadie se acuerde:** la comprobación A2 de
+`medir:movil` mide lo que pasa dentro del pill.
 
 | # | Pendiente | Quién |
 |---|---|---|
@@ -506,11 +508,28 @@ columna de Servicios subió el footer a 1 337 px en un iPhone SE, con el tope en
 quitando un enlace: el objetivo táctil queda en 29 px, por encima de los 24 que
 pide la norma, y el pie baja a 1 249. `medir:movil` en verde.
 
+**Hecho el 2026-08-11 (entra en la barra, y el nav deja de vigilarse a mano).**
+Seguridad es el noveno enlace del nav, pegado a eBot: los dos son productos que
+no son una web, y quien llega buscando «sitios» no los encuentra si están al
+final. Con nueve enlaces el pill se desbordaba **75 px entre 1001 y 1079 px** —
+otra vez invisible, porque `body{overflow-x:hidden}` se lo traga— así que el nav
+colapsa ahora a **1100 px** en vez de a 1000. Medido enlace a enlace en 17
+anchos de 1000 a 1920: el contenido deja de desbordarse a partir de 1080 con los
+mismos 14 px de holgura que el sitio ya aceptaba; el colapso se pone 20 px por
+encima para no vivir pegado al límite.
+
+Y lo que importa más que el arreglo: **la comprobación A2 de `medir:movil` ya
+mide lo que pasa DENTRO del pill**, que es lo que las tres veces anteriores no
+miraba nadie. Verificada rompiéndola —devolver el colapso a 1000 px la tumba en
+1001, 1024 y 1060— y con un cepo propio para que no se vuelva un adorno: si
+todos los anchos salieran colapsados, falla en vez de pasar en verde sin haber
+medido nada. El menú desplegable con nueve entradas mide 438 px y entra en un
+iPhone SE (568 px) sin recortarse.
+
 | # | Pendiente | Quién |
 |---|---|---|
 | 49 | **Los precios, el alcance y los plazos de seguridad son una propuesta mía, no una decisión tomada.** Las cifras salen del documento tal cual (en dólares en vez de euros) y «informe en 5 días» o «respuesta en 24–48 h» son promesas que tienes que poder cumplir un martes ocupado. Se revisan enteras en `src/data/seguridad.ts`. Es el mismo pendiente que el 46 tiene para eBot. | `[tuyo]` |
 | 50 | **Web Protegida Total se pisa con Care Pro.** El tercer plan incluye mantenimiento, actualizaciones, vigilancia y soporte prioritario por $70–$120/mes; Care Pro cuesta $75/mes y hace casi lo mismo sobre un sitio nuestro. Hoy se sostiene con una distinción escrita —Care mantiene lo que construimos, Seguridad protege cualquier sitio— y con la nota que manda a escribirnos antes de contratar los dos. **Decisión tuya:** o se funden, o el tercer plan deja de ofrecer mantenimiento, o Care deja de ofrecer vigilancia. Es el mismo choque que eBot tuvo con «Respuestas automáticas con IA», y aquel se resolvió quitando uno de los dos. | `[tuyo]` |
-| 51 | **Seguridad no está en la barra de navegación.** Está en el pie, en `/planes`, en `/servicios`, en el cotizador y en el chat, pero no en el nav. No se metió porque sería el **noveno** enlace y el bloque 8 dejó escrito que la franja de 1000 a 1100 px hay que volver a medirla con cada enlace nuevo — y esa comprobación todavía no está en `medir:movil`, así que hoy depende de que alguien se acuerde. Meterlo obliga a medir esa franja o a decidir qué sale. | `[código]` + `[tuyo]` |
 | 52 | **La revisión no tiene un camino de compra propio para tráfico frío.** Es la oferta más barata del catálogo después del Diagnóstico de $49 —y las dos se parecen mucho: las dos son «te decimos qué está mal por poco dinero»—. Hoy conviven sin explicar en qué se diferencian: una mira la velocidad y la otra la seguridad. Es el punto 13 visto desde aquí, y probablemente sean un solo producto con dos mitades. | `[tuyo]` |
 | 53 | **El chat no sabe recomendar entre Care y Seguridad más allá de un hecho.** Está escrito `seguridad-vs-care` y responde la pregunta directa, pero la comparación fina —«tengo WordPress y ustedes no lo hicieron, ¿qué contrato?»— depende de que se cierre el punto 50. | `[código]` |
 

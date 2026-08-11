@@ -37,8 +37,11 @@ cuando no lo encuentra degrada solo a WhatsApp (ver [`docs/chat.md`](docs/chat.m
 ### Las auditorías de navegador
 
 `npm run medir:movil` comprueba sobre el sitio ya construido que el navbar quede
-centrado, que ninguna página deje espacio muerto tras el footer, que el footer no
-se coma media pantalla de más y que el panel del chat no se corte. Nació de fallos
+centrado **y que su contenido quepa dentro del pill** —son dos cosas distintas, y
+la diferencia costó tres desbordes: el pill puede estar centrado al píxel
+mientras sus enlaces se comprimen contra el CTA—, que ninguna página deje espacio
+muerto tras el footer, que el footer no se coma media pantalla de más y que el
+panel del chat no se corte. Nació de fallos
 reales, y cada comprobación se verificó reintroduciendo el bug para confirmar que
 salta. Sale con código 1 si algo se pasa de presupuesto.
 

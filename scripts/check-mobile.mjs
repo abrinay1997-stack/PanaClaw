@@ -7,6 +7,9 @@
  *
  *   A. El navbar queda centrado de verdad (márgenes iguales a izquierda y
  *      derecha) y no se sale de la pantalla.
+ *   A2. El contenido del navbar cabe DENTRO de su pill. Es otra cosa que la A,
+ *      y la diferencia costó tres desbordes: el pill puede estar centrado al
+ *      píxel mientras sus enlaces se comprimen contra el CTA.
  *   B. Ninguna página tiene espacio muerto después del footer ni desborda
  *      horizontalmente.
  *   C. El footer no se come más pantallas de la cuenta.
@@ -49,9 +52,25 @@ const BUDGET = {
    * que está: un enlace de más no se ve en un escritorio de 1440px.
    */
   footerMaxPx: 1300,
+  /*
+   * Aire mínimo entre la marca y el primer enlace, y entre el último y el CTA.
+   * 8px y no 14 —que es lo que hoy mide el peor caso— porque este cepo vigila
+   * que el nav no se COMPRIMA, no el gusto tipográfico: apretarlo a 8 sería
+   * feo, pasar de ahí es que ya no cabe.
+   */
+  navInnerMinGapPx: 8,
 };
 
 const NAV_WIDTHS = [320, 360, 390, 430, 768, 900, 1024, 1120, 1280, 1440, 1920];
+
+/*
+ * Anchos de A2: la franja donde el nav horizontal acaba de aparecer, que es
+ * donde se rompe siempre. 1101 es el primer ancho en el que se despliega hoy;
+ * los de abajo salen colapsados y se saltan solos, y siguen en la lista para
+ * que el día que el colapso vuelva a bajar, esos anchos se midan sin que nadie
+ * tenga que acordarse de añadirlos.
+ */
+const NAV_INNER_WIDTHS = [1001, 1024, 1060, 1080, 1101, 1140, 1180, 1280, 1440];
 const PHONES = ['iPhone SE', 'iPhone 13', 'iPhone 14 Pro Max'];
 
 /* ------------------------------------------------------------------ *
@@ -86,6 +105,76 @@ async function checkNav(browser, base) {
         ` ${m.width.toFixed(0).padStart(5)} │ ${mark(ok)}`
     );
   }
+  await page.context().close();
+}
+
+/**
+ * A2 · Lo que pasa DENTRO del pill.
+ *
+ * La comprobación A mide dónde está el pill; esta mide si su contenido cabe.
+ * Son dos cosas distintas y la diferencia costó dos incidentes: con siete
+ * enlaces el pill se desbordaba 18px a 901px, con el octavo llegó a 77px en toda
+ * la franja 901–999, y con el noveno a 75px entre 1001 y 1079 — y las tres veces
+ * A pasó en verde, porque el pill seguía perfectamente centrado mientras sus
+ * enlaces se comprimían contra el CTA. `body{overflow-x:hidden}` se traga el
+ * sobrante, así que tampoco se ve mirando la página.
+ *
+ * Los anchos son los de la franja donde el nav horizontal acaba de aparecer,
+ * que es donde siempre se rompe: por encima sobra sitio y por debajo manda el
+ * desplegable. Las medidas colapsadas se saltan, no se dan por buenas.
+ */
+async function checkNavInterior(browser, base) {
+  console.log('\nA2. El contenido cabe dentro del pill (nav horizontal)');
+  console.log('   ancho │ desborde │ holgura izq  der │');
+  const page = await (await browser.newContext()).newPage();
+  let medidos = 0;
+  for (const w of NAV_INNER_WIDTHS) {
+    await page.setViewportSize({ width: w, height: 800 });
+    await page.goto(`${base}/`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(120);
+    const m = await page.evaluate(() => {
+      const pill = document.querySelector('.nav-pill');
+      const links = [...pill.querySelectorAll('.nav-links a')];
+      const brand = pill.querySelector('.brand');
+      const cta = pill.querySelector('.nav-cta');
+      if (getComputedStyle(pill.querySelector('nav')).display === 'none' || !links.length) {
+        return { colapsado: true };
+      }
+      const primero = links[0].getBoundingClientRect();
+      const ultimo = links[links.length - 1].getBoundingClientRect();
+      return {
+        colapsado: false,
+        desborde: Math.round(pill.scrollWidth - pill.getBoundingClientRect().width),
+        izq: Math.round(primero.left - brand.getBoundingClientRect().right),
+        der: cta ? Math.round(cta.getBoundingClientRect().left - ultimo.right) : 999,
+      };
+    });
+
+    if (m.colapsado) {
+      console.log(`   ${String(w).padStart(5)} │ colapsado — manda el desplegable`);
+      continue;
+    }
+    medidos++;
+    const holgura = Math.min(m.izq, m.der);
+    const ok = m.desborde <= 0 && holgura >= BUDGET.navInnerMinGapPx;
+    if (!ok)
+      fail(
+        `el nav se sale de su pill a ${w}px (${m.desborde}px de sobra, holgura mínima ${holgura}px): ` +
+          'sobra un enlace o falta subir el ancho al que colapsa'
+      );
+    console.log(
+      `   ${String(w).padStart(5)} │ ${String(m.desborde).padStart(8)} │ ${String(m.izq).padStart(11)} ${String(m.der).padStart(4)} │ ${mark(ok)}`
+    );
+  }
+
+  /*
+   * Si TODOS los anchos salen colapsados, esta comprobación no ha comprobado
+   * nada y no puede pasar en verde: sería exactamente el adorno que este
+   * proyecto ya se comió dos veces.
+   */
+  if (medidos === 0)
+    fail('A2 no midió ni un ancho con el nav horizontal desplegado: la comprobación no vigila nada');
+
   await page.context().close();
 }
 
@@ -278,6 +367,7 @@ async function main() {
   const browser = await chromium.launch();
   try {
     await checkNav(browser, base);
+    await checkNavInterior(browser, base);
     await checkPages(browser, base, pages);
     await checkFooter(browser, base);
     await checkChat(browser, base);
