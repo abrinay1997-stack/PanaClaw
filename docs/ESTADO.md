@@ -591,11 +591,41 @@ llegar a algo.
 
 **Lo que queda, por orden de lo que rinde:**
 
-| # | Pendiente | Quién |
-|---|---|---|
-| 56 | **La home son 17 acciones y 196 palabras.** Es un índice, no una portada: muchos botones y casi ningún argumento. Y es donde eBot y Seguridad **no aparecen** (el viejo punto 47), o sea que los dos productos que nadie viene buscando son invisibles justo donde cae el tráfico frío. Bajar a ~10 acciones metiendo esos dos y quitando las redundantes. | `[código]` |
-| 57 | **`/proyectos` echa al visitante y no lo devuelve.** Sus 10 acciones son enlaces a sitios de clientes; la prueba es fortísima («no te lo contamos, ábrelos») pero quien los abre no vuelve. Cada ficha necesita su vuelta. | `[código]` |
-| 58 | **Cuatro caminos compiten por el mismo clic.** El CTA del nav va al cotizador, el hero ofrece «Ver planes» y WhatsApp, el chat flota en todas las páginas y `/contacto` tiene formulario + «vía rápida» + enlace al cotizador. Regla a aplicar: **una acción principal por página**, las demás secundarias. De paso, un solo verbo — hoy conviven «Cotizar», «Ver planes», «Pedir» y «Quiero». | `[código]` |
+
+**Hecho el 2026-08-11 (puntos 56, 57 y 58).** La portada baja de **17 acciones a
+11** y por fin nombra eBot y Seguridad, en un bloque propio («No solo hacemos
+webs») colocado después de los planes: primero lo que trae a la gente, y con el
+precio de su sitio ya en la cabeza, lo que puede sumarle.
+
+De dónde salieron las seis acciones que se fueron, porque ninguna era contenido:
+los tres pilares eran tres enlaces a la misma página que su propio «Ver todo» —
+cuatro clics para un destino, y un argumento no necesita ser un botón—; el
+«Ver planes en detalle» repetía lo que ya hacen las cuatro tarjetas de precio; y
+los cuatro dominios de la banda de prueba eran cuatro salidas a sitios ajenos en
+la primera pantalla, sin ninguna vuelta. Los dominios siguen escritos —se pueden
+teclear y comprobar, que es el argumento entero de esa banda— pero la puerta para
+abrirlos es ahora `/proyectos`, donde cada ficha ya tiene su regreso.
+
+**La acción principal de la portada pasa a ser cotizar** en vez de «Ver planes».
+Las dos llevan al precio por caminos distintos: `/planes` enseña cuatro cifras y
+deja a la persona decidiendo sola; el cotizador le da SU cifra en cuatro
+respuestas y termina en un mensaje redactado. Es el camino que mejor convierte
+(bloque 6) y la portada no lo ofrecía ni una vez. **Es una propuesta comercial
+mía y se revierte en una línea** si prefieres lo contrario.
+
+**Cada ficha de `/proyectos` tiene su vuelta** («¿Quieres uno así? →» al
+cotizador), dentro de la tarjeta y no en el cierre de la página: quien se iba en
+la primera tarjeta nunca llegaba al cierre. La página sube de 10 a 14 acciones y
+está bien — son dos destinos por ficha, su sitio y el nuestro, y antes solo
+existía el primero.
+
+**Un solo verbo en todo el sitio:** «Pedir» para contratar algo concreto,
+«Cotizar» para pedir precio a medida, «Hablar por WhatsApp» para escribir y
+«Ver» para navegar. Se cambiaron «Quiero eBot» → «Pedir eBot», «Quiero la
+revisión» → «Pedir la revisión», «Ver mi precio en 4 preguntas» → «Cotizar en
+cuatro preguntas» y «Escribir por WhatsApp» → «Hablar por WhatsApp». De paso cayó
+un voseo suelto en `/contacto` («Chateá con nosotros»), que era la única frase del
+sitio que no hablaba de tú.
 
 **Y lo que pesa más que los cinco juntos:** nada de esto se arregla programando.
 Un desconocido que ve $850 por adelantado no duda del diseño — duda de quién está
