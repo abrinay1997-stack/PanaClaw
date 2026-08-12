@@ -30,6 +30,43 @@ import { routes } from './links';
  */
 const PRECIO = '$499';
 
+/**
+ * El plazo, y por qué es un rango.
+ *
+ * Estuvo en «48 horas» y era una promesa que no dependía solo de nosotros. Lo
+ * que tarda de verdad no lo decide el montaje —eso es lo mismo en todos— sino
+ * el negocio: cuánto material tiene ya escrito, cuántos de los cuatro canales
+ * conecta y si entre ellos está WhatsApp, que pasa por Meta. Un rango con la
+ * razón al lado se cumple; una cifra redonda sin ella solo se incumple.
+ */
+const ENTREGA = '3–5 días';
+
+/**
+ * Cuánto dura el periodo de ajustes, y por qué es un plazo y no un número de
+ * rondas.
+ *
+ * Los planes web cuentan rondas (Launch 2, Corporate 3, Commerce 4) porque una
+ * web se revisa de una sentada: se mira, se apunta todo y se manda. Un bot no —
+ * sus fallos aparecen de uno en uno, cuando un cliente real pregunta algo que
+ * nadie previó. Obligar a juntarlos en dos tandas sería pedirle al cliente que
+ * adivine hoy lo que va a descubrir el jueves.
+ *
+ * Y esto tiene que estar PUBLICADO. A $70 nadie preguntaba qué pasaba después
+ * de entregar; a $499 es la primera pregunta, y el silencio en esa pregunta
+ * siempre se resuelve a favor de quien pagó — «yo pensé que estaba incluido».
+ */
+const AJUSTES = 'catorce días';
+
+/**
+ * El tope de la carga inicial.
+ *
+ * Era la única línea del catálogo sin ningún límite: «le cargamos lo que tu
+ * negocio sabe», y ahí cabe tanto una página de preguntas frecuentes como un
+ * manual de ochenta. Los dos casos no cuestan lo mismo, así que o hay un número
+ * o la diferencia se la come quien monta.
+ */
+const TOPE_PREGUNTAS = 30;
+
 export const ebot = {
   /** Nombre de producto. Se escribe así en todas partes: e minúscula y B alta. */
   name: 'eBot',
@@ -40,7 +77,15 @@ export const ebot = {
    * justamente la diferencia contra el software de mensajería que se alquila.
    */
   price: PRECIO,
-  priceKicker: 'Pago único · Entrega en 48 horas',
+  priceKicker: `Pago único · Entrega en ${ENTREGA}`,
+  /** El plazo suelto, para quien lo necesite sin el «Pago único» delante. */
+  entrega: ENTREGA,
+  /**
+   * El periodo de ajustes. Lo publican la lista de alcance de `/ebot`, una de
+   * las preguntas y el apartado de revisiones de `/terminos`, que es donde el
+   * cliente va a buscarlo cuando haya una discusión.
+   */
+  ajustes: AJUSTES,
   /**
    * La frase de una línea. Se usa en el `<title>`, en la tarjeta social y en lo
    * que el chat responde: si cambia, cambia en los tres a la vez.
@@ -224,9 +269,10 @@ export const ebotCostos: EbotCosto[] = [
 export const ebotIncluye: string[] = [
   'Lo montamos en tu cuenta y te entregamos tu panel con tu contraseña',
   'Conectamos los canales que uses de los cuatro',
-  'Le cargamos lo que tu negocio sabe: precios, horarios, políticas y preguntas frecuentes',
+  `Le cargamos lo que tu negocio sabe: tus precios, horarios y políticas, y hasta ${TOPE_PREGUNTAS} preguntas frecuentes`,
   'Le damos la voz de tu negocio y le decimos cuándo callarse y avisarte',
   'Lo probamos contigo en vivo, con un mensaje real desde tu teléfono, antes de entregarlo',
+  `${AJUSTES[0]!.toUpperCase()}${AJUSTES.slice(1)} de ajustes desde que lo entregamos: lo que conteste mal, lo corregimos nosotros`,
 ];
 
 /**
@@ -237,6 +283,7 @@ export const ebotIncluye: string[] = [
 export const ebotNoIncluye: string[] = [
   'Las dos cuentas de arriba: se pagan a Cloudflare y a la empresa de IA, no a nosotros',
   'Escribir desde cero los documentos de tu negocio, si todavía no existen',
+  `Cargarle más material del de la carga inicial, o los cambios que pidas pasados los ${AJUSTES} de ajustes: se cotizan aparte`,
   'Atender las conversaciones a diario por ti — eso sigue siendo tuyo',
   'El trámite de verificación de WhatsApp con Meta, que solo tú puedes firmar',
   'Una página web: eBot atiende tus mensajes, no reemplaza tu sitio',
@@ -295,11 +342,11 @@ export const ebotFaq: EbotFaq[] = [
   },
   {
     q: '¿Y si contesta una barbaridad?',
-    a: 'Entras al panel y lo corriges: cada conversación queda guardada, y la pantalla de Mejoras te muestra justo lo que no supo responder para que se lo enseñes. También puedes apagarlo entero desde ahí en un clic, sin llamarnos.',
+    a: `Los primeros ${AJUSTES} lo corregimos nosotros: es lo que dura el periodo de ajustes, y está para eso — los fallos de un bot no salen todos el primer día, salen cuando un cliente real pregunta algo que nadie previó. Después lo haces tú desde el panel, que es donde queda guardada cada conversación: la pantalla de Mejoras te muestra justo lo que no supo responder para que se lo enseñes. Y puedes apagarlo entero desde ahí en un clic, sin llamarnos.`,
   },
   {
     q: '¿Cuánto tardo en tenerlo funcionando?',
-    a: '48 horas desde que nos das acceso a tus cuentas y el material de tu negocio. Telegram queda listo el mismo día; WhatsApp depende de que Meta apruebe tu número, y ese trámite tiene sus tiempos, que no dependen de nosotros.',
+    a: `Entre 3 y 5 días desde que nos das acceso a tus cuentas y el material de tu negocio. Dónde caigas dentro de ese rango depende de tu empresa y no del montaje: cuánto tienes ya escrito de precios, horarios y políticas, y cuántos de los cuatro canales conectas. Telegram queda listo el mismo día; WhatsApp depende de que Meta apruebe tu número, y ese trámite tiene sus tiempos, que no dependen de nosotros — si tu caso se atasca ahí, te lo decimos el primer día y no el quinto.`,
   },
   {
     q: 'No tengo mis precios ni mis políticas escritos. ¿Sirve igual?',

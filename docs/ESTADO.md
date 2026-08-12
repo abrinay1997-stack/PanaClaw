@@ -439,7 +439,6 @@ Seguridad, y ya no depende de que nadie se acuerde:** la comprobación A2 de
 
 | # | Pendiente | Quién |
 |---|---|---|
-| 46 | **El alcance y el plazo de eBot son una propuesta mía, no una decisión tomada.** «Entrega en 48 horas», qué entra por ese pago único y qué no (las cinco líneas de cada lista) salieron de lo que el producto hace, no de lo que tú te comprometes a hacer. Se revisan enteros en `src/data/ebot.ts`; una promesa que no puedas cumplir un martes ocupado es peor que no publicarla. | `[tuyo]` |
 | 48 | **En un iPhone SE, la pastilla de eBot queda bajo el pliegue del propio chat.** El panel abierto solo deja ver la primera —le pasaba igual a las cuatro de antes, así que no lo trajo eBot—, y quien no desplaza dentro del chat solo ve «¿Cuánto cuesta un sitio?». Cabrían las cinco recortando el mensaje de bienvenida, que ocupa cuatro líneas en esa pantalla. Medido el 2026-08-09 con `medir:movil` (el panel entero entra y no se corta; lo que no entra es el contenido de su lista). | `[código]` |
 
 ## Bloque 9 — Seguridad web, el servicio para sitios ajenos
@@ -558,6 +557,34 @@ respuesta ante incidente.
 |---|---|---|
 | 54 | **El precio de Web Blindada no se ha revisado después de perder el mantenimiento.** Sigue en $70–$120/mes, que era el precio cuando incluía actualizaciones, uptime y soporte. Hoy lo que añade sobre Web Protegida es revisión mensual, vigilancia de cambios y respuesta ante incidente. **Decisión tuya:** o el precio baja, o el plan gana algo más. | `[tuyo]` |
 | 49 | **Los precios, el alcance y los plazos de seguridad son una propuesta mía, no una decisión tomada.** Las cifras salen del documento tal cual (en dólares en vez de euros) y «informe en 5 días» o «respuesta en 24–48 h» son promesas que tienes que poder cumplir un martes ocupado. Se revisan enteras en `src/data/seguridad.ts`. Es el mismo pendiente que el 46 tiene para eBot. | `[tuyo]` |
+
+**Hecho el 2026-08-11 (el alcance y el plazo de eBot, decididos).** Cierra el
+pendiente 46. Los tres cambios salen de una decisión tuya, no de lo que el
+producto hacía:
+
+- **El plazo pasa de «48 horas» a «3–5 días».** Las 48 horas eran una promesa que
+  no dependía solo de nosotros. Lo que tarda de verdad no lo decide el montaje
+  —ese es igual en todos— sino el negocio: cuánto material tiene ya escrito,
+  cuántos de los cuatro canales conecta y si entre ellos está WhatsApp, que pasa
+  por Meta. El rango va publicado con esa razón al lado, y la pregunta añade que
+  si un caso se atasca en el trámite de Meta se avisa el primer día y no el
+  quinto.
+- **Catorce días de ajustes después de entregar**, y publicados. A $70 nadie
+  preguntaba qué pasaba después de la entrega; a $499 es la primera pregunta, y
+  el silencio en esa pregunta siempre se resuelve a favor de quien pagó. Es un
+  plazo y no un número de rondas a propósito: una web se revisa de una sentada,
+  pero los fallos de un bot aparecen de uno en uno, cuando un cliente real
+  pregunta algo que nadie previó. `/terminos` lleva su propio párrafo —el
+  apartado de revisiones habla de rondas, que a eBot no le aplican— compuesto de
+  `ebot.ts` para que no puedan decir cosas distintas.
+- **La carga inicial tiene tope: 30 preguntas frecuentes**, más los documentos de
+  precios, horarios y políticas. Era la única línea del catálogo sin ningún
+  límite, y una página de preguntas y un manual de ochenta no cuestan lo mismo.
+  Ampliar más allá de eso se cotiza aparte, igual que los cambios pasados los
+  catorce días.
+
+Los dos gastos que paga el cliente por su cuenta no se tocan: los $5 al mes de
+la nube y la llave de IA siguen publicados con el mismo tamaño que el precio.
 
 **Hecho el 2026-08-11 (eBot pasa a $499).** El precio sube de $70 a $499 y se
 propaga solo: `/ebot`, la portada, `/servicios` (incluida su meta descripción,
