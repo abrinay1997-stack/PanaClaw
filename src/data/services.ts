@@ -75,8 +75,10 @@ export interface NavLink {
   href: string;
   label: string;
   /**
-   * Corona sobre el enlace. Es la única distinción de la barra y por eso hay
-   * una sola: dos coronas no destacan el doble, dejan de destacar.
+   * Corona sobre el enlace. Es la única distinción de la barra, así que se
+   * reparte con cuentagotas: si la llevan la mitad de los enlaces deja de
+   * significar nada. Hoy la llevan dos —Planes y eBot—, que son las dos
+   * páginas a las que el sitio quiere llevar a la gente.
    */
   crown?: boolean;
 }
@@ -88,7 +90,7 @@ export const navLinks: NavLink[] = [
   // que no es una web, así que quien llega buscando "sitios" tiene que tropezarse
   // con él temprano o no lo verá nunca. El nombre va solo, sin explicación — la
   // barra no da para una frase y la página entera es la explicación.
-  { href: routes.ebot, label: 'eBot' },
+  { href: routes.ebot, label: 'eBot', crown: true },
   // Seguridad va pegada a eBot por el mismo motivo: los dos son productos que
   // no son una web, y quien llega buscando «sitios» no los va a encontrar si
   // están al final. Y va DESPUÉS de eBot, no antes, porque a este se llega

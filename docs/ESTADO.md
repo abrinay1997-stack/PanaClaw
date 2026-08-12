@@ -371,9 +371,9 @@ página, el formulario y lo que responde el bot no pueden desincronizarse. Emite
 Dos decisiones que conviene no deshacer:
 
 - **Los dos gastos mensuales del cliente van publicados con el mismo tamaño que
-  los $70**, no en una nota al pie. Un producto que anuncia $70 y calla la nube y
-  la llave de IA es exactamente la letra chica que el resto del sitio dice no
-  tener, y aquí duele más porque el argumento entero es «no te alquilamos nada».
+  la implementación**, no en una nota al pie. Un producto que anuncia un pago
+  único y calla la nube y la llave de IA es exactamente la letra chica que el
+  resto del sitio dice no tener, y aquí duele más porque el argumento entero es «no te alquilamos nada».
 - **eBot no entró en `plans.ts` ni en `modules.ts`.** No se entrega en días de
   diseño, no lleva rondas de revisión y su precio no se compone como el de una
   web; mezclarlo habría obligado a poner asteriscos en los cuatro planes.
@@ -394,16 +394,17 @@ sola frase. Las acciones (8) están muy por debajo de las 16 de `/planes`: aquí
 solo se puede hacer una cosa.
 
 **Hecho el 2026-08-09 (el cotizador y el choque de precios).** El paso 3 ya
-ofrece eBot: la capacidad «Contestar tus mensajes solo» suma **+$70 fijos** y su
-línea del desglose dice, ahí mismo, que aparte se pagan la nube y la llave de IA
-—compuesto de `ebotCostos`, no escrito a mano—, para que un total de $920 no se
-lea como «y nada más nunca».
+ofrece eBot: la capacidad «Contestar tus mensajes solo» suma el precio cerrado
+de eBot y su línea del desglose dice, ahí mismo, que aparte se pagan la nube y la
+llave de IA —compuesto de `ebotCostos`, no escrito a mano—, para que el total no
+se lea como «y nada más nunca».
 
 Con eso hubo que resolver el choque que quedaba abierto: la capacidad cotizaba
 el módulo **«Respuestas automáticas con IA» ($250–$900)**, cuya descripción era
 «Contesta las preguntas de siempre por WhatsApp, a cualquier hora» — palabra por
-palabra lo que eBot hace por $70. Publicar los dos era ofrecer dos precios para
-lo que el cliente lee como una sola cosa. **El módulo se quitó de `modules.ts`**,
+palabra lo que hace eBot, y con una horquilla de casi setecientos dólares de
+ancho. Publicar los dos era ofrecer dos precios para lo que el cliente lee como
+una sola cosa. **El módulo se quitó de `modules.ts`**,
 así que desaparece también de `/planes` y del chat, y todo lo de contestar
 mensajes pasa por eBot.
 
@@ -438,7 +439,7 @@ Seguridad, y ya no depende de que nadie se acuerde:** la comprobación A2 de
 
 | # | Pendiente | Quién |
 |---|---|---|
-| 46 | **El alcance y el plazo de eBot son una propuesta mía, no una decisión tomada.** «Entrega en 48 horas», qué entra por los $70 y qué no (las cinco líneas de cada lista) salieron de lo que el producto hace, no de lo que tú te comprometes a hacer. Se revisan enteros en `src/data/ebot.ts`; una promesa que no puedas cumplir un martes ocupado es peor que no publicarla. | `[tuyo]` |
+| 46 | **El alcance y el plazo de eBot son una propuesta mía, no una decisión tomada.** «Entrega en 48 horas», qué entra por ese pago único y qué no (las cinco líneas de cada lista) salieron de lo que el producto hace, no de lo que tú te comprometes a hacer. Se revisan enteros en `src/data/ebot.ts`; una promesa que no puedas cumplir un martes ocupado es peor que no publicarla. | `[tuyo]` |
 | 48 | **En un iPhone SE, la pastilla de eBot queda bajo el pliegue del propio chat.** El panel abierto solo deja ver la primera —le pasaba igual a las cuatro de antes, así que no lo trajo eBot—, y quien no desplaza dentro del chat solo ve «¿Cuánto cuesta un sitio?». Cabrían las cinco recortando el mensaje de bienvenida, que ocupa cuatro líneas en esa pantalla. Medido el 2026-08-09 con `medir:movil` (el panel entero entra y no se corta; lo que no entra es el contenido de su lista). | `[código]` |
 
 ## Bloque 9 — Seguridad web, el servicio para sitios ajenos
@@ -557,6 +558,33 @@ respuesta ante incidente.
 |---|---|---|
 | 54 | **El precio de Web Blindada no se ha revisado después de perder el mantenimiento.** Sigue en $70–$120/mes, que era el precio cuando incluía actualizaciones, uptime y soporte. Hoy lo que añade sobre Web Protegida es revisión mensual, vigilancia de cambios y respuesta ante incidente. **Decisión tuya:** o el precio baja, o el plan gana algo más. | `[tuyo]` |
 | 49 | **Los precios, el alcance y los plazos de seguridad son una propuesta mía, no una decisión tomada.** Las cifras salen del documento tal cual (en dólares en vez de euros) y «informe en 5 días» o «respuesta en 24–48 h» son promesas que tienes que poder cumplir un martes ocupado. Se revisan enteras en `src/data/seguridad.ts`. Es el mismo pendiente que el 46 tiene para eBot. | `[tuyo]` |
+
+**Hecho el 2026-08-11 (eBot pasa a $499).** El precio sube de $70 a $499 y se
+propaga solo: `/ebot`, la portada, `/servicios` (incluida su meta descripción,
+que lo tenía escrito a mano y ahora se compone), el desplegable de `/contacto`,
+el cotizador y la lista blanca de cifras del chat salen todos de `ebot.price`.
+
+Lo que sí había que tocar a mano era la prosa del propio `ebot.ts`: la frase de
+resumen, la línea de «sin mensualidad nuestra» y una de las preguntas llevaban
+los `$70` escritos. Ahora las tres se componen de una constante `PRECIO` del
+mismo archivo — es la regla 10 aplicada dentro de un solo fichero, y sin ella
+medio producto se habría quedado anunciando la cifra vieja sin que nada avisara.
+
+Dos textos cambian de sentido con la cifra nueva y se han reescrito, no solo
+renumerado:
+
+- La pregunta «¿Por qué $499 si esto en otro lado cuesta una mensualidad?» ya no
+  se lee como «¿por qué tan barato?». La respuesta añade la cuenta que ahora hay
+  que hacer: pago único contra alquiler, y en un año sale por debajo de tres
+  meses de casi cualquier plataforma.
+- Los comentarios que justificaban retirar el módulo «Respuestas automáticas con
+  IA» ($250–$900) se apoyaban en que eBot costaba $70. A $499 el argumento ya no
+  es el precio sino la horquilla: seguía siendo cotizar con un rango de casi
+  setecientos dólares de ancho algo que tiene precio cerrado.
+
+**En el nav, eBot también lleva corona.** Son dos —Planes y eBot—, que son las
+dos páginas a las que el sitio quiere llevar a la gente. La corona solo funciona
+mientras sea rara: si la llevan la mitad de los enlaces deja de significar nada.
 
 **Hecho el 2026-08-11 (Planes va delante, y el CTA cambia de color).** En el
 nav, **Planes** pasa por delante de Proyectos y lleva una corona. Estaba al

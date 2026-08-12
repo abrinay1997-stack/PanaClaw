@@ -43,10 +43,11 @@ export const modules: Module[] = [
    * 2026-08-09 al publicarse eBot.
    *
    * Su descripción era «Contesta las preguntas de siempre por WhatsApp, a
-   * cualquier hora» — literalmente lo que eBot hace por $70. Con los dos
-   * publicados, el sitio ofrecía dos precios muy distintos para lo que el
-   * cliente lee como una sola cosa, y eso desmonta la promesa de precios claros
-   * sobre la que se sostiene el resto.
+   * cualquier hora» — literalmente lo que hace eBot. Con los dos publicados, el
+   * sitio ofrecía dos precios distintos para lo que el cliente lee como una sola
+   * cosa, y uno de ellos era una horquilla de casi setecientos dólares de ancho:
+   * eso desmonta la promesa de precios claros sobre la que se sostiene el
+   * resto.
    *
    * Para revertirlo: se devuelve este objeto al array y se le vuelve a apuntar
    * la capacidad del cotizador (`CAPABILITIES.ebot` en `quote.ts`). Pero antes

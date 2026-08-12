@@ -19,6 +19,17 @@
  */
 import { routes } from './links';
 
+/**
+ * El precio, como constante y no como literal repetido.
+ *
+ * Lo nombran la frase de resumen, la lista de propiedad y una de las preguntas,
+ * y en las tres estaba escrito a mano: subirlo de $70 a $499 dejaba media
+ * página anunciando la cifra vieja sin que nada avisara. Ahora hay un solo
+ * sitio donde cambiarlo, que es la regla 10 del proyecto aplicada dentro del
+ * propio archivo.
+ */
+const PRECIO = '$499';
+
 export const ebot = {
   /** Nombre de producto. Se escribe así en todas partes: e minúscula y B alta. */
   name: 'eBot',
@@ -28,14 +39,14 @@ export const ebot = {
    * Qué se paga a PanaClaw. Es pago único: no hay mensualidad nuestra, y esa es
    * justamente la diferencia contra el software de mensajería que se alquila.
    */
-  price: '$70',
+  price: PRECIO,
   priceKicker: 'Pago único · Entrega en 48 horas',
   /**
    * La frase de una línea. Se usa en el `<title>`, en la tarjeta social y en lo
    * que el chat responde: si cambia, cambia en los tres a la vez.
    */
   summary:
-    'Un asistente que contesta por WhatsApp, Instagram, Messenger y Telegram las 24 horas, con un panel donde ves cada conversación y cada cliente nuevo. Lo montamos por $70 y queda en tu cuenta, no en la nuestra.',
+    `Un asistente que contesta por WhatsApp, Instagram, Messenger y Telegram las 24 horas, con un panel donde ves cada conversación y cada cliente nuevo. Lo montamos por ${PRECIO} y queda en tu cuenta, no en la nuestra.`,
 } as const;
 
 /* ------------------------------------------------------------------ *
@@ -186,8 +197,9 @@ export interface EbotCosto {
  * Los dos gastos que NO son nuestros.
  *
  * Van publicados con el mismo tamaño que el precio de la implementación porque
- * son parte del precio real. Un producto que anuncia $70 y calla dos cuentas
- * mensuales es exactamente la letra chica que el resto del sitio dice no tener.
+ * son parte del precio real. Un producto que anuncia un pago único y calla dos
+ * cuentas mensuales es exactamente la letra chica que el resto del sitio dice
+ * no tener.
  */
 export const ebotCostos: EbotCosto[] = [
   {
@@ -208,7 +220,7 @@ export const ebotCostos: EbotCosto[] = [
   },
 ];
 
-/** Lo que sí hacemos por los $70. */
+/** Lo que sí hacemos por ese pago único. */
 export const ebotIncluye: string[] = [
   'Lo montamos en tu cuenta y te entregamos tu panel con tu contraseña',
   'Conectamos los canales que uses de los cuatro',
@@ -255,7 +267,7 @@ export const ebotPropiedad: EbotHecho[] = [
   },
   {
     k: 'Sin mensualidad nuestra',
-    desc: 'Pagas los $70 una vez. No hay cuota de plataforma, ni límite de mensajes, ni un precio que suba el año que viene porque a nosotros nos convenga.',
+    desc: `Pagas los ${PRECIO} una vez. No hay cuota de plataforma, ni límite de mensajes, ni un precio que suba el año que viene porque a nosotros nos convenga.`,
   },
 ];
 
@@ -274,8 +286,8 @@ export interface EbotFaq {
  */
 export const ebotFaq: EbotFaq[] = [
   {
-    q: '¿Por qué $70 si esto en otro lado cuesta una mensualidad?',
-    a: 'Porque no te lo alquilamos. El programa es abierto y ya está hecho; los $70 son el trabajo de montarlo en tu cuenta, conectar tus canales y enseñarle lo que tu negocio sabe. Lo que sigue pagando cada mes no lo cobramos nosotros: son los $5 de la nube y el gasto de tu llave de IA, que van directo a esas dos empresas.',
+    q: `¿Por qué ${PRECIO} si esto en otro lado cuesta una mensualidad?`,
+    a: `Porque no te lo alquilamos. El programa es abierto y ya está hecho; los ${PRECIO} son el trabajo de montarlo en tu cuenta, conectar tus canales y enseñarle lo que tu negocio sabe, y no se repiten nunca. Lo que sigue pagando cada mes no lo cobramos nosotros: son los $5 de la nube y el gasto de tu llave de IA, que van directo a esas dos empresas — con eso, en un año pagas menos que tres meses de casi cualquier plataforma que te lo alquile.`,
   },
   {
     q: '¿El bot va a engañar a mis clientes?',

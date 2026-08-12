@@ -7,6 +7,7 @@ import { services } from '../data/services';
 import { carePlans, careNote } from '../data/care';
 import { diagnostico } from '../data/plans';
 import { seguridad, revision } from '../data/seguridad';
+import { ebot } from '../data/ebot';
 import { catalogo } from '../data/catalogo';
 import { serviceVisuals } from '../data/images';
 import { routes } from '../data/links';
@@ -33,7 +34,7 @@ import { routes } from '../data/links';
 
 <BaseLayout
   title="Servicios"
-  description="Todo lo que hacemos y lo que cuesta: sitios web desde $295, seguridad desde $80, eBot por $70, mantenimiento desde $35/mes y el diagnóstico de tu sitio actual por $49."
+  description={`Todo lo que hacemos y lo que cuesta: sitios web desde $295, seguridad desde ${revision.price.split("–")[0]}, ${ebot.name} por ${ebot.price}, mantenimiento desde $35/mes y el ${diagnostico.name} de tu sitio actual por ${diagnostico.price}.`}
   activePath={routes.servicios}
 >
   <!-- EL CATÁLOGO: todo lo que se vende, en una pantalla -->
