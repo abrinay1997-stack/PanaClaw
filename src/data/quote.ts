@@ -179,8 +179,9 @@ export const steps: QuoteStep[] = [
       { value: 'api', label: 'Conectar con otro sistema', hint: 'Que tu web y tu programa dejen de ir por separado.' },
       /*
        * Esta opción era «Respuestas automáticas» y cotizaba el módulo de
-       * $250–$900. Hoy la cubre eBot por $70, así que cotizar aquí lo caro sería
-       * cobrar de más por lo mismo. El nombre del producto va en la ayuda y no
+       * $250–$900. Hoy la cubre eBot con un precio cerrado, así que cotizar
+       * aquí una horquilla de casi setecientos dólares de ancho sería cobrar de
+       * más por lo mismo, y encima sin poder decir cuánto. El nombre del producto va en la ayuda y no
        * en la etiqueta: quien está en el paso 3 no sabe todavía qué es «eBot»,
        * sabe qué le duele.
        */
@@ -326,9 +327,9 @@ export interface CapabilityRule {
 
 /**
  * La nota de eBot en el desglose. Se compone de `ebot.ts`, como todo lo demás:
- * el cotizador suma los $70 y solo los $70 — decir «total» sin mencionar las
- * dos cuentas mensuales sería el mismo engaño que la página de eBot evita
- * publicándolas en grande.
+ * el cotizador suma la implementación y solo la implementación — decir «total»
+ * sin mencionar las dos cuentas mensuales sería el mismo engaño que la página de
+ * eBot evita publicándolas en grande.
  */
 const ebotNota =
   `Pago único. Aparte pagas por tu cuenta ` +

@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { site, contact, waLink } from '../data/site';
 import { routes } from '../data/links';
 import { diagnostico } from '../data/plans';
+import { ebot } from '../data/ebot';
 
 /**
  * Los términos recogen lo que el sitio ya promete en /proceso y /planes: 50 %
@@ -63,6 +64,18 @@ const actualizado = '1 de agosto de 2026';
         <p>
           Cada plan incluye un número definido de rondas de revisión, especificado en la
           propuesta. Agotadas las incluidas, cada ronda adicional se factura a <strong>$40</strong>.
+        </p>
+        <!--
+          eBot no se revisa por rondas y por eso lleva su propio párrafo: quien
+          lea solo el de arriba aplicaría a un bot una regla que no es la suya.
+          El plazo se compone de `ebot.ts` para que no pueda decir aquí una cosa
+          y en /ebot otra.
+        -->
+        <p>
+          <strong>{ebot.name}</strong> no se revisa por rondas: incluye <strong>{ebot.ajustes} de
+          ajustes</strong> desde la entrega, durante los cuales corregimos lo que el asistente
+          responda mal. Pasado ese plazo, los cambios y la carga de material adicional se cotizan
+          aparte.
         </p>
         <p>
           Las funcionalidades no contempladas en la propuesta se cotizan aparte antes de

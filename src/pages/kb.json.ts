@@ -223,7 +223,7 @@ export const GET: APIRoute = () => {
    * de recuperación falsa tiene: casi nadie va a escribir su nombre. Preguntan
    * «¿tienen algo para contestar WhatsApp solo?». Sin estas frases de intención,
    * esa pregunta recupera el módulo "Respuestas automáticas con IA" —comparten
-   * media frase— y el bot contesta $250–$900 por algo que cuesta $70.
+   * media frase— y el bot contesta $250–$900 por algo que tiene precio cerrado.
    */
   const ebotIntencion = [
     'ebot',

@@ -19,6 +19,54 @@
  */
 import { routes } from './links';
 
+/**
+ * El precio, como constante y no como literal repetido.
+ *
+ * Lo nombran la frase de resumen, la lista de propiedad y una de las preguntas,
+ * y en las tres estaba escrito a mano: subirlo de $70 a $499 dejaba media
+ * página anunciando la cifra vieja sin que nada avisara. Ahora hay un solo
+ * sitio donde cambiarlo, que es la regla 10 del proyecto aplicada dentro del
+ * propio archivo.
+ */
+const PRECIO = '$499';
+
+/**
+ * El plazo, y por qué es un rango.
+ *
+ * Estuvo en «48 horas» y era una promesa que no dependía solo de nosotros. Lo
+ * que tarda de verdad no lo decide el montaje —eso es lo mismo en todos— sino
+ * el negocio: cuánto material tiene ya escrito, cuántos de los cuatro canales
+ * conecta y si entre ellos está WhatsApp, que pasa por Meta. Un rango con la
+ * razón al lado se cumple; una cifra redonda sin ella solo se incumple.
+ */
+const ENTREGA = '3–5 días';
+
+/**
+ * Cuánto dura el periodo de ajustes, y por qué es un plazo y no un número de
+ * rondas.
+ *
+ * Los planes web cuentan rondas (Launch 2, Corporate 3, Commerce 4) porque una
+ * web se revisa de una sentada: se mira, se apunta todo y se manda. Un bot no —
+ * sus fallos aparecen de uno en uno, cuando un cliente real pregunta algo que
+ * nadie previó. Obligar a juntarlos en dos tandas sería pedirle al cliente que
+ * adivine hoy lo que va a descubrir el jueves.
+ *
+ * Y esto tiene que estar PUBLICADO. A $70 nadie preguntaba qué pasaba después
+ * de entregar; a $499 es la primera pregunta, y el silencio en esa pregunta
+ * siempre se resuelve a favor de quien pagó — «yo pensé que estaba incluido».
+ */
+const AJUSTES = 'catorce días';
+
+/**
+ * El tope de la carga inicial.
+ *
+ * Era la única línea del catálogo sin ningún límite: «le cargamos lo que tu
+ * negocio sabe», y ahí cabe tanto una página de preguntas frecuentes como un
+ * manual de ochenta. Los dos casos no cuestan lo mismo, así que o hay un número
+ * o la diferencia se la come quien monta.
+ */
+const TOPE_PREGUNTAS = 30;
+
 export const ebot = {
   /** Nombre de producto. Se escribe así en todas partes: e minúscula y B alta. */
   name: 'eBot',
@@ -28,14 +76,22 @@ export const ebot = {
    * Qué se paga a PanaClaw. Es pago único: no hay mensualidad nuestra, y esa es
    * justamente la diferencia contra el software de mensajería que se alquila.
    */
-  price: '$70',
-  priceKicker: 'Pago único · Entrega en 48 horas',
+  price: PRECIO,
+  priceKicker: `Pago único · Entrega en ${ENTREGA}`,
+  /** El plazo suelto, para quien lo necesite sin el «Pago único» delante. */
+  entrega: ENTREGA,
+  /**
+   * El periodo de ajustes. Lo publican la lista de alcance de `/ebot`, una de
+   * las preguntas y el apartado de revisiones de `/terminos`, que es donde el
+   * cliente va a buscarlo cuando haya una discusión.
+   */
+  ajustes: AJUSTES,
   /**
    * La frase de una línea. Se usa en el `<title>`, en la tarjeta social y en lo
    * que el chat responde: si cambia, cambia en los tres a la vez.
    */
   summary:
-    'Un asistente que contesta por WhatsApp, Instagram, Messenger y Telegram las 24 horas, con un panel donde ves cada conversación y cada cliente nuevo. Lo montamos por $70 y queda en tu cuenta, no en la nuestra.',
+    `Un asistente que contesta por WhatsApp, Instagram, Messenger y Telegram las 24 horas, con un panel donde ves cada conversación y cada cliente nuevo. Lo montamos por ${PRECIO} y queda en tu cuenta, no en la nuestra.`,
 } as const;
 
 /* ------------------------------------------------------------------ *
@@ -186,8 +242,9 @@ export interface EbotCosto {
  * Los dos gastos que NO son nuestros.
  *
  * Van publicados con el mismo tamaño que el precio de la implementación porque
- * son parte del precio real. Un producto que anuncia $70 y calla dos cuentas
- * mensuales es exactamente la letra chica que el resto del sitio dice no tener.
+ * son parte del precio real. Un producto que anuncia un pago único y calla dos
+ * cuentas mensuales es exactamente la letra chica que el resto del sitio dice
+ * no tener.
  */
 export const ebotCostos: EbotCosto[] = [
   {
@@ -208,13 +265,14 @@ export const ebotCostos: EbotCosto[] = [
   },
 ];
 
-/** Lo que sí hacemos por los $70. */
+/** Lo que sí hacemos por ese pago único. */
 export const ebotIncluye: string[] = [
   'Lo montamos en tu cuenta y te entregamos tu panel con tu contraseña',
   'Conectamos los canales que uses de los cuatro',
-  'Le cargamos lo que tu negocio sabe: precios, horarios, políticas y preguntas frecuentes',
+  `Le cargamos lo que tu negocio sabe: tus precios, horarios y políticas, y hasta ${TOPE_PREGUNTAS} preguntas frecuentes`,
   'Le damos la voz de tu negocio y le decimos cuándo callarse y avisarte',
   'Lo probamos contigo en vivo, con un mensaje real desde tu teléfono, antes de entregarlo',
+  `${AJUSTES[0]!.toUpperCase()}${AJUSTES.slice(1)} de ajustes desde que lo entregamos: lo que conteste mal, lo corregimos nosotros`,
 ];
 
 /**
@@ -225,6 +283,7 @@ export const ebotIncluye: string[] = [
 export const ebotNoIncluye: string[] = [
   'Las dos cuentas de arriba: se pagan a Cloudflare y a la empresa de IA, no a nosotros',
   'Escribir desde cero los documentos de tu negocio, si todavía no existen',
+  `Cargarle más material del de la carga inicial, o los cambios que pidas pasados los ${AJUSTES} de ajustes: se cotizan aparte`,
   'Atender las conversaciones a diario por ti — eso sigue siendo tuyo',
   'El trámite de verificación de WhatsApp con Meta, que solo tú puedes firmar',
   'Una página web: eBot atiende tus mensajes, no reemplaza tu sitio',
@@ -255,7 +314,7 @@ export const ebotPropiedad: EbotHecho[] = [
   },
   {
     k: 'Sin mensualidad nuestra',
-    desc: 'Pagas los $70 una vez. No hay cuota de plataforma, ni límite de mensajes, ni un precio que suba el año que viene porque a nosotros nos convenga.',
+    desc: `Pagas los ${PRECIO} una vez. No hay cuota de plataforma, ni límite de mensajes, ni un precio que suba el año que viene porque a nosotros nos convenga.`,
   },
 ];
 
@@ -274,8 +333,8 @@ export interface EbotFaq {
  */
 export const ebotFaq: EbotFaq[] = [
   {
-    q: '¿Por qué $70 si esto en otro lado cuesta una mensualidad?',
-    a: 'Porque no te lo alquilamos. El programa es abierto y ya está hecho; los $70 son el trabajo de montarlo en tu cuenta, conectar tus canales y enseñarle lo que tu negocio sabe. Lo que sigue pagando cada mes no lo cobramos nosotros: son los $5 de la nube y el gasto de tu llave de IA, que van directo a esas dos empresas.',
+    q: `¿Por qué ${PRECIO} si esto en otro lado cuesta una mensualidad?`,
+    a: `Porque no te lo alquilamos. El programa es abierto y ya está hecho; los ${PRECIO} son el trabajo de montarlo en tu cuenta, conectar tus canales y enseñarle lo que tu negocio sabe, y no se repiten nunca. Lo que sigue pagando cada mes no lo cobramos nosotros: son los $5 de la nube y el gasto de tu llave de IA, que van directo a esas dos empresas — con eso, en un año pagas menos que tres meses de casi cualquier plataforma que te lo alquile.`,
   },
   {
     q: '¿El bot va a engañar a mis clientes?',
@@ -283,11 +342,11 @@ export const ebotFaq: EbotFaq[] = [
   },
   {
     q: '¿Y si contesta una barbaridad?',
-    a: 'Entras al panel y lo corriges: cada conversación queda guardada, y la pantalla de Mejoras te muestra justo lo que no supo responder para que se lo enseñes. También puedes apagarlo entero desde ahí en un clic, sin llamarnos.',
+    a: `Los primeros ${AJUSTES} lo corregimos nosotros: es lo que dura el periodo de ajustes, y está para eso — los fallos de un bot no salen todos el primer día, salen cuando un cliente real pregunta algo que nadie previó. Después lo haces tú desde el panel, que es donde queda guardada cada conversación: la pantalla de Mejoras te muestra justo lo que no supo responder para que se lo enseñes. Y puedes apagarlo entero desde ahí en un clic, sin llamarnos.`,
   },
   {
     q: '¿Cuánto tardo en tenerlo funcionando?',
-    a: '48 horas desde que nos das acceso a tus cuentas y el material de tu negocio. Telegram queda listo el mismo día; WhatsApp depende de que Meta apruebe tu número, y ese trámite tiene sus tiempos, que no dependen de nosotros.',
+    a: `Entre 3 y 5 días desde que nos das acceso a tus cuentas y el material de tu negocio. Dónde caigas dentro de ese rango depende de tu empresa y no del montaje: cuánto tienes ya escrito de precios, horarios y políticas, y cuántos de los cuatro canales conectas. Telegram queda listo el mismo día; WhatsApp depende de que Meta apruebe tu número, y ese trámite tiene sus tiempos, que no dependen de nosotros — si tu caso se atasca ahí, te lo decimos el primer día y no el quinto.`,
   },
   {
     q: 'No tengo mis precios ni mis políticas escritos. ¿Sirve igual?',
