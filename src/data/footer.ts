@@ -25,7 +25,7 @@ export const footerColumns: FooterColumn[] = [
       { label: 'Auditoría de Seguridad', href: routes.seguridad },
       { label: 'Mantenimiento (Care)', href: anchor(routes.servicios, '#care') },
       { label: 'Diagnóstico de Ventas', href: anchor(routes.servicios, '#diagnostico') },
-      { label: 'Planes y precios', href: routes.planes },
+      { label: 'Webs y precios', href: routes.planes },
       { label: 'Capacidades avanzadas', href: anchor(routes.planes, '#modulos') },
       { label: 'Cotizador', href: routes.cotizador },
     ],

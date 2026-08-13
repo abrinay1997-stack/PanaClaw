@@ -609,18 +609,15 @@ renumerado:
   es el precio sino la horquilla: seguía siendo cotizar con un rango de casi
   setecientos dólares de ancho algo que tiene precio cerrado.
 
-**En el nav, eBot también lleva corona.** Son dos —Planes y eBot—, que son las
-dos páginas a las que el sitio quiere llevar a la gente. La corona solo funciona
-mientras sea rara: si la llevan la mitad de los enlaces deja de significar nada.
-
 **Hecho el 2026-08-11 (Planes va delante, y el CTA cambia de color).** En el
-nav, **Planes** pasa por delante de Proyectos y lleva una corona. Estaba al
-revés con este argumento: quien duda del precio suele estar dudando de si
-sabemos hacerlo, así que la prueba tiene que llegar antes que la cifra. Sigue
-siendo verdad para quien lee la barra de izquierda a derecha, y casi nadie la
-lee así — a la barra se viene a buscar, y lo que se busca es el precio. La
-corona hace lo mismo con menos palabras: entre nueve enlaces del mismo tamaño no
-hay ninguno que llame, y este tiene que llamar.
+nav, **Planes** pasa por delante de Proyectos. Estaba al revés con este
+argumento: quien duda del precio suele estar dudando de si sabemos hacerlo, así
+que la prueba tiene que llegar antes que la cifra. Sigue siendo verdad para
+quien lee la barra de izquierda a derecha, y casi nadie la lee así — a la barra
+se viene a buscar, y lo que se busca es el precio.
+
+(Este enlace y el de eBot llevaron corona hasta el 2026-08-13; ver la entrada
+de esa fecha más abajo.)
 
 El botón «Cotizar» pasa a llevar la letra **blanca** sobre el naranja, y negra
 solo cuando el botón se pone blanco (que es como el nav dice que ya estás en el
@@ -628,6 +625,30 @@ cotizador). Queda anotado que el blanco sobre `#FF5100` da 3.1:1 y AA pide 4.5:1
 a ese cuerpo de letra: es una decisión de marca tomada a sabiendas. Cumplirlo con
 blanco exigiría bajar el naranja del botón a ~`#D64200`, o sea tocar el acento de
 la marca; el estado activo (negro sobre blanco) cumple de sobra.
+
+**Hecho el 2026-08-13 (la barra se reordena, «Planes» pasa a ser «Webs» y se
+van las coronas).** Tres cambios en el nav, ninguno estructural:
+
+- **Orden nuevo:** Inicio · Webs · Servicios · Proyectos · eBot · Seguridad ·
+  Proceso · Ayuda · Contacto. Son dos bloques y el orden es el argumento:
+  primero el producto principal con todo lo que lo sostiene (el precio, qué
+  incluye, la prueba de que sabemos hacerlo), después los dos productos que no
+  son una web —que siguen viajando pegados, por el motivo de siempre— y al
+  final lo que no vende sino que acompaña. Siguen siendo nueve enlaces, así que
+  el colapso a 1100 px y lo que mide `medir:movil` no cambian.
+- **«Planes» se llama «Webs».** Quien llega no busca un plan, busca una web. La
+  URL sigue siendo `/planes/` a propósito: renombrarla rompería los enlaces ya
+  publicados sin comprar nada. El nombre cambia donde es una **etiqueta de
+  enlace** —el nav, el pie, `/smark`, el aviso sin JS del cotizador— y no en los
+  textos de la propia página, que siguen hablando de planes porque es lo que
+  son: cuatro paquetes con precio cerrado.
+- **Fuera las coronas.** Las llevaban Planes y eBot. El argumento era que entre
+  nueve enlaces del mismo tamaño ninguno llama; el problema es que era el
+  argumento para una, y con dos ya no distinguía nada. Se va el SVG, la clase
+  `has-crown` y el campo `crown` de `NavLink`, más las tres reglas de
+  `global.css` (la corona de escritorio, la del desplegable y su renglón en el
+  bloque de `prefers-reduced-motion`). El sitio vuelve a tener un solo modo de
+  destacar en la barra: el CTA naranja.
 
 **Probado y descartado el 2026-08-11: el contorno del nav abombándose sobre la
 pestaña activa.** Estuvo hecho y funcionando —un solo `<path>` con la cápsula y

@@ -31,27 +31,7 @@ const { activePath = '' } = Astro.props;
       <ul class="nav-links">
         {navLinks.map((link) => (
           <li>
-            <a
-              href={link.href}
-              class={link.crown ? 'has-crown' : undefined}
-              aria-current={activePath === link.href ? 'page' : undefined}
-            >
-              {/*
-                La corona es decoración y no información: quien no la ve no se
-                pierde nada que no diga ya la propia página de Planes. Por eso
-                va `aria-hidden` y fuera del nombre accesible del enlace — un
-                lector de pantalla que anunciara "corona, Planes" estaría
-                leyendo un adorno como si fuera parte del destino.
-              */}
-              {link.crown && (
-                <svg class="nav-crown" viewBox="0 0 24 18" aria-hidden="true" focusable="false">
-                  <path
-                    d="M3 16 L3 3 L8.5 10.5 L12 2 L15.5 10.5 L21 3 L21 16 Z"
-                    stroke-linejoin="round"
-                    stroke-width="1.2"
-                  />
-                </svg>
-              )}
+            <a href={link.href} aria-current={activePath === link.href ? 'page' : undefined}>
               {link.label}
             </a>
           </li>
