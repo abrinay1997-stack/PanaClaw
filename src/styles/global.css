@@ -123,25 +123,6 @@ a{color:inherit;text-decoration:none;}
   background:rgba(255,255,255,.08);
 }
 
-/* ---------- LA CORONA ---------- */
-/* Naranja y no dorada: la regla del proyecto es un solo acento cromático, y un
-   tercer color en la barra —justo donde está la marca— lo rompe donde más se
-   nota. Va sobre el texto y no al lado para no ensanchar el enlace: la barra
-   colapsa a 1100px y cada píxel de más adelanta ese corte. */
-.nav-links a.has-crown{position:relative;}
-.nav-crown{
-  position:absolute;
-  left:50%;
-  top:0;
-  width:14px;height:10px;
-  transform:translateX(-50%);
-  fill:var(--flash-orange);
-  stroke:var(--flash-orange);
-  stroke-linejoin:round;
-  transition:top .28s ease;
-}
-.floating-nav.is-scrolled .nav-crown{top:-1px;}
-
 .brand{
   /* Alineación al centro (no a la baseline): el logo no tiene línea de base y
      con `baseline` se hundía respecto al texto. `gap` es el aire entre el
@@ -238,7 +219,7 @@ a{color:inherit;text-decoration:none;}
 .floating-nav.is-scrolled .nav-cta{padding:9px 18px;font-size:12px;}
 
 @media(prefers-reduced-motion:reduce){
-  .floating-nav,.nav-pill,.brand,.nav-links a,.nav-cta,.nav-crown{transition:none;}
+  .floating-nav,.nav-pill,.brand,.nav-links a,.nav-cta{transition:none;}
 }
 
 /* ---------- HERO ---------- */
@@ -668,15 +649,6 @@ h2.section-title .muted{color:var(--studio-gray);}
     display:block;
     padding:12px 16px;
     text-align:left;
-  }
-  /* En el desplegable los enlaces son bloques anchos: una corona centrada sobre
-     el bloque no cae sobre la palabra. Pasa a ir delante del nombre. */
-  .nav-crown{
-    position:static;
-    display:inline-block;
-    transform:none;
-    margin-right:8px;
-    vertical-align:-1px;
   }
   .nav-toggle{display:flex;}
 }

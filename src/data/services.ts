@@ -74,46 +74,37 @@ export const procesoSteps: ProcesoStep[] = [
 export interface NavLink {
   href: string;
   label: string;
-  /**
-   * Corona sobre el enlace. Es la única distinción de la barra, así que se
-   * reparte con cuentagotas: si la llevan la mitad de los enlaces deja de
-   * significar nada. Hoy la llevan dos —Planes y eBot—, que son las dos
-   * páginas a las que el sitio quiere llevar a la gente.
-   */
-  crown?: boolean;
 }
 
+/**
+ * La barra va en dos bloques, y el orden es el argumento.
+ *
+ * Primero el producto principal —las webs— con todo lo que lo sostiene:
+ * Webs (el precio), Servicios (qué incluye), Proyectos (la prueba de que
+ * sabemos hacerlo). Después los dos productos que NO son una web, eBot y
+ * Seguridad, juntos y en ese orden. Al final lo que no vende sino que
+ * acompaña: Proceso, Ayuda y Contacto.
+ *
+ * Webs va inmediatamente después de Inicio porque a la barra se viene a
+ * BUSCAR, y lo que se busca es el precio: es la pregunta con la que llega la
+ * gente y la única que el sitio promete contestar sin pedir datos. Ningún
+ * enlace lleva distintivo — con nueve entradas del mismo tamaño, adornar una
+ * solo funciona mientras sea la única, y ya no compensa el ruido.
+ *
+ * El nombre «Webs» y no «Planes»: quien llega no busca un plan, busca una
+ * web. La URL sigue siendo /planes/ para no romper los enlaces ya publicados.
+ */
 export const navLinks: NavLink[] = [
   { href: routes.home, label: 'Inicio' },
+  { href: routes.planes, label: 'Webs' },
   { href: routes.servicios, label: 'Servicios' },
-  // eBot va pegado a Servicios y no al final: es el único producto del catálogo
-  // que no es una web, así que quien llega buscando "sitios" tiene que tropezarse
-  // con él temprano o no lo verá nunca. El nombre va solo, sin explicación — la
-  // barra no da para una frase y la página entera es la explicación.
-  { href: routes.ebot, label: 'eBot', crown: true },
-  // Seguridad va pegada a eBot por el mismo motivo: los dos son productos que
-  // no son una web, y quien llega buscando «sitios» no los va a encontrar si
-  // están al final. Y va DESPUÉS de eBot, no antes, porque a este se llega
-  // también por el dolor —«me hackearon»— y ese camino ya está cubierto desde
-  // /servicios, /planes y el chat; eBot no tiene ningún otro.
-  { href: routes.seguridad, label: 'Seguridad' },
-  /*
-   * Planes va delante de Proyectos, y con corona.
-   *
-   * Estuvo al revés, con este argumento: quien duda del precio suele estar
-   * dudando de si sabemos hacerlo, así que la prueba tiene que llegarle antes
-   * que la cifra. Sigue siendo verdad para quien navega la barra de izquierda a
-   * derecha; el problema es que casi nadie la navega así. A la barra se viene a
-   * BUSCAR, y lo que se busca es el precio: es la pregunta con la que llega la
-   * gente y la única que el sitio promete contestar sin pedir datos. Ponerla
-   * antes no es discutirle el argumento a la prueba social — es dejar de
-   * esconder la respuesta que trajo a la persona.
-   *
-   * La corona hace lo mismo con menos palabras: entre nueve enlaces del mismo
-   * tamaño no hay ninguno que llame, y este tiene que llamar.
-   */
-  { href: routes.planes, label: 'Planes', crown: true },
   { href: routes.proyectos, label: 'Proyectos' },
+  // eBot y Seguridad viajan pegados: son los dos productos del catálogo que no
+  // son una web, así que quien llega buscando «sitios» tiene que tropezarse con
+  // ellos como bloque o no los verá. Los nombres van solos, sin explicación —
+  // la barra no da para una frase y cada página entera es la explicación.
+  { href: routes.ebot, label: 'eBot' },
+  { href: routes.seguridad, label: 'Seguridad' },
   { href: routes.proceso, label: 'Proceso' },
   { href: routes.ayuda, label: 'Ayuda' },
   { href: routes.contacto, label: 'Contacto' },
