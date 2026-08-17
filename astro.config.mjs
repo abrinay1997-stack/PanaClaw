@@ -5,12 +5,24 @@ import sitemap from '@astrojs/sitemap';
 /**
  * URL pública del sitio.
  * - Netlify sirve en la raíz del dominio, así que no hay `base`.
- * - `site` se usa para sitemap y URLs canónicas. Cambiar cuando haya dominio propio.
- *   Netlify asigna un subdominio *.netlify.app tras conectar el repo; puedes reemplazar
- *   la URL de abajo por la real (Settings → Domain management en Netlify).
+ * - `site` se usa para sitemap y URLs canónicas, y todo el sitio lo lee de aquí
+ *   vía `Astro.site`: canonical, `og:url`, JSON-LD y sitemap salen de esta línea.
+ *   Por eso es el único sitio donde vive el dominio — no hay una segunda copia
+ *   que se pueda quedar desfasada.
+ *
+ * Va SIN `www` y SIN barra final, y las dos cosas importan:
+ * - Sin `www` porque el dominio principal en Netlify es el apex. Si aquí
+ *   dijera `www`, el canonical apuntaría al alias y no al dominio que el
+ *   visitante ve en la barra: Google recibiría dos URLs para cada página.
+ * - Sin barra final porque Astro compone `new URL(ruta, site)`; la barra la
+ *   pone cada ruta (`trailingSlash:'always'`, abajo), y duplicarla aquí
+ *   produciría `https://panaclaw.com//contacto/`.
+ *
+ * El subdominio `panaclaw.netlify.app` sigue existiendo y Netlify lo redirige
+ * con 301 al dominio principal por sí solo — no hace falta declarar esa regla.
  */
 export default defineConfig({
-  site: 'https://panaclaw.netlify.app',
+  site: 'https://panaclaw.com',
   /**
    * URLs de directorio: `/contacto/`, no `/contacto.html`.
    *

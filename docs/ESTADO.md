@@ -145,7 +145,7 @@ propia**. Todo lo de aquí convierte afirmación en evidencia.
 
 | # | Pendiente | Quién |
 |---|---|---|
-| 2 | **Medir el propio sitio y publicarlo.** El sitio vende velocidad y no enseña la suya. Apuntar `npm run medir` a `panaclaw.netlify.app` y poner la cifra donde se lee. Es autoevidencia y ya la tienes. | `[código]` |
+| 2 | **Medir el propio sitio y publicarlo.** El sitio vende velocidad y no enseña la suya. Apuntar `npm run medir` a `panaclaw.com` y poner la cifra donde se lee. Es autoevidencia y ya la tienes. | `[código]` |
 | 3 | **Estructura de testimonios.** Hoy no existe ni el sitio donde ponerlos. Se puede dejar montado —tipo, componente, tarjeta— para que publicar uno sea añadir un objeto a un array. Los textos y los permisos son tuyos. | `[código]` + `[tuyo]` |
 | 4 | **Quién está detrás.** El bloque vive en `/proceso` y está vacío. En un servicio de confianza el anonimato es una barrera de compra: la objeción real del comprador no es el precio, es «¿y este quién es?». | `[tuyo]` |
 | 5 | **Qué significa «PanaClaw».** El nombre no se explica en ninguna página. Es una línea de origen de marca y hoy es storytelling desaprovechado. | `[tuyo]` |
@@ -313,10 +313,11 @@ analítica mientras la haya.
 **Lo que queda:** el identificador de GA4 (punto 28), decidir lo del banner
 (29) y medir el coste en velocidad (30).
 
-**Cuándo pegarla en la bio:** cuando haya dominio propio. La página se construye
-ahora y vive en `panaclaw.netlify.app/…`; el día que cambie `site` en
-`astro.config.mjs` funciona sin tocar nada más. Pero repartir un `.netlify.app`
-en redes es exactamente el problema de credibilidad que se quiere evitar.
+**Cuándo pegarla en la bio:** ya. El dominio propio está puesto — `site` en
+`astro.config.mjs` apunta a `https://panaclaw.com`, así que la página vive en
+`panaclaw.com/smark/` y el enlace se puede repartir. Era la única condición
+que faltaba: repartir un `.netlify.app` en redes es exactamente el problema de
+credibilidad que se quería evitar.
 
 ## Bloque 7 — El chat
 
