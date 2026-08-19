@@ -55,7 +55,39 @@ export interface KbFact {
   q: string[];
   /** La respuesta, ya redactada. El modelo la parafrasea, no la deduce. */
   text: string;
+  /**
+   * Página del sitio donde vive este hecho, absoluta y lista para pegar en un
+   * chat. La rellena `add()`; no se escribe a mano en ningún hecho.
+   *
+   * Existe porque quien consume esta base no siempre está DENTRO del sitio. El
+   * chat de la web puede decir «mira abajo»; el bot que contesta por WhatsApp,
+   * no —ahí un enlace es la única forma de enseñar algo—. Y es justo donde un
+   * modelo improvisa una URL que no existe si no se la damos hecha.
+   */
+  url: string;
 }
+
+/**
+ * A qué página pertenece cada tema.
+ *
+ * Se deriva del `topic` en vez de escribirse hecho por hecho: son 80 hechos y
+ * un enlace copiado a mano en cada uno es un enlace roto esperando su turno.
+ * Un hecho puede pasar su propia ruta a `add()` cuando el tema no basta —el
+ * cotizador es de tema «contacto» pero vive en su propia página—.
+ */
+const PAGINA_POR_TEMA: Record<string, string> = {
+  planes: 'planes/',
+  capacidades: 'planes/',
+  ebot: 'ebot/',
+  seguridad: 'seguridad/',
+  mantenimiento: 'servicios/',
+  servicios: 'servicios/',
+  proceso: 'proceso/',
+  proyectos: 'proyectos/',
+  faq: 'ayuda/',
+  contacto: 'contacto/',
+  legal: 'privacidad/',
+};
 
 /**
  * Qué herramientas de medición hay activas, derivado de `data/analytics.ts`.
@@ -70,9 +102,25 @@ const medicionNombres = [
   .join(' y ');
 const medicionActiva = medicionNombres.length > 0;
 
-export const GET: APIRoute = () => {
+export const GET: APIRoute = ({ site: origen }) => {
+  /*
+   * El dominio sale de `site` en astro.config.mjs, igual que el canonical y el
+   * sitemap. No hay una segunda copia aquí que se pueda quedar en el subdominio
+   * viejo el día que cambie el dominio.
+   *
+   * Si faltara, cada enlace saldría relativo y el bot mandaría «/planes/» por
+   * WhatsApp, que no lleva a ninguna parte. Preferimos romper el build.
+   */
+  if (!origen) {
+    throw new Error('kb.json: falta `site` en astro.config.mjs; sin dominio no hay enlaces.');
+  }
+
   const facts: KbFact[] = [];
-  const add = (f: KbFact) => facts.push(f);
+  const add = (f: Omit<KbFact, 'url'> & { ruta?: string }) => {
+    const { ruta, ...hecho } = f;
+    const path = ruta ?? PAGINA_POR_TEMA[f.topic] ?? '';
+    facts.push({ ...hecho, url: new URL(path, origen).href });
+  };
 
   /* ---------------- Planes ---------------- */
 
@@ -476,6 +524,7 @@ export const GET: APIRoute = () => {
   add({
     id: 'seguridad-cotizador',
     topic: 'seguridad',
+    ruta: 'cotizador/',
     q: [
       'puedo cotizar seguridad',
       'me sale en el cotizador la seguridad',
@@ -645,6 +694,9 @@ export const GET: APIRoute = () => {
   add({
     id: 'cotizador',
     topic: 'contacto',
+    // Su tema es «contacto», pero la página es otra: sin esta ruta el bot
+    // mandaría a /contacto/ a alguien que pide precio.
+    ruta: 'cotizador/',
     q: [
       'como cotizo',
       'quiero un presupuesto',
@@ -797,7 +849,21 @@ export const GET: APIRoute = () => {
     JSON.stringify(
       {
         generatedAt: new Date().toISOString(),
-        site: { name: site.name, location: site.location, whatsapp: contact.whatsapp },
+        /*
+         * La cabecera que necesita quien consume esta base desde FUERA del
+         * sitio (el bot de WhatsApp, un panel). El chat de la web ya sabe en
+         * qué dominio vive y a qué hora se atiende; un bot en otro servidor no,
+         * y si no se lo damos aquí acaba con esos datos copiados a mano en su
+         * propia configuración — que es exactamente como se desincronizan.
+         */
+        site: {
+          name: site.name,
+          location: site.location,
+          whatsapp: contact.whatsapp,
+          url: origen.href,
+          horario: contact.horario,
+          timezone: contact.timezone,
+        },
         prices: [...new Set(prices)],
         facts,
       },

@@ -3,7 +3,9 @@
 Sitio web de PanaClaw, agencia de sitios web en Panamá. Astro con salida
 estática pura, desplegado en Netlify.
 
-**En producción:** https://panaclaw.netlify.app
+**En producción:** https://panaclaw.com — dominio propio desde agosto de 2026.
+El antiguo `panaclaw.netlify.app` sigue vivo y Netlify lo redirige con 301 al dominio
+principal, así que los enlaces viejos no se rompen.
 
 ---
 

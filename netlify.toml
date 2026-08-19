@@ -1,4 +1,4 @@
-# Configuración Netlify para CuatroNodos (Astro)
+# Configuración Netlify para PanaClaw (Astro)
 
 [build]
   command = "npm run build"

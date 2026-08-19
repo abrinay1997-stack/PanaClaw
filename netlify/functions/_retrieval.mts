@@ -11,11 +11,20 @@ export interface KbFact {
   topic: string;
   q: string[];
   text: string;
+  /** Página del sitio donde vive el hecho. La usa el bot externo, no este chat. */
+  url: string;
 }
 
 export interface Kb {
   generatedAt: string;
-  site: { name: string; location: string; whatsapp: string };
+  site: {
+    name: string;
+    location: string;
+    whatsapp: string;
+    url: string;
+    horario: string;
+    timezone: string;
+  };
   prices: string[];
   facts: KbFact[];
 }
