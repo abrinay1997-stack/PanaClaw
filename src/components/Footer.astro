@@ -30,7 +30,7 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
       <nav class="foot-nav" aria-label="Pie de página">
         {footerColumns.map((col) => (
           <div class="foot-col">
-            <h2 class="foot-col-title">{col.title}</h2>
+            <p class="foot-col-title">{col.title}</p>
             <ul>
               {col.links.map((link) => (
                 <li><a href={link.href}>{link.label}</a></li>
@@ -40,7 +40,7 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
         ))}
 
         <div class="foot-col">
-          <h2 class="foot-col-title">Contacto</h2>
+          <p class="foot-col-title">Contacto</p>
           <ul>
             <li>
               <a href={waLink()} target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
