@@ -3,7 +3,7 @@ import type { Config, Context } from '@netlify/functions';
 import { retrieve, invalidPrices, buildSystem, trimReply, type Kb } from './_retrieval.mts';
 
 /**
- * Endpoint del chat de CuatroNodos.
+ * Endpoint del chat de PanaClaw.
  *
  * PREMISA DE DISEÑO: el modelo es la parte menos fiable del sistema, así que se
  * le da el trabajo más pequeño posible. No busca, no calcula y no recuerda: solo
