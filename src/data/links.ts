@@ -38,6 +38,7 @@ export const routes = {
   ayuda: withBase('ayuda/'),
   cotizador: withBase('cotizador/'),
   contacto: withBase('contacto/'),
+  blog: withBase('blog/'),
   gracias: withBase('gracias/'),
   privacidad: withBase('privacidad/'),
   terminos: withBase('terminos/'),
