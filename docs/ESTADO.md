@@ -85,13 +85,18 @@ Lo que sigue verde y conviene no romper:
 
 ### Cómo repetir esta medición
 
+Desde 2026-08-20, `medir:movil` y `medir:cotizador` —además de `medir:enlaces`,
+la auditoría de enlaces y anclas rotas— corren solas en cada PR
+(`.github/workflows/ci.yml`), así que ya no dependen de que alguien se acuerde
+de correrlas a mano. Para reproducir localmente antes de subir:
+
 Playwright **no** es dependencia del proyecto a propósito: arrastra la descarga
-de un navegador y encarecería cada build de Netlify para algo que solo se corre
-a mano.
+de un navegador y encarecería cada build de Netlify. En CI se instala solo para
+ese job, sin tocar `package.json`.
 
 ```bash
 npm i -D playwright && npx playwright install chromium
-npm run build && npm run medir:movil && npm run medir:cotizador
+npm run build && npm run medir:movil && npm run medir:cotizador && npm run medir:enlaces
 ```
 
 `npm run medir:movil` vigila el navbar —dónde está y, desde el 2026-08-11,
@@ -110,7 +115,14 @@ plan). Mientras esa última pase, ninguna etiqueta del cotizador puede mentir.
 Desde el 2026-08-11 son **dos** cifras las que vigila —la de una vez y la
 mensual— y las compara por separado: sumarlas daría un número creíble y falso.
 
-La regla al añadir una comprobación a cualquiera de las dos: **romper lo que
+`npm run medir:enlaces` (nuevo el 2026-08-20) no necesita Playwright: lee el
+HTML de `dist/` directamente. Vigila que ningún `href` interno ni ninguna ancla
+(`#seccion`, incluida la combinada `/planes/#modulos`) apunte a nada, que no
+quede un `href="#"` a medio escribir, y —sobre el código fuente, antes de
+tocar `dist/`— que ningún `.astro`/`.ts` hardcodee `href="/algo"` en vez de
+usar `routes.*` / `withBase()` (regla 1 de `convenciones.md`).
+
+La regla al añadir una comprobación a cualquiera de las tres: **romper lo que
 vigila y ver que salta.** Dos de las de `medir:cotizador` pasaban en verde con
 la función que vigilaban desactivada; una comprobación así no es una red, es un
 adorno que da confianza falsa.

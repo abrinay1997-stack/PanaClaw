@@ -11,11 +11,12 @@ uno. El resumen de las cinco más importantes está en el
 1. **Rutas internas: nunca hardcodear `href="/..."`.** Usar `routes.*` o
    `withBase('...')` de `src/data/links.ts`. Hoy el sitio se sirve en la raíz del
    dominio, pero ese helper es lo único que hace falta tocar si algún día vuelve
-   a servirse bajo un subpath.
+   a servirse bajo un subpath. `npm run medir:enlaces` lo vigila en cada PR.
 2. **Datos siempre en `src/data/*.ts`.** Cambiar el precio de un plan = una sola
    edición. Cero copy-paste entre páginas.
 3. **Un solo `<h1>` por página.**
 4. **Cero placeholders en producción:** nada de `#`, `lorem`, `G-XXXXXXXXXX`.
+   `npm run medir:enlaces` falla si queda un `href="#"` o un `href=""` sueltos.
 5. **Solo animar `transform` y `opacity`.** Todo lo demás provoca repintados.
 6. **Sin librería de animación.** El movimiento se hace con transiciones CSS y
    JavaScript solo decide cuándo dispararlas (`IntersectionObserver` en

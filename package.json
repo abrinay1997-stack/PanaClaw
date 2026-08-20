@@ -14,6 +14,7 @@
     "capturas": "node scripts/capture-projects.mjs",
     "medir:movil": "node scripts/check-mobile.mjs",
     "medir:cotizador": "node scripts/check-cotizador.mjs",
+    "medir:enlaces": "node scripts/check-links.mjs",
     "astro": "astro"
   },
   "repository": {

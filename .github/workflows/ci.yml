@@ -1,7 +1,12 @@
 name: CI
 
 # El deploy lo hace Netlify al detectar un push en main. Este workflow no
-# publica nada: solo verifica que lo que entra a main compile y tipe bien.
+# publica nada: verifica que lo que entra a main compile, tipe bien y no rompa
+# ninguna de las auditorías de `scripts/` — layout móvil, cotizador y enlaces.
+#
+# Antes estas tres solo se corrían a mano ("cuando alguien se acordaba"). Con
+# varias personas tocando el mismo sitio, acordarse no basta: por eso corren
+# aquí, en cada PR, contra el `dist/` recién construido.
 
 on:
   push:
@@ -12,7 +17,7 @@ on:
 
 jobs:
   build:
-    name: Tipos y build
+    name: Tipos, build y auditorías
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,3 +39,20 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Enlaces internos rotos
+        run: npm run medir:enlaces
+
+      # Playwright NO es dependencia del proyecto a propósito (ver README y
+      # docs/convenciones.md): se instala aquí, solo para este job, sin tocar
+      # package.json ni el build de Netlify.
+      - name: Instalar Playwright (solo para este job)
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Layout móvil
+        run: npm run medir:movil
+
+      - name: Cotizador
+        run: npm run medir:cotizador
