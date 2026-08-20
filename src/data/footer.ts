@@ -35,6 +35,13 @@ export const footerColumns: FooterColumn[] = [
     links: [
       { label: 'Proyectos', href: routes.proyectos },
       { label: 'Cómo trabajamos', href: routes.proceso },
+      /*
+       * El blog vive SOLO en el footer, no en el nav principal — el nav es
+       * comercial y meter «Blog» ahí diluye el foco. Aquí basta: Google
+       * descubre `/blog/` desde este enlace interno, y los posts se
+       * descubren desde el listado de `/blog/`.
+       */
+      { label: 'Blog', href: routes.blog },
       { label: 'Centro de ayuda', href: routes.ayuda },
       { label: 'Contacto', href: routes.contacto },
     ],

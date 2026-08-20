@@ -1,0 +1,227 @@
+---
+/**
+ * /blog/ — el listado de posts.
+ *
+ * FILOSOFÍA DE ESTA SECCIÓN
+ * El blog **no vive en el nav principal**. Está en el footer, se descubre por
+ * búsqueda orgánica, y su función es capturar tráfico informacional que la
+ * página comercial no puede capturar: gente buscando «cuánto cuesta una web
+ * en Panamá», «WordPress vs sitio a medida», etc.
+ *
+ * Cada post remata con un enlace al cotizador o a planes, así que también
+ * funciona como embudo. Google necesita descubrir estas páginas y para eso
+ * este listado es la puerta — se genera solo del contenido en
+ * `src/content/blog/*.md`, sin tocar aquí para publicar.
+ *
+ * No hay paginación deliberadamente: con volumen bajo (1 post/mes) tarda años
+ * en hacer falta, y meter paginación desde el día uno es sobre-ingeniería.
+ * Cuando pase de 30-40 posts, se añade.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Reveal from '../../components/Reveal.astro';
+import { getCollection } from 'astro:content';
+import { routes } from '../../data/links';
+import { site } from '../../data/site';
+
+// Filtra borradores en producción; en dev los deja ver para revisar.
+const isDev = import.meta.env.DEV;
+const posts = (await getCollection('blog', ({ data }) => isDev || !data.draft))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const origin = Astro.site ?? new URL('http://localhost:4321');
+
+const listSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: `Blog — ${site.name}`,
+  description:
+    'Guías, comparativas y análisis del mercado web en Panamá. Precios reales, criterios honestos, cero jerga.',
+  url: new URL('blog/', origin).toString(),
+  publisher: {
+    '@type': 'Organization',
+    name: site.name,
+  },
+  blogPost: posts.map((p) => ({
+    '@type': 'BlogPosting',
+    headline: p.data.title,
+    datePublished: p.data.date.toISOString(),
+    url: new URL(`blog/${p.id.replace(/\.md$/, '')}/`, origin).toString(),
+  })),
+};
+
+const fmtDate = (d: Date) =>
+  new Intl.DateTimeFormat('es-PA', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+
+// El label de cada categoría vive junto al listado, no en el schema del
+// content: es lo único que cambia por vista y no por dato del post.
+const categoryLabels: Record<string, string> = {
+  precios: 'Precios',
+  guias: 'Guía',
+  comparativas: 'Comparativa',
+  casos: 'Caso',
+  panama: 'Panamá',
+};
+---
+
+<BaseLayout
+  title="Blog"
+  description="Guías, comparativas y análisis del mercado web en Panamá. Precios reales, criterios honestos, cero jerga."
+  activePath={routes.blog}
+  jsonLd={[listSchema]}
+>
+  <section class="blog-hero">
+    <div class="container">
+      <Reveal>
+        <span class="eyebrow">Blog</span>
+      </Reveal>
+      <Reveal delay={0.08}>
+        <h1 class="blog-title">
+          Guías y comparativas <span class="muted">para elegir bien.</span>
+        </h1>
+      </Reveal>
+      <Reveal delay={0.16}>
+        <p class="blog-lead">
+          Lo que aprendimos construyendo sitios en Panamá, escrito sin jerga y
+          con datos reales. Nada de «tips» ni «trucos» — son las preguntas que
+          los clientes hacen antes de firmar.
+        </p>
+      </Reveal>
+    </div>
+  </section>
+
+  <section class="blog-list">
+    <div class="container">
+      {posts.length === 0 ? (
+        <p class="blog-empty">Todavía no hay posts publicados. Vuelve en unos días.</p>
+      ) : (
+        <ul class="blog-grid">
+          {posts.map((post) => {
+            const slug = post.id.replace(/\.md$/, '');
+            return (
+              <Reveal>
+                <li>
+                  <a class="blog-card" href={`/blog/${slug}/`}>
+                    <div class="blog-card-head">
+                      <span class="blog-card-cat">{categoryLabels[post.data.category] ?? post.data.category}</span>
+                      <time class="blog-card-date" datetime={post.data.date.toISOString()}>
+                        {fmtDate(post.data.date)}
+                      </time>
+                    </div>
+                    <h2 class="blog-card-title">{post.data.title}</h2>
+                    <p class="blog-card-desc">{post.data.description}</p>
+                    <span class="blog-card-more">
+                      Leer <span aria-hidden="true">→</span>
+                    </span>
+                  </a>
+                </li>
+              </Reveal>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .blog-hero {
+    padding: 120px 0 40px;
+  }
+  .blog-title {
+    font-size: clamp(36px, 6vw, 60px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-top: 18px;
+  }
+  .blog-title .muted {
+    color: var(--studio-gray);
+  }
+  .blog-lead {
+    margin-top: 24px;
+    max-width: 640px;
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--soft-white);
+  }
+
+  .blog-list {
+    padding: 40px 0 120px;
+  }
+  .blog-grid {
+    list-style: none;
+    display: grid;
+    /* Dos columnas amplias en desktop, una en móvil. auto-fit para que la
+       última fila no quede huérfana si el número de posts es impar. */
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 20px;
+  }
+  .blog-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: border-color 0.25s, background 0.25s, transform 0.25s;
+  }
+  .blog-card:hover {
+    border-color: var(--flash-orange);
+    background: rgba(255, 81, 0, 0.05);
+    transform: translateY(-3px);
+  }
+  .blog-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .blog-card-cat {
+    padding: 4px 10px;
+    border: 1px solid rgba(255, 81, 0, 0.4);
+    border-radius: 999px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--flash-orange);
+  }
+  .blog-card-date {
+    font-size: 12px;
+    color: var(--studio-gray);
+  }
+  .blog-card-title {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin-bottom: 12px;
+  }
+  .blog-card-desc {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.55;
+    color: var(--studio-gray);
+    margin-bottom: 20px;
+  }
+  .blog-card-more {
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--flash-orange);
+  }
+  .blog-empty {
+    text-align: center;
+    color: var(--studio-gray);
+    padding: 60px 20px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blog-card:hover {
+      transform: none;
+    }
+  }
+</style>
