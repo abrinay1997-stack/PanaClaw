@@ -15,10 +15,13 @@ Reglas de este documento:
   [`convenciones.md`](convenciones.md); cómo funciona el chat, en
   [`chat.md`](chat.md). Aquí solo está el estado.
 
-**Dónde está el sitio hoy:** en beta. Publicado pero sin anunciar, sin dominio
-propio y sin buscar clientes todavía. El dominio se compra cuando lo de abajo
-esté hecho, no antes — y hay un punto (el 1) que **hay que hacer antes de
-comprarlo** o se vuelve caro.
+**Dónde está el sitio hoy:** publicado en dominio propio
+(`https://panaclaw.com`, apuntado el 2026-08-17). Los cimientos técnicos y de
+SEO están cerrados (auditoría del 2026-08-20 lo confirma: 100/100 Lighthouse
+SEO). El sitio está listo para buscar clientes; lo que falta es que Google lo
+descubra en volumen (el dominio tiene días), acumular credibilidad
+(testimonios, RUC, quién hay detrás) y armar el motor de contenido para
+capturar tráfico orgánico.
 
 Cada pendiente lleva quién lo desbloquea:
 
@@ -195,11 +198,66 @@ es peor. Si algún día se toca esa regla, esto es lo que hay que volver a pensa
 
 ## Bloque 4 — Que te encuentren
 
+**Hecho el 2026-08-20 (paquete SEO a raíz de la auditoría externa).** Los tres
+puntos originales de este bloque se cerraron en un solo commit; queda una
+cadencia y dos gestiones fuera del repo.
+
+Cerrados:
+
+- **`LocalBusiness` + `ProfessionalService` con `sameAs`, `priceRange`,
+  `address` y `contactPoint`** — el schema pasó de genérico a específico de
+  agencia local. Los perfiles de Instagram y Facebook viajan en `sameAs`, que
+  es la señal fuerte para desambiguar «panaclaw» del «panaclub» que Google
+  seguía sugiriendo como marca más establecida. Vive en `BaseLayout.astro`,
+  se compone del array `socials` (`data/footer.ts`) y del `contact` de
+  `data/site.ts` — cuando cambien las redes o el número, el schema se
+  actualiza solo.
+- **Iconos 192 y 512** (`public/icon-192.png`, `public/icon-512.png`)
+  declarados en el `<head>` — Google Search prefiere PNG de al menos 48×48
+  para el favicon del resultado, y solo teníamos 32×32; por eso el sitio
+  salía con el globo genérico. Los dos se generan del SVG con `rsvg-convert`
+  al cambiar la marca. El 512 también se usa como `logo` en el JSON-LD.
+- **Sitemap con `<lastmod>`** para que Google reprioritice el rastreo cuando
+  algo cambie. Fecha del build para todas las URLs — coherente con la
+  naturaleza estática del sitio: cualquier build pudo tocar cualquier
+  página.
+- **Títulos con palabra clave + Panamá** en las cuatro páginas comerciales
+  (`/planes`, `/servicios`, `/proyectos`, `/cotizador`). Con SEO técnico ya
+  en 100/100 pero autoridad cero, cada punto de coincidencia con la query
+  pesa más de lo normal.
+- **Caché long-lived para assets de raíz** (`favicon.svg`, `og.png`, iconos
+  PWA) — PageSpeed marcaba 205 KiB de ahorro por caché ineficiente.
+- **Redes sociales activadas en el footer.** Facebook (`facebook.com/panaclaw`)
+  e Instagram (`instagram.com/pana.claw`) pasan de dibujarse apagadas a
+  enlazar de verdad.
+- **Blog montado**, con Content Collections y cuatro posts iniciales
+  («cuánto cuesta una web en Panamá», «cómo elegir agencia», «Instagram no
+  es tu web», «WordPress vs. medida»). Está enlazado solo desde el footer,
+  no del nav principal — decisión comercial: el nav queda quirúrgico y el
+  blog capta tráfico orgánico + entra al embudo por enlaces internos + CTAs
+  al cotizador al final de cada post.
+
+**Falso positivo del auditor que conviene no tocar:** las tres imágenes con
+`alt=""` (SceneBg, Nav, HeroShader) están correctamente bajo `aria-hidden` o
+`aria-label` del padre. Rellenarlas crearía ruido para lectores de pantalla.
+Comentado en `HeroShader.astro` para que la próxima auditoría no lo vuelva a
+marcar.
+
+**Sobre el número de teléfono del auditor:** el auditor detectó
+`+1 (940) 604-6565` como número publicado. Es real — está en `data/site.ts`
+desde el 2026-08-11. Es un número de EE.UU. y para SEO local en Panamá es
+una señal negativa. El propietario dijo que lo cambiaría más adelante
+(2026-08-20). Ver **issue de GitHub** o el punto 60 abajo.
+
 | # | Pendiente | Quién |
 |---|---|---|
-| 20 | **Blog con Content Collections de Astro.** El motor se monta aquí y no cuesta nada; los artículos los escribes tú. Un competidor ya ranquea con «cuánto cuesta una página web en Panamá», que es exactamente la búsqueda de mayor intención del mercado. **Cero blogs vacíos:** el motor solo tiene sentido si van a existir posts. | `[código]` + `[tuyo]` |
-| 21 | **`LocalBusiness` además de `Organization`.** El schema que ya se emite es correcto pero genérico; `LocalBusiness` con área de servicio es el que compite en búsquedas locales. | `[código]` |
-| 22 | **Search Console.** Sitemap y canonical ya se emiten bien; falta darlos de alta y verificar. Hacerlo **después** del punto 1, no antes. | `[cuenta]` |
+| 22 | **Search Console.** Sitemap y canonical se emiten bien y ya se dieron de alta (la auditoría del 2026-08-20 lo confirma: sitemap enviado, 12 páginas descubiertas). Sigue pendiente **añadir el sitemap del blog al enviar tras el próximo build** y **solicitar indexación manual** de las páginas nuevas de mayor valor (`/blog/`, los cuatro posts). | `[tuyo]` |
+| 60 | **Cambiar el número de teléfono a un panameño.** El número actual (`+1 940-604-6565`, EE.UU.) es una señal negativa para SEO local en Panamá y el auditor lo marcó como inconsistencia con el mensaje «agencia web en Panamá». **Decisión y valor tuyos:** cuando decidas el nuevo, se cambia en `src/data/site.ts` (`whatsapp` y `whatsappRaw`) y se propaga solo a las 13 páginas, chat, cotizador y schema JSON-LD. | `[tuyo]` |
+| 61 | **Google Business Profile.** Es el camino más rápido para aparecer en el paquete local de Maps y no depende de la autoridad del dominio. Se abre con `panaclaw507@gmail.com`, categoría «Diseño y desarrollo web», área de servicio Panamá, teléfono, horario y fotos del trabajo. Verificación por postal 5-14 días. | `[cuenta]` + `[tuyo]` |
+| 62 | **3-5 backlinks en directorios locales panameños.** Cámaras de comercio, directorios de negocios, marketplaces de agencias/freelancers. Genera los primeros backlinks reales (hoy son cero según Search Console) y desambigua la marca sin depender de que Google elija hacerlo por su cuenta. | `[tuyo]` |
+| 63 | **Cadencia del blog: 1 post/mes mínimo.** Menos que eso, Google marca la sección como abandonada y le baja el ranking a todo el blog. Ritmo sostenible: cada 2-4 semanas tú investigás qué buscar (Search Console → Consultas, o preguntas de clientes), me lo pasás, yo redacto por lote, revisás, publicás. | `[tuyo]` + `[código]` |
+| 64 | **Verificar el favicon en Google Search** 2-3 semanas después de la publicación de los iconos 192/512 (2026-08-20). Herramienta rápida: `https://www.google.com/s2/favicons?domain=panaclaw.com&sz=128`. Si sigue el globo, solicitar indexación de la home en Search Console. | `[tuyo]` |
+| 65 | **Optimizar LCP móvil.** PageSpeed reportó 4.3s (debería ser <2.5s). El paquete del 2026-08-20 atacó la parte de caché (los 205 KiB de assets). Los otros ítems (~400 ms de render-blocking, ~80 KiB de JS «antiguo» con polyfills, ~5 KiB de imágenes) requieren experimentación específica con el reporte en vivo. Después del deploy del blog, correr PageSpeed móvil y ver qué se movió. | `[código]` |
 
 ## Bloque 5 — Técnico y marca
 
@@ -207,7 +265,6 @@ es peor. Si algún día se toca esa regla, esto es lo que hay que volver a pensa
 |---|---|---|
 | 23 | **Prueba con lector de pantalla real** (NVDA / VoiceOver). Lo auditado es estructura, no experiencia. Es el único hueco de accesibilidad que queda y no se puede cerrar desde el repo. | `[tuyo]` |
 | 24 | **El `<select>` de `/contacto` usa `appearance:none`** con la flecha en `background-image`. En Windows con alto contraste puede desaparecer. Riesgo bajo. | `[código]` |
-| 25 | **La marca es solo tipográfica.** El rayo del favicon no aparece en el nav, ni en el footer, ni en la imagen social, y no hay versión sobre fondo claro para facturas o propuestas. | `[código]` |
 | 26 | **El shader es un `requestAnimationFrame` permanente** mientras el hero está en pantalla. Es la única animación corriendo del sitio. Ya se pausa fuera del viewport y no arranca con reduce-motion; si algún día importa la batería, baja a 30 fps sin que se note. | `[código]` |
 | 27 | **Los 9 PNG de origen pesan 11,2 MB** y en WebP q90 pesarían 0,87 MB — un 92 % menos, imperceptible en pantalla porque se muestran al 32–50 % de opacidad bajo un velo. No afecta a lo que se sirve (Astro ya emite 1,19 MB de WebP), solo al peso del repo. | `[código]` |
 
@@ -802,25 +859,36 @@ evaluarlos cada mes.
 
 ---
 
-## Sobre el análisis externo del 2026-08-03
+## Sobre las auditorías externas
 
-Ese informe se hizo desde el navegador, sin acceso al código. Acierta en lo
-grande —la falta de prueba social y de dominio propio son los dos agujeros
-reales— pero conviene no actuar sobre estos cuatro puntos:
+Se han hecho dos, y las dos aciertan en lo grande y meten cosas menores.
 
-- **«No detecté datos estructurados (schema.org)».** Sí los hay, y desde hace
-  tiempo: `Organization`, `FAQPage`, `Service` + `Offer` y `CollectionPage`. Lo
-  que falta es matizar `Organization` a `LocalBusiness` (punto 21), que es otra
-  cosa y mucho más pequeña.
-- **«URLs limpias» como fortaleza.** Es justo al revés: el sitio sirve
-  `/contacto.html`. Es el punto 1, y es el único con fecha límite.
-- **«Ocultar los íconos de redes “próximamente”».** Ya no enlazan a ningún
-  sitio: se dibujan apagados, fuera del orden de foco y con `aria-hidden`,
-  precisamente para no llevar a un 404. Si aun así se prefiere no anunciarlos,
-  es un filtro de una línea en `Footer.astro` — pero no es el bug que describe.
-- **«No pude verificar el responsive» y «auditar el contraste».** Los dos están
-  medidos: el layout móvil con `npm run medir:movil`, y el contraste del texto
-  secundario dio 10,4 : 1 sobre fondo real, muy por encima del 4,5 que pide AA.
+**Auditoría del 2026-08-20** (con acceso a Search Console). Su diagnóstico
+central es correcto: el sitio es técnicamente impecable (100/100 Lighthouse
+SEO) pero es invisible para Google porque tiene días de vida y cero autoridad.
+Los cinco puntos accionables se ejecutaron y viven arriba, en el bloque 4. Los
+matices que **no** se aplicaron:
+
+- **«Alt vacío como problema».** Las tres imágenes con `alt=""` están bajo
+  `aria-hidden` o dentro de un enlace con `aria-label` propio: rellenarlas
+  sería regresivo. Falso positivo. Documentado en `HeroShader.astro`.
+- **«Teléfono como inconsistencia local».** Cierto — el número es de EE.UU.
+  (`+1 940-604-6565`). No es error del auditor, es una decisión pendiente del
+  propietario (punto 60).
+
+**Auditoría del 2026-08-03** (sin acceso al código). Acertó en lo grande —
+falta de prueba social y de dominio propio— y esos dos agujeros siguen
+abiertos en el bloque 2. Los cuatro puntos sobre los que se decidió **no**
+actuar (ya obsoletos, para evitar reabrirlos):
+
+- «No detecté datos estructurados» — Sí los había desde hace tiempo. Y a día
+  de hoy es `LocalBusiness` + `ProfessionalService` con `sameAs`.
+- «URLs limpias» como fortaleza — Era al revés (`/contacto.html`), ya
+  resuelto en el bloque 1.
+- «Ocultar íconos de redes próximamente» — Ya no aplica: los íconos activos
+  enlazan de verdad desde el 2026-08-20.
+- «No pude verificar el responsive» — Está medido con `npm run medir:movil`,
+  y el contraste dio 10,4 : 1, muy por encima del 4,5 AA.
 
 ---
 

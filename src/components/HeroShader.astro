@@ -16,6 +16,11 @@ import heroFallback from '../assets/hero/hero-fallback.png';
 ---
 
 <div class="hero-shader" data-hero-shader>
+  {/* alt="" + aria-hidden es intencional: la imagen es atmósfera, no
+     contenido, y el hero ya dice todo lo que hay que decir en su H1. Que un
+     lector de pantalla la anuncie sería ruido. La auditoría SEO del 20 ago
+     marcó este alt vacío como "corregir"; es un falso positivo — sacar el
+     alt="" o rellenarlo con "imagen del hero" empeoraría la accesibilidad. */}
   <Image
     src={heroFallback}
     alt=""

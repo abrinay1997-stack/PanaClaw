@@ -68,7 +68,17 @@ export default defineConfig({
        * sin barra final, el build falla en vez de entregarle a Google una lista
        * de URLs que ninguna página reconoce como la buena. Es el bug que ya
        * ocurrió una vez, en las diez páginas indexables a la vez.
+       *
+       * `lastmod` se pone al momento del build. En un sitio estático como este
+       * cada build implica que TODO se pudo haber tocado —los datos comparten
+       * archivos, así que un cambio en plans.ts repinta media docena de
+       * páginas—: emitir la fecha del build para todas es honesto y le dice a
+       * Google "esto es lo más nuevo que hay". No usamos `fs.stat` del archivo
+       * porque una página como /planes/ no depende solo de su .astro sino de
+       * plans.ts, modules.ts, quote.ts, y calcular esa raíz de dependencias es
+       * más código que valor.
        */
+      lastmod: new Date(),
       serialize: (item) => {
         const { pathname } = new URL(item.url);
         if (!pathname.endsWith('/')) {
