@@ -48,16 +48,31 @@ encuentra (dev, GitHub Pages) degrada solo a WhatsApp.
 | `npm run check` | `astro check` — tipos y diagnósticos |
 | `npm run medir:movil` | Auditoría de layout en móvil sobre `dist/` |
 | `npm run medir:cotizador` | Auditoría del cotizador sobre `dist/` |
+| `npm run medir:enlaces` | Enlaces internos y anclas rotas sobre `dist/` |
 | `npm run medir` | Mide los proyectos publicados con Lighthouse |
 | `npm run capturas` | Captura la portada de cada proyecto |
 | `npm run brand` | Regenera favicons y `og.png` — solo al cambiar el branding |
 
 `npm run build` **no** comprueba tipos. Para eso está `npm run check`.
 
-Las auditorías (`medir:movil`, `medir:cotizador`) necesitan Playwright — que
-**no** es dependencia del proyecto a propósito para que no infle cada build de
-Netlify. Ver [`docs/convenciones.md`](docs/convenciones.md) para la instalación
-y el porqué de cada comprobación.
+**Las tres auditorías (`medir:movil`, `medir:cotizador`, `medir:enlaces`) corren
+solas en cada PR** — ver [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+Un PR con el CI en rojo no se mergea; así es como el sitio no se rompe cuando
+varias personas lo tocan a la vez. Para reproducir localmente antes de subir:
+
+```bash
+npm run build
+npm run medir:enlaces          # no necesita Playwright
+npm i -D playwright && npx playwright install chromium
+npm run medir:movil
+npm run medir:cotizador
+```
+
+`medir:movil` y `medir:cotizador` necesitan Playwright — que **no** es
+dependencia del proyecto a propósito para que no infle cada build de Netlify
+(en CI se instala solo para ese job, sin tocar `package.json`). Ver
+[`docs/convenciones.md`](docs/convenciones.md) para el porqué de cada
+comprobación.
 
 ---
 
@@ -79,7 +94,7 @@ src/
 
 public/             Archivos servidos tal cual (favicons, og.png, robots.txt).
 netlify/functions/  chat.mts — endpoint del chat. Único código de servidor.
-scripts/            Herramientas que se corren a mano (auditorías, capturas).
+scripts/            Auditorías (algunas corren solas en CI, ver arriba) y capturas.
 brand-assets/       Fuentes originales de logo (SVG y PNG del usuario). NO se sirven.
 docs/               Estado, convenciones y chat.
 netlify.toml        Comando de build, cabeceras de seguridad y política de caché.
