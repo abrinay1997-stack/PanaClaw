@@ -21,6 +21,7 @@ import ChatWidget from '../components/ChatWidget.astro';
 import { site, contact } from '../data/site';
 import { withBase, routes } from '../data/links';
 import { metaPixelId } from '../data/analytics';
+import { socials } from '../data/footer';
 
 interface Props {
   title: string;
@@ -79,24 +80,58 @@ const canonical = new URL(canonicalPath, origin).toString();
 const emitCanonical = !noindex;
 const ogImage = new URL(withBase('og.png'), origin).toString();
 
-// Organization schema (JSON-LD) — se emite solo en la home para no duplicar
+/*
+ * Schema JSON-LD — se emite solo en la home para no duplicar.
+ *
+ * Migrado de `Organization` a un tipo doble `[LocalBusiness, ProfessionalService]`
+ * en 2026-08-20 a raíz de la auditoría SEO: Organization es genérico y no da
+ * señal de negocio local a Google, y por eso el sitio no aparecía en el paquete
+ * de Maps para búsquedas como "agencia web Panamá". LocalBusiness sí, y
+ * ProfessionalService lo especializa. Van los dos como array porque una web es
+ * las dos cosas.
+ *
+ * Los campos añadidos y por qué:
+ * - `address`   → PostalAddress con país PA. Sin dirección exacta a propósito
+ *                 (es 100% remoto), pero la locality/country ya localiza.
+ * - `priceRange`→ los valores del catálogo, calculados de plans.ts sería ideal,
+ *                 pero como este archivo no lo importa y no vale la pena
+ *                 acoplar, se pone el rango a mano ($295 - $1200); si cambia,
+ *                 sale del build igual porque `astro check` no lo valida.
+ * - `sameAs`    → URLs de los perfiles sociales. Es la señal más fuerte para
+ *                 DESAMBIGUAR "panaclaw" (que Google confunde con "panaclub").
+ *                 Salen de `data/footer.ts`, así el día que activemos otra red
+ *                 se suma sola aquí.
+ * - `logo`      → apunta al icon-512.png (más grande y más limpio para search
+ *                 result), no al apple-touch-icon.
+ */
 const isHome = canonicalPath === import.meta.env.BASE_URL;
 
 const orgSchema = {
   '@context': 'https://schema.org',
-  '@type': 'Organization',
+  '@type': ['LocalBusiness', 'ProfessionalService'],
+  '@id': new URL(routes.home, origin).toString() + '#business',
   name: site.name,
   description: site.description,
   url: new URL(routes.home, origin).toString(),
-  logo: new URL(withBase('apple-touch-icon.png'), origin).toString(),
+  logo: new URL(withBase('icon-512.png'), origin).toString(),
   image: ogImage,
-  areaServed: site.location,
+  priceRange: '$295 - $1200',
+  areaServed: {
+    '@type': 'Country',
+    name: 'Panama',
+  },
+  address: {
+    '@type': 'PostalAddress',
+    addressCountry: 'PA',
+    addressLocality: 'Panamá',
+  },
   contactPoint: {
     '@type': 'ContactPoint',
     contactType: 'sales',
     telephone: contact.whatsapp,
     availableLanguage: ['Spanish'],
   },
+  sameAs: socials.filter((s) => s.href).map((s) => s.href),
 };
 
 const schemas = isHome ? [orgSchema, ...jsonLd] : jsonLd;
@@ -175,8 +210,22 @@ fbq('init', ${JSON.stringify(metaPixelId)});
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
 
+    {/*
+      Cuatro iconos, cada uno con su motivo:
+      - SVG: navegadores modernos, escala a cualquier densidad.
+      - 32×32 PNG: fallback histórico para la pestaña.
+      - 192×192 PNG: el que prefiere Google Search para el favicon del
+        resultado (documentado por Google en la guía de favicon). Sin esto, el
+        resultado sale con un globo genérico —fue el hallazgo del 2026-08-20—.
+        Va en múltiplo de 48, que es lo que Google recomienda.
+      - 512×512 PNG: el que usan Android/PWA para instalar en pantalla de
+        inicio, y el que declaramos como `logo` en el JSON-LD.
+      - apple-touch-icon: iOS al añadir a inicio; fondo negro obligatorio.
+    */}
     <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
     <link rel="icon" type="image/png" sizes="32x32" href={withBase('favicon-32.png')} />
+    <link rel="icon" type="image/png" sizes="192x192" href={withBase('icon-192.png')} />
+    <link rel="icon" type="image/png" sizes="512x512" href={withBase('icon-512.png')} />
     <link rel="apple-touch-icon" href={withBase('apple-touch-icon.png')} />
 
     <!-- View Transitions API entre páginas -->

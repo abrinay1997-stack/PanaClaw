@@ -66,3 +66,27 @@
   for = "/_astro/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Assets sueltos de public/ (favicons, og image, iconos PWA). No llevan hash en
+# el nombre, así que no pueden ser `immutable`, pero sí un mes de caché — cambian
+# raras veces y cuando lo hacen se puede forzar recarga con Ctrl+Shift+R o
+# esperar 30 días. PageSpeed marcaba estos assets como "tiempos de vida de caché
+# poco eficientes" (~205 KiB de ahorro estimado) porque heredaban el default de
+# `max-age=0, must-revalidate`. Los pongo por extensión, uno por regla, porque
+# Netlify no soporta patrones con llaves.
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+[[headers]]
+  for = "/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+[[headers]]
+  for = "/*.ico"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
