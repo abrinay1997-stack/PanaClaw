@@ -1,6 +1,16 @@
 export interface FaqItem {
   q: string;
   a: string;
+  /**
+   * Otras formas de preguntar lo mismo. NO se muestran en la página: existen
+   * solo para la base de conocimiento del bot, cuya recuperación es léxica y
+   * solo encuentra lo que está escrito.
+   *
+   * Sin esto, cada pregunta del centro de ayuda llegaba al bot con una sola
+   * frase —la formal, la que nadie escribe por WhatsApp— y una duda que ESTÁ
+   * respondida aquí no se recuperaba. El bot, sin nada que citar, improvisaba.
+   */
+  alias?: string[];
 }
 
 export interface FaqGroup {
@@ -72,6 +82,18 @@ export const faqGroups: FaqGroup[] = [
         a: 'Puede ser cero. Los sitios que hacemos funcionan sin cuotas mensuales obligatorias; lo único que se renueva es el dominio, unos $15 al año. Si prefieres no ocuparte de nada, los planes Care empiezan en $35 al mes e incluyen el alojamiento, la vigilancia y horas de cambios.',
       },
       {
+        q: 'Si usan inteligencia artificial, ¿por qué no es más barato?',
+        a: 'Porque lo que pagas no son las horas de tecleo, es el criterio. La herramienta escribe rápido; decidir qué se construye, qué se descarta y por qué tu negocio necesita esto y no aquello sigue siendo trabajo humano, y es justo la parte que hace que un sitio venda o se quede mirando. Los precios de cada plan están publicados y son los mismos para todos.',
+        alias: [
+          'si usan ia por que cobran eso',
+          'entonces para que les pago si lo hace la ia',
+          'si lo hace una maquina deberia costar menos',
+          'por que tan caro si usan inteligencia artificial',
+          'me sale mas barato hacerlo yo con chatgpt',
+          'no me lo puede hacer la ia gratis',
+        ],
+      },
+      {
         q: '¿Hay descuentos o facilidades de pago?',
         a: 'En los planes de sitio, el esquema es siempre mitad y mitad. En los planes Care, pagar el año por adelantado te sale con dos meses gratis. No manejamos descuentos por regatear: el precio publicado es el mismo para todos, y esa es justamente la idea.',
       },
@@ -93,6 +115,25 @@ export const faqGroups: FaqGroup[] = [
       {
         q: '¿Qué pasa si necesito más cambios de los incluidos?',
         a: 'Cada ronda extra cuesta $40. Se sabe desde el principio, así que no hay nada que negociar ni situaciones incómodas. Es una cifra pensada para que puedas pedir un cambio más sin pensártelo, no para castigarte.',
+      },
+      {
+        q: '¿Usan inteligencia artificial para hacer las páginas?',
+        a: 'Sí, y te decimos exactamente en qué. La IA es una herramienta más del taller, como el editor de código o el de diseño: acelera la parte mecánica —escribir código, preparar borradores, revisar detalles—. Lo que no hace es decidir. Cómo se ve tu marca, qué dice y qué se queda fuera sale de hablar contigo y lo define una persona del equipo, que además audita todo antes de entregártelo. La herramienta acelera; el criterio y la identidad de tu negocio son de un humano, y ahí no hay atajo.',
+        alias: [
+          'usan ia',
+          'usan inteligencia artificial',
+          'usan ia para crear paginas web',
+          'usan ia para hacer los sitios',
+          'la pagina la hace una ia',
+          'esto lo hizo una inteligencia artificial',
+          'el sitio lo hace un robot',
+          'lo hacen con chatgpt',
+          'programan con ia',
+          'trabajan con ia',
+          'la hace una persona o una maquina',
+          'quien hace realmente mi pagina',
+          'es codigo generado por ia',
+        ],
       },
       {
         q: '¿Tengo que darles mis claves de algo?',
