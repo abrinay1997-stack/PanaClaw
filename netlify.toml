@@ -28,7 +28,7 @@
 #   ANTHROPIC_API_KEY  clave de Claude (si está, tiene prioridad)
 #   GROQ_API_KEY       clave de Groq (alternativa más barata)
 #   CHAT_PROVIDER      opcional, 'groq' o 'anthropic' para fijar cuál se usa
-#   CHAT_MODEL         opcional, para fijar el modelo
+#   CHAT_MODEL         opcional, para fijar el modelo (varios, separados por comas)
 #   CHAT_MAX_PER_DAY   opcional, techo diario de mensajes (300 por defecto)
 #
 # Sin ninguna clave el endpoint sigue respondiendo: deriva a WhatsApp en vez de
