@@ -60,6 +60,16 @@ uno. El resumen de las cinco más importantes está en el
     panel del chat (`width:calc(100vw - 28px)` peleando con el desplazamiento del
     padre). Ambos se veían bien en escritorio y rotos en teléfono.
     `npm run medir:movil` vigila los dos.
+16. **Nada de la primera pantalla espera al JavaScript.** Lo que se ve sin hacer
+    scroll —el H1, su párrafo, sus botones— se pinta con el HTML y el CSS, y
+    punto. Los reveals de esa zona van con `<Reveal eager>`, que es una
+    animación CSS que corre sola; el `<Reveal>` normal arranca en `opacity:0` y
+    solo se destapa cuando llega su script, así que arriba no es una entrada:
+    es el contenido escondido detrás de la red. Costó caro y por eso está
+    escrito: PageSpeed, 22 ago 2026, LCP móvil de 4,4 s con 3,3 s de retraso de
+    renderizado sobre el titular de la portada, con el servidor respondiendo en
+    30 ms. La regla vale para cualquier otro adorno que se añada arriba: si
+    esconde contenido hasta que corra un script, va mal.
 
 ---
 

@@ -55,23 +55,27 @@ import { routes } from '../data/links';
         nombre: casi nadie sabe cómo se llama lo que necesita, pero todo el
         mundo sabe en qué situación está.
       -->
+      {/*
+        `as="li"`: un <ul> solo admite <li> como hijo directo. Con el <div> del
+        reveal en medio, el navegador no construye la lista y un lector de
+        pantalla deja de anunciar "lista de N elementos" y de poder saltar de
+        uno a otro (Lighthouse "list"/"listitem", 22 ago 2026).
+      */}
       <ul class="cat-list">
         {catalogo.map((item) => (
-          <Reveal>
-            <li class="cat-item">
-              <a class="cat-link" href={item.href}>
-                <span class="cat-main">
-                  <span class="cat-name">{item.name}</span>
-                  <span class="cat-para">{item.paraQuien}</span>
-                  <span class="cat-desc">{item.desc}</span>
-                </span>
-                <span class="cat-money">
-                  <span class="cat-price">{item.price}</span>
-                  <span class="cat-cobro">{item.cobro}</span>
-                </span>
-                <span class="cat-arrow" aria-hidden="true">→</span>
-              </a>
-            </li>
+          <Reveal as="li" class="cat-item">
+            <a class="cat-link" href={item.href}>
+              <span class="cat-main">
+                <span class="cat-name">{item.name}</span>
+                <span class="cat-para">{item.paraQuien}</span>
+                <span class="cat-desc">{item.desc}</span>
+              </span>
+              <span class="cat-money">
+                <span class="cat-price">{item.price}</span>
+                <span class="cat-cobro">{item.cobro}</span>
+              </span>
+              <span class="cat-arrow" aria-hidden="true">→</span>
+            </a>
           </Reveal>
         ))}
       </ul>
@@ -308,6 +312,13 @@ import { routes } from '../data/links';
   }
   .cat-foot a {
     color: var(--flash-orange);
+/* Subrayado obligado: el naranja sobre el gris del cuerpo da 1,68:1 y el
+       mínimo para distinguir un enlace solo por color es 3:1. Sin esto, en
+       medio de un párrafo no se ve que sea un enlace (Lighthouse
+       "link-in-text-block", 22 ago 2026). */
+    text-decoration: underline;
+    text-underline-offset: 0.16em;
+    text-decoration-thickness: 1px;
   }
 
   /* ---------- CARE ---------- */
@@ -340,6 +351,10 @@ import { routes } from '../data/links';
   }
   .care-otro a {
     color: var(--flash-orange);
+    /* Mismo motivo que .cat-foot a: 1,68:1 contra el gris del cuerpo. */
+    text-decoration: underline;
+    text-underline-offset: 0.16em;
+    text-decoration-thickness: 1px;
   }
   .care-lead-text {
     margin-top: 24px;

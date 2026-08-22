@@ -21,15 +21,36 @@ import heroFallback from '../assets/hero/hero-fallback.png';
      lector de pantalla la anuncie sería ruido. La auditoría SEO del 20 ago
      marcó este alt vacío como "corregir"; es un falso positivo — sacar el
      alt="" o rellenarlo con "imagen del hero" empeoraría la accesibilidad. */}
+  {/*
+    Tres decisiones de peso, todas medidas en PageSpeed el 22 ago 2026:
+
+    - `widths` con escalones finos. Con [640, 1280, 1920] y `sizes="100vw"`, un
+      teléfono de 412 px a DPR 1,75 necesita ~721 px y no le queda más remedio
+      que bajarse el de 1280 — 51 KiB para pintar 721. Los escalones intermedios
+      le dejan pedir el que de verdad usa.
+    - `quality` 62 en lugar de 72. Esta imagen nunca se ve limpia: va al 42 %
+      de opacidad (62 % en móvil) y debajo de una viñeta que la oscurece entera.
+      La calidad que se le quita no llega a la pantalla.
+    - `fetchpriority="high"` se queda, y merece la aclaración porque el informe
+      dice lo contrario. Ahí el elemento LCP era el H1 y esta imagen parecía una
+      prioridad robada; lo era solo porque la imagen estaba invisible esperando
+      al JavaScript. Arreglado eso, en móvil vuelve a ser lo que siempre fue de
+      hecho: un fondo a pantalla completa, o sea el elemento más grande de la
+      primera pantalla, o sea el LCP. Medido con Lighthouse en local, mediana de
+      tres pasadas: quitarle la prioridad empeora el LCP de 1,97 s a 2,11 s.
+      (En escritorio manda el shader y esta imagen no llega a verse, así que ahí
+      la prioridad se gasta en algo invisible. Se acepta: el escritorio ya iba a
+      1,3 s de LCP y el problema estaba en móvil.)
+  */}
   <Image
     src={heroFallback}
     alt=""
     class="hero-shader-fallback"
     aria-hidden="true"
-    widths={[640, 1280, 1920]}
+    widths={[480, 640, 768, 960, 1280, 1920]}
     sizes="100vw"
     format="webp"
-    quality={72}
+    quality={62}
     loading="eager"
     fetchpriority="high"
     decoding="async"
@@ -55,6 +76,23 @@ import heroFallback from '../assets/hero/hero-fallback.png';
 
   let cleanup: (() => void) | null = null;
 
+  /**
+   * ¿Toca shader o imagen? Es la parte barata —dos media queries y una clase—,
+   * así que corre de inmediato: en móvil la imagen es el fondo del hero y no
+   * tiene por qué esperar a nada. Devuelve si hay que intentar el WebGL.
+   */
+  function decidirFondo(): boolean {
+    const container = document.querySelector<HTMLElement>('[data-hero-shader]');
+    if (!container) return false;
+
+    // La imagen de respaldo solo aparece si de verdad no vamos a animar nada.
+    if (prefersReducedMotion() || isNarrow()) {
+      container.classList.add('is-fallback');
+      return false;
+    }
+    return true;
+  }
+
   function initHeroShader() {
     // Limpieza de instancia anterior (View Transitions puede re-invocar)
     if (cleanup) {
@@ -66,7 +104,7 @@ import heroFallback from '../assets/hero/hero-fallback.png';
     const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-canvas]');
     if (!container || !canvas) return;
 
-    // La imagen de respaldo solo aparece si de verdad no vamos a animar nada.
+    // Entre la decisión y este punto pudo cambiar el ancho (rotar el móvil).
     if (prefersReducedMotion() || isNarrow()) {
       container.classList.add('is-fallback');
       return;
@@ -254,11 +292,41 @@ void main() {
   const narrowQuery = window.matchMedia('(max-width: 900px)');
   const onBreakpoint = () => {
     document.querySelector('[data-hero-shader]')?.classList.remove('is-fallback');
-    initHeroShader();
+    arrancar();
   };
   if (narrowQuery.addEventListener) narrowQuery.addEventListener('change', onBreakpoint);
 
-  document.addEventListener('astro:page-load', initHeroShader);
+  /**
+   * El shader arranca DESPUÉS de que cargue la página, no durante.
+   *
+   * Compilar dos shaders, crear el contexto WebGL y entrar en un bucle de
+   * requestAnimationFrame no es trabajo gratis, y hacerlo mientras el navegador
+   * todavía está pintando la primera pantalla es gastarlo en el peor momento
+   * posible: PageSpeed midió 620 ms de TBT en escritorio el 22 ago 2026, que es
+   * justo la ventana en la que esto corría. El fondo es atmósfera; el titular
+   * es el contenido. Primero el contenido.
+   *
+   * Lo que NO se aplaza es la decisión: `decidirFondo` corre de inmediato y, si
+   * toca imagen fija —móvil o reduce-motion—, la enciende ahí mismo. Cuesta una
+   * clase y en móvil esa imagen es el fondo del hero, no un plan B.
+   *
+   * En una navegación con View Transitions la página ya está cargada, así que
+   * `readyState === 'complete'` y el shader entra sin esperar a nada.
+   */
+  function alQuedarOcioso(fn: () => void) {
+    const lanzar = () => {
+      if ('requestIdleCallback' in window) window.requestIdleCallback(fn, { timeout: 1200 });
+      else setTimeout(fn, 200);
+    };
+    if (document.readyState === 'complete') lanzar();
+    else window.addEventListener('load', lanzar, { once: true });
+  }
+
+  function arrancar() {
+    if (decidirFondo()) alQuedarOcioso(initHeroShader);
+  }
+
+  document.addEventListener('astro:page-load', arrancar);
   document.addEventListener('astro:before-swap', () => {
     if (cleanup) {
       cleanup();
@@ -268,9 +336,9 @@ void main() {
 
   // Bootstrap para el primer render (module scripts llegan después de astro:page-load)
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHeroShader, { once: true });
+    document.addEventListener('DOMContentLoaded', arrancar, { once: true });
   } else {
-    initHeroShader();
+    arrancar();
   }
 </script>
 

@@ -122,14 +122,14 @@ const celda = (valor: boolean | string) =>
     <SceneBg visual={seguridadVisual} side="left" />
     <div class="container">
       <div class="seg-hero-copy">
-        <Reveal>
+        <Reveal eager>
           <span class="eyebrow">{seguridad.name} · Para el sitio que ya tienes</span>
           <h1>Que no te lo <span class="muted">hackeen.</span></h1>
         </Reveal>
-        <Reveal delay={0.12}>
+        <Reveal delay={0.12} eager>
           <p class="seg-lead">{seguridad.summary}</p>
         </Reveal>
-        <Reveal delay={0.2}>
+        <Reveal delay={0.2} eager>
           <div class="seg-hero-price">
             <span class="seg-hero-amount">Desde {revision.price.split('–')[0]}</span>
             <span class="seg-hero-kicker">{revision.kicker}</span>
@@ -877,6 +877,13 @@ const celda = (valor: boolean | string) =>
   }
   .seg-faq-foot a {
     color: var(--flash-orange);
+/* Subrayado obligado: el naranja sobre el gris del cuerpo da 1,68:1 y el
+       mínimo para distinguir un enlace solo por color es 3:1. Sin esto, en
+       medio de un párrafo no se ve que sea un enlace (Lighthouse
+       "link-in-text-block", 22 ago 2026). */
+    text-decoration: underline;
+    text-underline-offset: 0.16em;
+    text-decoration-thickness: 1px;
   }
 
   @media (prefers-reduced-motion: reduce) {

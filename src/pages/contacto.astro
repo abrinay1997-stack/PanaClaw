@@ -38,7 +38,7 @@ const esWhatsApp = formDestination === 'whatsapp';
       <div class="ct-grid">
         <!-- Columna izquierda: las vías rápidas -->
         <div class="ct-intro">
-          <Reveal>
+          <Reveal eager>
             <span class="eyebrow">Contacto</span>
             <h1>Hablemos de <span class="muted">tu proyecto.</span></h1>
             <p class="ct-lead">
@@ -47,7 +47,7 @@ const esWhatsApp = formDestination === 'whatsapp';
             </p>
           </Reveal>
 
-          <Reveal delay={0.12}>
+          <Reveal delay={0.12} eager>
             <a class="ct-wa" href={waLink()} target="_blank" rel="noopener">
               <span class="ct-wa-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor">

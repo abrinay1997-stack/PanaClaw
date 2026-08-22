@@ -3,7 +3,7 @@
  * Reveal por scroll con estrategia robusta.
  *
  * - CSS transitions puros (más confiables que animations en browsers pausados).
- * - Above-the-fold: se revela inmediatamente al cargar.
+ * - Above-the-fold: `eager` — animación CSS pura, sin JavaScript de por medio.
  * - Below-the-fold: IntersectionObserver, uno compartido por todos los nodos.
  * - Fallback CSS con animation-fill si nada dispara (1.5s).
  * - Respeta prefers-reduced-motion.
@@ -22,6 +22,27 @@ interface Props {
   duration?: number;
   stagger?: boolean;
   class?: string;
+  /**
+   * Contenido de la primera pantalla: se anima sin esperar a JavaScript.
+   *
+   * EL PORQUÉ, que es la razón de que esta propiedad exista. El modo normal
+   * arranca en `opacity:0` y solo se destapa cuando el script del componente ha
+   * bajado, ha bajado su import (`motion.js`) y ha corrido. Para un bloque que
+   * ya está en pantalla eso no es una animación de entrada: es el titular
+   * escondido detrás de la red. PageSpeed lo midió el 22 ago 2026 en móvil —
+   * LCP 4,4 s con 3,3 s de «retraso de renderizado» sobre el H1 de la portada,
+   * con el TTFB en 30 ms. La página estaba entera y en blanco esperando dos
+   * peticiones de JavaScript para poder enseñar su propio titular.
+   *
+   * Con `eager` el elemento no lleva `data-reveal`, así que el observador ni lo
+   * mira: la entrada es una `@keyframes` que el navegador arranca en el primer
+   * frame, junto al primer pintado. Se ve igual, pero ya no depende de nada.
+   *
+   * REGLA: `eager` en todo lo que entre en la primera pantalla sin hacer
+   * scroll —el H1, su párrafo y sus botones— y nada más. Abajo no aporta
+   * (dispararía la animación antes de que nadie la vea) y quita el reveal.
+   */
+  eager?: boolean;
 }
 
 const {
@@ -31,6 +52,7 @@ const {
   duration = 0.9,
   stagger = false,
   class: className = '',
+  eager = false,
 } = Astro.props;
 
 const classes = ['reveal', stagger ? 'reveal--stagger' : '', className].filter(Boolean).join(' ');
@@ -39,7 +61,8 @@ const styleVars = `--reveal-delay:${delay}s;--reveal-duration:${duration}s;--rev
 
 <Tag
   class={classes}
-  data-reveal
+  data-reveal={eager ? undefined : true}
+  data-reveal-eager={eager ? true : undefined}
   style={styleVars}
 >
   <slot />
@@ -87,8 +110,17 @@ const styleVars = `--reveal-delay:${delay}s;--reveal-duration:${duration}s;--rev
     const vh = window.innerHeight || document.documentElement.clientHeight || 720;
     const io = getObserver();
 
-    nodes.forEach((el) => {
-      const rect = el.getBoundingClientRect();
+    /*
+     * Primero se mide TODO y después se escribe. En un solo bucle,
+     * `markDone` invalida los estilos y el `getBoundingClientRect` del
+     * siguiente nodo obliga al navegador a recalcular el layout ahí mismo, una
+     * vez por elemento: es el «reflow forzado» que salió en PageSpeed el 22 ago
+     * 2026. Separados en dos pasadas, el layout se calcula una sola vez.
+     */
+    const rects = Array.from(nodes, (el) => el.getBoundingClientRect());
+
+    nodes.forEach((el, i) => {
+      const rect = rects[i];
       const aboveTheFold = rect.top < vh * 0.9 && rect.bottom > 0;
 
       if (aboveTheFold) {
@@ -133,12 +165,38 @@ const styleVars = `--reveal-delay:${delay}s;--reveal-duration:${duration}s;--rev
       transform: none;
     }
   }
+
+  /*
+    Variante `eager` (primera pantalla). Ni `opacity:0` de partida ni observador:
+    una keyframe que el navegador arranca sola en el primer frame. Que el estado
+    inicial viva DENTRO de la animación y no en el elemento es justo lo que la
+    hace segura para el LCP — si el CSS llega y el JavaScript no, el titular se
+    ve igual, porque nada fuera de la animación lo esconde.
+  */
+  [data-reveal-eager] {
+    animation: reveal-in var(--reveal-duration, 0.9s) cubic-bezier(0.22, 1, 0.36, 1)
+      var(--reveal-delay, 0s) backwards;
+  }
+  @keyframes reveal-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, var(--reveal-y, 24px), 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     [data-reveal] {
       opacity: 1 !important;
       transform: none !important;
       animation: none !important;
       transition: none !important;
+    }
+    [data-reveal-eager] {
+      animation: none !important;
     }
   }
 </style>

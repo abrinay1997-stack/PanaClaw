@@ -41,7 +41,23 @@ export default defineConfig({
   trailingSlash: 'always',
   build: {
     format: 'directory',
-    inlineStylesheets: 'auto', // CSS pequeño se inlinea; el grande queda como <link>
+    /**
+     * TODO el CSS viaja dentro del HTML, no como <link>.
+     *
+     * Con 'auto' se inlinea solo lo que baja de 4 KB, y en la práctica eso
+     * dejaba fuera las dos hojas que importan: BaseLayout (34 KB) e index
+     * (8 KB). Las dos bloquean el renderizado, y bloquearlo cuesta una segunda
+     * vuelta de red completa —PageSpeed lo midió el 22 ago 2026 en 430 ms de
+     * móvil sobre un TTFB de 30 ms: la página llegaba enseguida y se quedaba
+     * en blanco esperando su propio CSS—.
+     *
+     * El precio es real y conviene tenerlo escrito: ~9 KB comprimidos de más en
+     * cada HTML, que ya no se comparten entre páginas ni se cachean un año. Se
+     * paga a gusto. Este sitio se abre casi siempre desde un anuncio o desde la
+     * bio de una red —una sola página, sin caché previa, con datos móviles—, y
+     * ahí la primera pantalla vale más que la segunda navegación.
+     */
+    inlineStylesheets: 'always',
   },
   compressHTML: true,
   integrations: [

@@ -270,7 +270,59 @@ JSON-LD. Con esto cierra el punto 60, que sale de la tabla de pendientes.
 | 62 | **3-5 backlinks en directorios locales panameños.** Cámaras de comercio, directorios de negocios, marketplaces de agencias/freelancers. Genera los primeros backlinks reales (hoy son cero según Search Console) y desambigua la marca sin depender de que Google elija hacerlo por su cuenta. | `[tuyo]` |
 | 63 | **Cadencia del blog: 1 post/mes mínimo.** Menos que eso, Google marca la sección como abandonada y le baja el ranking a todo el blog. Ritmo sostenible: cada 2-4 semanas tú investigás qué buscar (Search Console → Consultas, o preguntas de clientes), me lo pasás, yo redacto por lote, revisás, publicás. | `[tuyo]` + `[código]` |
 | 64 | **Verificar el favicon en Google Search** 2-3 semanas después de la publicación de los iconos 192/512 (2026-08-20). Herramienta rápida: `https://www.google.com/s2/favicons?domain=panaclaw.com&sz=128`. Si sigue el globo, solicitar indexación de la home en Search Console. | `[tuyo]` |
-| 65 | **Optimizar LCP móvil.** PageSpeed reportó 4.3s (debería ser <2.5s). El paquete del 2026-08-20 atacó la parte de caché (los 205 KiB de assets). Los otros ítems (~400 ms de render-blocking, ~80 KiB de JS «antiguo» con polyfills, ~5 KiB de imágenes) requieren experimentación específica con el reporte en vivo. Después del deploy del blog, correr PageSpeed móvil y ver qué se movió. | `[código]` |
+| 65 | **Confirmar en producción el paquete de rendimiento del 2026-08-22.** El diagnóstico ya se hizo con el informe en vivo y las cinco causas están atacadas en el repo (ver abajo). Lo que falta es la comprobación, que solo se puede hacer con el sitio desplegado: correr PageSpeed móvil **y** escritorio y comparar contra los números de partida —móvil 85, escritorio 71, LCP móvil 4,3-4,4 s, TBT escritorio 620 ms—. Si el LCP móvil no baja de 2,5 s, lo siguiente que queda por mirar es el peso de la imagen del hero, que es el recurso que hoy marca el techo. | `[código]` |
+
+
+### Lo que se hizo el 2026-08-22 sobre el informe de PageSpeed
+
+Cinco causas, medidas en el informe del 22 de agosto (móvil 85 / escritorio 71)
+y no en la intuición. Van juntas porque tres de ellas tocan la misma pantalla:
+
+1. **El H1 de cada página ya no espera al JavaScript.** Era la causa del LCP de
+   4,4 s: el titular arrancaba en `opacity:0` y solo se destapaba cuando bajaba
+   el script del reveal y su import — 3,3 s de «retraso de renderizado» sobre un
+   TTFB de 30 ms. Ahora los bloques de la primera pantalla llevan
+   `<Reveal eager>`, que es una animación CSS que corre sola. 21 bloques en 8
+   páginas. Se ve exactamente igual.
+2. **El píxel de Meta ya no se descarga durante la carga.** Era el responsable
+   de 233 KiB, del grueso de los 620 ms de TBT en escritorio y de cuatro
+   hallazgos más (caché de 20 min, 67 KiB de JS sin usar, 13 KiB de polyfills).
+   El archivo es de Facebook y no se puede tocar; lo que se decide aquí es
+   cuándo pesa. Se pide al primer gesto del visitante o al quedar el navegador
+   ocioso tras el `load`, lo que ocurra antes. **No se pierde ni un evento:**
+   `fbq` es una cola y `init`+`PageView` se siguen llamando de inmediato.
+3. **Cero CSS que bloquee el renderizado.** `inlineStylesheets: 'always'`: las
+   dos hojas que quedaban fuera del umbral de 4 KB viajan dentro del HTML. Son
+   ~9 KB comprimidos más por página a cambio de una vuelta de red entera.
+4. **El shader del hero arranca después del `load`, no durante.** Compilar
+   shaders y entrar en un bucle de `requestAnimationFrame` mientras el navegador
+   pinta la primera pantalla era gastar el hilo principal en el peor momento.
+   Lo que no se aplaza es la decisión: en móvil la imagen del fondo se enciende
+   ya en `DOMContentLoaded`, y eso solo bajó el Speed Index de 4,0 s a 1,2 s.
+5. **Accesibilidad: de 89 a 100 en las trece páginas.** Los fallos se
+   encontraron corriendo Lighthouse contra el build local, página por página —
+   el informe de PageSpeed solo miraba la portada y tres de los seis estaban en
+   otras—. Eran: el lanzador del chat sin nombre accesible por debajo de 520 px
+   (la etiqueta se oculta con `display:none`); el CTA del nav con 3,09:1 de
+   contraste y el mínimo AA en 4,5 (blanco sobre naranja → negro sobre naranja,
+   6,26:1); la flecha del hero anunciándose «Ver servicios» mientras en pantalla
+   dice «Scroll», que deja sin poder pulsarla a quien navega por voz (WCAG
+   2.5.3); dos <ul> —el del blog y el del catálogo de /servicios— cuyos hijos
+   directos eran los <div> del reveal en vez de <li>, así que dejaban de ser
+   listas para un lector de pantalla (esto es el «árbol de accesibilidad mal
+   formado» del informe, y se arregla con `<Reveal as="li">`); cuatro enlaces en
+   medio de un párrafo distinguidos solo por color, a 1,68:1 del texto que los
+   rodea cuando el mínimo para fiarlo al color es 3:1 (van subrayados); y el
+   texto de apoyo del botón principal de /smark, a 4,13:1 sobre su naranja.
+
+Además se separaron lecturas y escrituras del DOM en el observador de reveals,
+que provocaba un reflow forzado por elemento.
+
+**Medido en local** (Lighthouse 12.8.2 sobre el build de producción, móvil,
+mediana de tres pasadas; sin terceros, así que el TBT real no se ve aquí):
+accesibilidad **89 → 100 en las trece páginas**, Speed Index **4,0 s → 1,2 s**,
+recursos que bloquean el renderizado **2 → 0**, LCP 2,1 s → 1,97 s. Los números de verdad son los de
+producción, y por eso el punto 65 sigue abierto.
 
 ## Bloque 5 — Técnico y marca
 

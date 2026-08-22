@@ -124,7 +124,7 @@ const breadcrumbSchema = {
       </nav>
 
       <header class="post-head">
-        <Reveal>
+        <Reveal eager>
           <div class="post-meta">
             <span class="post-cat">{categoryLabels[post.data.category] ?? post.data.category}</span>
             <time datetime={post.data.date.toISOString()}>{fmtDate(post.data.date)}</time>
@@ -132,10 +132,10 @@ const breadcrumbSchema = {
             <span>{post.data.readingTime} min de lectura</span>
           </div>
         </Reveal>
-        <Reveal delay={0.08}>
+        <Reveal delay={0.08} eager>
           <h1 class="post-title">{post.data.title}</h1>
         </Reveal>
-        <Reveal delay={0.16}>
+        <Reveal delay={0.16} eager>
           <p class="post-lead">{post.data.description}</p>
         </Reveal>
       </header>

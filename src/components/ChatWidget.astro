@@ -39,10 +39,23 @@ const sugerencias = [
 ---
 
 <div class="chat" data-chat transition:persist="chat">
+  {/*
+    El aria-label repite la palabra que ya se lee al lado, y tiene que estar:
+    debajo de 520 px la etiqueta visible se oculta con display:none y el botón
+    se queda en icono puro, sin nombre accesible —un lector de pantalla anuncia
+    "botón" y ya—. Lighthouse lo marcó el 22 ago 2026 solo en la pasada de
+    móvil, por eso mismo.
+
+    Dice exactamente "Asistente", el mismo texto visible, y no algo más
+    descriptivo tipo "Abrir el asistente": si el nombre accesible no contiene al
+    texto que se ve, quien maneja el sitio por voz dice lo que lee y no pasa
+    nada (WCAG 2.5.3, y es el fallo que tenía la flecha del hero).
+  */}
   <button
     class="chat-launcher"
     type="button"
     data-chat-toggle
+    aria-label="Asistente"
     aria-expanded="false"
     aria-controls="chat-panel"
   >
