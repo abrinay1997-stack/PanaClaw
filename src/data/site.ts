@@ -25,14 +25,16 @@ export const contact = {
    * cuando el usuario ya está adentro del chat, no como reclamo público.
    */
   /*
-   * Cambiado el 2026-08-11. Las dos formas del mismo número: la legible es la
-   * que se emite en el JSON-LD y la que ve el chat; la cruda es la que compone
-   * cada `wa.me`, y va SIN símbolos —ni +, ni espacios, ni paréntesis— porque
-   * WhatsApp los rechaza y el enlace fallaría en silencio, abriendo una
-   * conversación con nadie.
+   * Cambiado el 2026-08-22 al número panameño oficial. El anterior era de
+   * EE.UU. y contradecía el «agencia web en Panamá» que dice todo el sitio.
+   *
+   * Las dos formas del mismo número: la legible es la que se emite en el
+   * JSON-LD y la que ve el chat; la cruda es la que compone cada `wa.me`, y va
+   * SIN símbolos —ni +, ni espacios, ni guiones— porque WhatsApp los rechaza y
+   * el enlace fallaría en silencio, abriendo una conversación con nadie.
    */
-  whatsapp: '+1 (940) 604-6565',
-  whatsappRaw: '19406046565',
+  whatsapp: '+507 6531-0721',
+  whatsappRaw: '50765310721',
   whatsappDefaultMsg: 'Hola PanaClaw, quiero cotizar mi sitio web',
   horario: 'Lun–Vie · 9:00 – 18:00',
   timezone: 'Hora de Panamá (GMT-5)',

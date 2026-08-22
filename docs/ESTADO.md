@@ -255,16 +255,17 @@ Cerrados:
 Comentado en `HeroShader.astro` para que la próxima auditoría no lo vuelva a
 marcar.
 
-**Sobre el número de teléfono del auditor:** el auditor detectó
-`+1 (940) 604-6565` como número publicado. Es real — está en `data/site.ts`
-desde el 2026-08-11. Es un número de EE.UU. y para SEO local en Panamá es
-una señal negativa. El propietario dijo que lo cambiaría más adelante
-(2026-08-20). Ver **issue de GitHub** o el punto 60 abajo.
+**Sobre el número de teléfono del auditor: resuelto el 2026-08-22.** El
+auditor detectó `+1 (940) 604-6565`, un número de EE.UU., como señal negativa
+para el SEO local en Panamá y como inconsistencia con el «agencia web en
+Panamá» del resto del sitio. Tenía razón. El número oficial pasó a ser
+`+507 6531-0721` en `src/data/site.ts` (`whatsapp` y `whatsappRaw`), y desde
+ahí se propagó solo a las 13 páginas, al chat, al cotizador y al schema
+JSON-LD. Con esto cierra el punto 60, que sale de la tabla de pendientes.
 
 | # | Pendiente | Quién |
 |---|---|---|
 | 22 | **Search Console.** Sitemap y canonical se emiten bien y ya se dieron de alta (la auditoría del 2026-08-20 lo confirma: sitemap enviado, 12 páginas descubiertas). Sigue pendiente **añadir el sitemap del blog al enviar tras el próximo build** y **solicitar indexación manual** de las páginas nuevas de mayor valor (`/blog/`, los cuatro posts). | `[tuyo]` |
-| 60 | **Cambiar el número de teléfono a un panameño.** El número actual (`+1 940-604-6565`, EE.UU.) es una señal negativa para SEO local en Panamá y el auditor lo marcó como inconsistencia con el mensaje «agencia web en Panamá». **Decisión y valor tuyos:** cuando decidas el nuevo, se cambia en `src/data/site.ts` (`whatsapp` y `whatsappRaw`) y se propaga solo a las 13 páginas, chat, cotizador y schema JSON-LD. | `[tuyo]` |
 | 61 | **Google Business Profile.** Es el camino más rápido para aparecer en el paquete local de Maps y no depende de la autoridad del dominio. Se abre con `panaclaw507@gmail.com`, categoría «Diseño y desarrollo web», área de servicio Panamá, teléfono, horario y fotos del trabajo. Verificación por postal 5-14 días. | `[cuenta]` + `[tuyo]` |
 | 62 | **3-5 backlinks en directorios locales panameños.** Cámaras de comercio, directorios de negocios, marketplaces de agencias/freelancers. Genera los primeros backlinks reales (hoy son cero según Search Console) y desambigua la marca sin depender de que Google elija hacerlo por su cuenta. | `[tuyo]` |
 | 63 | **Cadencia del blog: 1 post/mes mínimo.** Menos que eso, Google marca la sección como abandonada y le baja el ranking a todo el blog. Ritmo sostenible: cada 2-4 semanas tú investigás qué buscar (Search Console → Consultas, o preguntas de clientes), me lo pasás, yo redacto por lote, revisás, publicás. | `[tuyo]` + `[código]` |
@@ -884,9 +885,9 @@ matices que **no** se aplicaron:
 - **«Alt vacío como problema».** Las tres imágenes con `alt=""` están bajo
   `aria-hidden` o dentro de un enlace con `aria-label` propio: rellenarlas
   sería regresivo. Falso positivo. Documentado en `HeroShader.astro`.
-- **«Teléfono como inconsistencia local».** Cierto — el número es de EE.UU.
-  (`+1 940-604-6565`). No es error del auditor, es una decisión pendiente del
-  propietario (punto 60).
+- **«Teléfono como inconsistencia local».** Cierto, y ya no aplica: el
+  2026-08-22 el número pasó al panameño `+507 6531-0721`. No fue error del
+  auditor, era una decisión pendiente del propietario.
 
 **Auditoría del 2026-08-03** (sin acceso al código). Acertó en lo grande —
 falta de prueba social y de dominio propio— y esos dos agujeros siguen
