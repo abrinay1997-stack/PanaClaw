@@ -651,12 +651,20 @@ export const GET: APIRoute = ({ site: origen }) => {
   });
 
   /* ---------------- FAQ ---------------- */
+  /*
+   * Cada pregunta del centro de ayuda entra con SUS alias (data/faq.ts), no
+   * solo con su título. La recuperación es léxica: una respuesta que existe
+   * pero está escrita en formal ("¿Usan inteligencia artificial...?") no se
+   * encontraba con lo que de verdad llega por WhatsApp ("usan ia para crear
+   * páginas web?"), y un hecho que no se recupera es, para el bot, un hecho
+   * que no existe — con la diferencia de que ahí sí improvisa.
+   */
   for (const group of faqGroups) {
     for (const [i, item] of group.items.entries()) {
       add({
         id: `faq-${group.id}-${i}`,
         topic: 'faq',
-        q: [item.q],
+        q: [item.q, ...(item.alias ?? [])],
         text: item.a,
       });
     }
