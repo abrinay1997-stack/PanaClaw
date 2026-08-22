@@ -242,7 +242,7 @@ Se configuran en el panel de Netlify, **nunca en el repo**:
 | `ANTHROPIC_API_KEY` | Chat con Claude (tiene prioridad si está) |
 | `GROQ_API_KEY` | Alternativa más barata para el chat |
 | `CHAT_PROVIDER` | Opcional, `groq` o `anthropic`. Ver [`docs/chat.md`](docs/chat.md) |
-| `CHAT_MODEL` | Opcional, para fijar el modelo |
+| `CHAT_MODEL` | Opcional, para fijar el modelo (acepta varios separados por comas; los de por defecto quedan de repuesto) |
 | `CHAT_MAX_PER_DAY` | Opcional, techo diario del chat (300 por defecto) |
 
 Sin ninguna clave el endpoint sigue respondiendo: deriva a WhatsApp en vez de

@@ -6,7 +6,8 @@
 
 ## El problema que resuelve el diseño
 
-Vas a usar un modelo pequeño (Groq/Llama) o, como mucho, uno intermedio. Los
+Vas a usar un modelo pequeño (Groq: GPT-OSS, Qwen) o, como mucho, uno
+intermedio. Los
 modelos pequeños fallan en tres cosas concretas: **recuerdan mal, calculan peor
 y se inventan datos con total aplomo.** En un sitio cuya promesa entera es
 "precio público, fijo y por escrito", un precio inventado no es un error
@@ -139,8 +140,11 @@ puede publicar un precio falso.
      innecesario.**
    - `CHAT_MODEL` — fija el modelo. Solo se aplica cuando hay una única clave
      configurada; con dos están `ANTHROPIC_MODEL` y `GROQ_MODEL`, porque el
-     mismo nombre de modelo no existe en las dos APIs. Por defecto usa
-     `claude-haiku-4-5-20251001` o `llama-3.3-70b-versatile`.
+     mismo nombre de modelo no existe en las dos APIs. Admiten **varios nombres
+     separados por comas**, y los de por defecto van detrás de lo que pongas
+     —`claude-haiku-4-5-20251001` en Anthropic; `openai/gpt-oss-120b` y
+     `qwen/qwen3.6-27b` en Groq—, así que fijar uno no te deja sin chat el día
+     que lo retiren.
    - `CHAT_MAX_PER_DAY` — mueve el tope diario (300 por defecto).
 
 > **El entorno puede traer claves que tú no pusiste.** Pasó en producción: con
@@ -151,8 +155,22 @@ puede publicar un precio falso.
 > deducirlo de qué variables haya sueltas.
 
 Si fallan todos los proveedores configurados, el chat deriva a WhatsApp. Cada
-intento fallido queda en el registro de la función con el nombre del proveedor y
-la respuesta que dio.
+intento fallido queda en el registro de la función con el proveedor, **el modelo**
+y la respuesta que dio.
+
+> **Un modelo retirado no puede apagar el chat, y esa regla se pagó cara.** Groq
+> retiró `llama-3.3-70b-versatile` el 16 de agosto de 2026 —avisado por correo
+> dos meses antes— y como era el único nombre escrito en el código, desde ese día
+> toda pregunta contestó «se me cayó la conexión»: la API devolvía `400
+> model_decommissioned` y no había a qué más llamar. Ahora cada proveedor lleva
+> una **lista** de modelos y se prueba el siguiente cuando el fallo es del modelo
+> (400/404 con «decommissioned», «not found» o similar). Con un 401 o un 429 no
+> se reintenta: el problema es la clave o la cuota, y cambiarle el nombre al
+> modelo solo suma esperas.
+>
+> El diagnóstico en caliente, sin entrar a Netlify: la respuesta trae un `code`
+> —`groq_http_400` es modelo o petición; `groq_http_401`, clave; `groq_network`,
+> tiempo agotado— visible en la pestaña Red del navegador.
 
 > **Ningún valor de entorno se escribe en el registro, ni los que "no son
 > secretos".** `CHAT_PROVIDER` solo admite dos palabras y aun así el registro

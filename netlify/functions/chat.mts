@@ -51,7 +51,9 @@ interface Provider {
   name: string;
   url: string;
   headers: Record<string, string>;
-  body: (system: string, msgs: ChatMessage[]) => unknown;
+  /** Modelos a probar dentro de este proveedor, en orden. Ver `listaModelos()`. */
+  models: string[];
+  body: (model: string, system: string, msgs: ChatMessage[]) => unknown;
   extract: (json: any) => string;
 }
 
@@ -114,6 +116,65 @@ function proveedorForzado(): string | undefined {
   return undefined;
 }
 
+/**
+ * Los modelos por defecto de cada proveedor, en orden de preferencia.
+ *
+ * Son listas y no un nombre suelto por lo que pasó el 16 de agosto de 2026:
+ * Groq retiró `llama-3.3-70b-versatile`, que era el único nombre escrito aquí, y
+ * desde ese día toda pregunta acabó en «se me cayó la conexión». La API devolvía
+ * `400 model_decommissioned` en cada mensaje y la función no tenía a qué más
+ * llamar, así que un modelo retirado —algo anunciado con dos meses de antelación
+ * y que vuelve a pasar— apagó el chat entero hasta que alguien miró el registro.
+ *
+ * Un repuesto dentro del mismo proveedor cuesta una línea y convierte esa avería
+ * en una respuesta con otro modelo. Los sustitutos son los que recomienda el
+ * propio aviso de retirada de Groq.
+ */
+const MODELOS_ANTHROPIC = ['claude-haiku-4-5-20251001'];
+const MODELOS_GROQ = ['openai/gpt-oss-120b', 'qwen/qwen3.6-27b'];
+
+/**
+ * Los sustitutos de Llama razonan antes de contestar, y ese razonamiento gasta
+ * del mismo presupuesto de tokens que la respuesta: con los 260 de siempre lo
+ * que llega al visitante sale cortado o vacío. El techo alto no encarece los
+ * turnos que no lo usan —se paga lo generado, no lo reservado— y quien decide el
+ * largo de lo que se publica sigue siendo `trimReply()`.
+ */
+const RAZONA = /gpt-oss|qwen/i;
+
+/**
+ * Arma la lista de modelos de un proveedor: primero lo que diga el entorno —que
+ * puede traer varios separados por comas— y detrás los de por defecto.
+ *
+ * Los de por defecto van SIEMPRE al final, también con `GROQ_MODEL` puesto.
+ * Fijar un modelo es decir cuál prefieres, no renunciar a tener chat el día que
+ * lo retiren: si el fijado ya no existe se sigue por el siguiente, en vez de
+ * derivar a WhatsApp a todo el mundo. Esto importa hoy más que mañana, porque
+ * el nombre retirado puede estar escrito en el panel de Netlify y no aquí.
+ */
+function listaModelos(...fuentes: (string | undefined)[]): string[] {
+  const out: string[] = [];
+  for (const fuente of fuentes) {
+    for (const modelo of (fuente ?? '').split(',').map((m) => m.trim()).filter(Boolean)) {
+      if (!out.includes(modelo)) out.push(modelo);
+    }
+  }
+  return out;
+}
+
+/**
+ * ¿El fallo es del modelo (retirado, mal escrito, no habilitado para la cuenta)
+ * o del proveedor entero (clave inservible, cuota agotada)?
+ *
+ * Solo en el primer caso tiene sentido reintentar con otro nombre. Con un 401 o
+ * un 429, probar cinco modelos son cinco esperas para quien está preguntando y
+ * cinco líneas idénticas en el registro.
+ */
+function modeloInservible(status: number, detalle: string): boolean {
+  if (status !== 400 && status !== 404) return false;
+  return /model|decommission|deprecat|not_found|does not exist/i.test(detalle);
+}
+
 function pickProviders(): Provider[] {
   const forzado = proveedorForzado();
   const anthropic = forzado && forzado !== 'anthropic' ? undefined : process.env.ANTHROPIC_API_KEY;
@@ -138,8 +199,9 @@ function pickProviders(): Provider[] {
         'x-api-key': anthropic,
         'anthropic-version': '2023-06-01',
       },
-      body: (system, msgs) => ({
-        model: process.env.ANTHROPIC_MODEL || generico || 'claude-haiku-4-5-20251001',
+      models: listaModelos(process.env.ANTHROPIC_MODEL, generico, ...MODELOS_ANTHROPIC),
+      body: (model, system, msgs) => ({
+        model,
         max_tokens: 260,
         temperature: 0.3,
         system,
@@ -154,9 +216,10 @@ function pickProviders(): Provider[] {
       name: 'groq',
       url: 'https://api.groq.com/openai/v1/chat/completions',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${groq}` },
-      body: (system, msgs) => ({
-        model: process.env.GROQ_MODEL || generico || 'llama-3.3-70b-versatile',
-        max_tokens: 260,
+      models: listaModelos(process.env.GROQ_MODEL, generico, ...MODELOS_GROQ),
+      body: (model, system, msgs) => ({
+        model,
+        max_tokens: RAZONA.test(model) ? 900 : 260,
         temperature: 0.3,
         messages: [{ role: 'system', content: system }, ...msgs],
       }),
@@ -325,39 +388,52 @@ export default async (req: Request, context: Context) => {
   let reply = '';
   let fallo = 'sin_proveedores';
 
-  // Se prueban en orden y se sale con el primero que conteste. Con una sola
-  // clave configurada el comportamiento es idéntico al de antes.
-  for (const provider of proveedores) {
-    try {
-      const res = await fetch(provider.url, {
-        method: 'POST',
-        headers: provider.headers,
-        body: JSON.stringify(provider.body(system, messages)),
-        signal: AbortSignal.timeout(20_000),
-      });
+  // Proveedor por proveedor y, dentro de cada uno, modelo por modelo. Se sale
+  // con el primero que conteste; con una sola clave y un solo modelo el
+  // comportamiento es idéntico al de antes.
+  porProveedor: for (const provider of proveedores) {
+    for (const model of provider.models) {
+      try {
+        const res = await fetch(provider.url, {
+          method: 'POST',
+          headers: provider.headers,
+          body: JSON.stringify(provider.body(model, system, messages)),
+          signal: AbortSignal.timeout(20_000),
+        });
 
-      if (!res.ok) {
-        /*
-         * El motivo real vive aquí y en ningún otro sitio: una clave mal pegada,
-         * una cuota agotada y un modelo retirado dan los tres el mismo "se me cayó
-         * la conexión" en pantalla. Sin este log había que adivinar. Va al registro
-         * de la función (Netlify → Functions → chat), que solo ve quien administra
-         * el sitio; al visitante nunca se le enseña el error del proveedor.
-         */
-        const detalle = (await res.text().catch(() => '')).slice(0, 500);
-        console.error(`[chat] ${provider.name} devolvió ${res.status}: ${detalle}`);
-        fallo = `${provider.name}_http_${res.status}`;
-        continue;
+        if (!res.ok) {
+          /*
+           * El motivo real vive aquí y en ningún otro sitio: una clave mal pegada,
+           * una cuota agotada y un modelo retirado dan los tres el mismo "se me cayó
+           * la conexión" en pantalla. Sin este log había que adivinar. Va al registro
+           * de la función (Netlify → Functions → chat), que solo ve quien administra
+           * el sitio; al visitante nunca se le enseña el error del proveedor.
+           *
+           * El nombre del modelo va en la línea porque es la mitad del diagnóstico:
+           * distingue "la clave no sirve" de "ese modelo ya no existe", que es
+           * justo lo que costó una semana de chat mudo en agosto de 2026.
+           */
+          const detalle = (await res.text().catch(() => '')).slice(0, 500);
+          console.error(`[chat] ${provider.name} (${model}) devolvió ${res.status}: ${detalle}`);
+          fallo = `${provider.name}_http_${res.status}`;
+          // Si el problema es el modelo, el siguiente de la lista puede servir.
+          // Si es del proveedor, cambiarle el nombre al modelo no arregla nada.
+          if (modeloInservible(res.status, detalle)) continue;
+          continue porProveedor;
+        }
+
+        reply = trimReply(provider.extract(await res.json()).trim());
+        if (reply) break porProveedor;
+
+        console.error(`[chat] ${provider.name} (${model}) respondió vacío`);
+        fallo = `${provider.name}_vacio`;
+      } catch (err) {
+        // Un corte de red o un tiempo agotado son del proveedor, no del modelo:
+        // reintentar aquí solo suma otros 20 segundos de espera al visitante.
+        console.error(`[chat] fallo llamando a ${provider.name} (${model}):`, err);
+        fallo = `${provider.name}_network`;
+        continue porProveedor;
       }
-
-      reply = trimReply(provider.extract(await res.json()).trim());
-      if (reply) break;
-
-      console.error(`[chat] ${provider.name} respondió vacío`);
-      fallo = `${provider.name}_vacio`;
-    } catch (err) {
-      console.error(`[chat] fallo llamando a ${provider.name}:`, err);
-      fallo = `${provider.name}_network`;
     }
   }
 
