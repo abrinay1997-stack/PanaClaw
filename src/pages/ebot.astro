@@ -109,14 +109,14 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     <SceneBg visual={ebotVisual} side="left" />
     <div class="container">
       <div class="ebot-hero-copy">
-        <Reveal>
+        <Reveal eager>
           <span class="eyebrow">{ebot.name} · Bot multicanal con panel</span>
           <h1>Todos tus mensajes, <span class="muted">en un solo lugar.</span></h1>
         </Reveal>
-        <Reveal delay={0.12}>
+        <Reveal delay={0.12} eager>
           <p class="ebot-lead">{ebot.summary}</p>
         </Reveal>
-        <Reveal delay={0.2}>
+        <Reveal delay={0.2} eager>
           <div class="ebot-hero-price">
             <span class="ebot-hero-amount">{ebot.price}</span>
             <span class="ebot-hero-kicker">{ebot.priceKicker}</span>
@@ -854,6 +854,13 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   }
   .ebot-faq-foot a {
     color: var(--flash-orange);
+/* Subrayado obligado: el naranja sobre el gris del cuerpo da 1,68:1 y el
+       mínimo para distinguir un enlace solo por color es 3:1. Sin esto, en
+       medio de un párrafo no se ve que sea un enlace (Lighthouse
+       "link-in-text-block", 22 ago 2026). */
+    text-decoration: underline;
+    text-underline-offset: 0.16em;
+    text-decoration-thickness: 1px;
   }
 
   /* ---------- RESPONSIVE ---------- */

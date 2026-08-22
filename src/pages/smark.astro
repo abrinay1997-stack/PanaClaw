@@ -390,7 +390,11 @@ const destinos = [
   }
   .smark-link.primary .smark-link-hint,
   .smark-link.primary .smark-link-arrow {
-    color: rgba(16, 1, 1, 0.7);
+    /* 0.78 y no 0.7: sobre el naranja del botón principal, el 0.7 compone un
+       #581901 que da 4,13:1 contra el fondo y estas líneas van a 12,5 px, o
+       sea que el mínimo AA es 4,5 (Lighthouse, 22 ago 2026). Con 0.78 son
+       4,77:1 y el matiz apagado que buscaba el diseño se mantiene. */
+    color: rgba(16, 1, 1, 0.78);
   }
   .smark-link.primary:hover {
     background: var(--ember-red);

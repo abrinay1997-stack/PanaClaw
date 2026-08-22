@@ -71,15 +71,15 @@ const categoryLabels: Record<string, string> = {
 >
   <section class="blog-hero">
     <div class="container">
-      <Reveal>
+      <Reveal eager>
         <span class="eyebrow">Blog</span>
       </Reveal>
-      <Reveal delay={0.08}>
+      <Reveal delay={0.08} eager>
         <h1 class="blog-title">
           Guías y comparativas <span class="muted">para elegir bien.</span>
         </h1>
       </Reveal>
-      <Reveal delay={0.16}>
+      <Reveal delay={0.16} eager>
         <p class="blog-lead">
           Lo que aprendimos construyendo sitios en Panamá, escrito sin jerga y
           con datos reales. Nada de «tips» ni «trucos» — son las preguntas que
@@ -97,23 +97,24 @@ const categoryLabels: Record<string, string> = {
         <ul class="blog-grid">
           {posts.map((post) => {
             const slug = post.id.replace(/\.md$/, '');
+            // as="li": un <ul> solo admite <li> como hijo directo, y con el
+            // reveal en medio la lista dejaba de ser una lista para quien usa
+            // lector de pantalla.
             return (
-              <Reveal>
-                <li>
-                  <a class="blog-card" href={`/blog/${slug}/`}>
-                    <div class="blog-card-head">
-                      <span class="blog-card-cat">{categoryLabels[post.data.category] ?? post.data.category}</span>
-                      <time class="blog-card-date" datetime={post.data.date.toISOString()}>
-                        {fmtDate(post.data.date)}
-                      </time>
-                    </div>
-                    <h2 class="blog-card-title">{post.data.title}</h2>
-                    <p class="blog-card-desc">{post.data.description}</p>
-                    <span class="blog-card-more">
-                      Leer <span aria-hidden="true">→</span>
-                    </span>
-                  </a>
-                </li>
+              <Reveal as="li">
+                <a class="blog-card" href={`/blog/${slug}/`}>
+                  <div class="blog-card-head">
+                    <span class="blog-card-cat">{categoryLabels[post.data.category] ?? post.data.category}</span>
+                    <time class="blog-card-date" datetime={post.data.date.toISOString()}>
+                      {fmtDate(post.data.date)}
+                    </time>
+                  </div>
+                  <h2 class="blog-card-title">{post.data.title}</h2>
+                  <p class="blog-card-desc">{post.data.description}</p>
+                  <span class="blog-card-more">
+                    Leer <span aria-hidden="true">→</span>
+                  </span>
+                </a>
               </Reveal>
             );
           })}

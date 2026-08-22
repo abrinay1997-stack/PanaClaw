@@ -163,7 +163,11 @@ a{color:inherit;text-decoration:none;}
   padding:11px 22px;
   border-radius:999px;
   background:var(--flash-orange);
-  color:var(--soft-white);
+  /* Negro sobre naranja, no blanco. El blanco daba 3,09:1 —Lighthouse, 22 ago
+     2026— y el mínimo AA para 13 px es 4,5:1; con --deep-black son 6,26:1. Es
+     además el par que ya usaban .skip-link y el propio CTA en su estado activo,
+     así que el botón deja de ser la excepción del sistema. */
+  color:var(--deep-black);
   font-size:13px;
   font-weight:600;
   letter-spacing:.06em;

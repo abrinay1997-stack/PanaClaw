@@ -139,7 +139,7 @@ const schemas = isHome ? [orgSchema, ...jsonLd] : jsonLd;
 /**
  * Píxel de Meta.
  *
- * DOS COSAS QUE NO SON EL FRAGMENTO QUE DA FACEBOOK, y son a propósito:
+ * TRES COSAS QUE NO SON EL FRAGMENTO QUE DA FACEBOOK, y son a propósito:
  *
  * 1. `PageView` se dispara en la carga inicial Y en `astro:after-swap`. El
  *    sitio navega con View Transitions: sin la segunda llamada, Meta contaría
@@ -154,6 +154,28 @@ const schemas = isHome ? [orgSchema, ...jsonLd] : jsonLd;
  *    medir conversiones y construir públicos parecidos. Un píxel que solo
  *    registra visitas no da para nada de eso.
  *
+ * 3. EL FRAGMENTO NO SE DESCARGA A SÍ MISMO. El de Meta inserta `fbevents.js`
+ *    en la misma línea en que se define `fbq`; aquí la descarga se separa y se
+ *    pide más tarde. El motivo está medido: PageSpeed, 22 ago 2026, con Meta
+ *    como responsable de 233 KiB, 289 ms de hilo principal en móvil y la mayor
+ *    parte de los 620 ms de TBT en escritorio —además de los cuatro hallazgos
+ *    que se derivan de él: caché de 20 minutos, 67 KiB de JavaScript sin usar,
+ *    13 KiB de polyfills viejos y trabajo de hilo principal. Nada de eso se
+ *    arregla desde aquí: el archivo es de Facebook. Lo que sí se puede decidir
+ *    es CUÁNDO pesa, y no tiene por qué ser mientras el visitante espera a ver
+ *    el titular.
+ *
+ *    NO SE PIERDE NI UN EVENTO, y esto es lo que hace que el cambio sea seguro:
+ *    el `fbq` que define el fragmento es una cola. Las llamadas que se hacen
+ *    antes de que llegue el archivo se apilan en `fbq.queue` y se envían todas,
+ *    en orden, en cuanto carga. Por eso `init` y `PageView` se siguen llamando
+ *    de inmediato: lo único que se aplaza es la descarga.
+ *
+ *    Se pide en cuanto ocurra lo primero de estas dos: que el visitante toque
+ *    la página (cualquier gesto real), o que el navegador termine de cargar y
+ *    quede ocioso —con un tope de 2 s para que un hilo ocupado no lo entierre—.
+ *    Es decir: siempre, y siempre después de lo que el visitante vino a ver.
+ *
  * La ruta de gracias se interpola de `routes`, no se escribe a mano: la regla 1
  * del proyecto vale también dentro de un `<script>`, y esa ruta ya cambió una
  * vez al quitar los `.html`.
@@ -161,9 +183,7 @@ const schemas = isHome ? [orgSchema, ...jsonLd] : jsonLd;
 const metaPixelSnippet = `
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-document,'script','https://connect.facebook.net/en_US/fbevents.js');
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[]}(window,document,'script');
 fbq('init', ${JSON.stringify(metaPixelId)});
 (function () {
   var gracias = ${JSON.stringify(routes.gracias)};
@@ -173,6 +193,34 @@ fbq('init', ${JSON.stringify(metaPixelId)});
   }
   medir();
   document.addEventListener('astro:after-swap', medir);
+
+  // La descarga: una sola vez, pase lo que pase y gane quien gane la carrera.
+  var pedido = false;
+  var gestos = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
+  var opciones = { passive: true, capture: true };
+
+  function pedirPixel() {
+    if (pedido) return;
+    pedido = true;
+    for (var i = 0; i < gestos.length; i++) {
+      window.removeEventListener(gestos[i], pedirPixel, opciones);
+    }
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.head.appendChild(s);
+  }
+
+  for (var i = 0; i < gestos.length; i++) {
+    window.addEventListener(gestos[i], pedirPixel, opciones);
+  }
+
+  function alQuedarOcioso() {
+    if (window.requestIdleCallback) requestIdleCallback(pedirPixel, { timeout: 2000 });
+    else setTimeout(pedirPixel, 1200);
+  }
+  if (document.readyState === 'complete') alQuedarOcioso();
+  else window.addEventListener('load', alQuedarOcioso, { once: true });
 })();
 `.trim();
 ---

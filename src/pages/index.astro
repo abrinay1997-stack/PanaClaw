@@ -24,13 +24,13 @@ import { routes } from '../data/links';
     <HeroShader />
 
     <div class="container hero-inner">
-      <Reveal y={50}>
+      <Reveal y={50} eager>
         <h1 class="hero-title">
           Sitios que <span class="ember">encienden</span>.<br />
           Código <span class="ember">tuyo</span>.
         </h1>
       </Reveal>
-      <Reveal delay={0.2}>
+      <Reveal delay={0.2} eager>
         <p class="hero-lead">
           Webs que abren en menos de un segundo, listas en días y que quedan a tu nombre —
           no al nuestro. Desde $295, en {site.location}.
@@ -46,7 +46,7 @@ import { routes } from '../data/links';
         ahora la portada no lo ofrecía ni una vez: solo lo llevaba el botón del
         nav. Los cuatro precios siguen abajo, a un scroll.
       -->
-      <Reveal delay={0.35}>
+      <Reveal delay={0.35} eager>
         <div class="hero-actions">
           <a class="btn btn-primary" href={routes.cotizador}>
             <span class="dot"></span> Cotizar mi sitio
@@ -58,7 +58,13 @@ import { routes } from '../data/links';
       </Reveal>
     </div>
 
-    <a class="hero-scroll-cue" href="#servicios" aria-label="Ver servicios">
+    {/*
+      El nombre accesible empieza por "Scroll" porque es lo que se lee en
+      pantalla. Decía "Ver servicios", que describe mejor el destino pero deja a
+      quien navega por voz sin poder pedirlo: dice "Scroll", que es lo que ve, y
+      no existe (WCAG 2.5.3 «Label in Name»; Lighthouse lo marcó el 22 ago 2026).
+    */}
+    <a class="hero-scroll-cue" href="#servicios" aria-label="Scroll a servicios">
       <span>Scroll</span>
       <span class="hero-scroll-line" aria-hidden="true"></span>
     </a>
