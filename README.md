@@ -6,7 +6,7 @@ estática pura, desplegado en Netlify.
 **En producción:** https://panaclaw.com
 
 Este README es el **mapa del repositorio**. Está pensado para que cualquiera —
-persona nueva en el equipo, o un asistente de IA que llega sin contexto —
+persona nueva en el equipo de PanaClaw, o un asistente de IA que llega sin contexto —
 pueda orientarse en cinco minutos. Si algo del sitio no responde a lo que este
 archivo dice, es un bug de la documentación y toca actualizarla.
 
