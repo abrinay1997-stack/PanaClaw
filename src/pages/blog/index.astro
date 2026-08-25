@@ -391,8 +391,14 @@ const categoriesInUse = categoryOrder.filter((cat) => posts.some((p) => p.data.c
   }
   /* Colapsa la tarjeta oculta por el filtro sin dejar un hueco en la rejilla:
      display:none en el <li> —el propio nodo de grid—, no solo en la tarjeta
-     de dentro. */
-  .blog-grid > li.is-hidden {
+     de dentro.
+     :global() es obligatorio aquí: el <li> lo renderiza Reveal.astro, no
+     este archivo, así que nunca lleva el atributo data-astro-cid-* con el
+     que Astro scopea el CSS de este componente. Sin :global(), el selector
+     compilado exige ese atributo también en el <li> y no coincide con
+     nada — el JS marca .is-hidden bien, pero la regla nunca se aplica y la
+     tarjeta se queda visible. Así se detectó el bug. */
+  :global(.blog-grid > li.is-hidden) {
     display: none;
   }
   /* Sigue siendo hermano de <ul>, no un item de grid — hereda .blog-empty y
