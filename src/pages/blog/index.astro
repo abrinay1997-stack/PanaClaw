@@ -61,6 +61,27 @@ const categoryLabels: Record<string, string> = {
   casos: 'Caso',
   panama: 'Panamá',
 };
+
+/**
+ * Filtro por categoría y por tema (buscador de texto), 100% del lado del
+ * cliente — sin backend, sin librería de búsqueda.
+ *
+ * POR QUÉ NADA MÁS PESADO. El sitio se compila estático (`astro build`, sin
+ * adaptador SSR): no hay a quién pedirle resultados. Y con el volumen de
+ * esta sección — 1 post al mes, ver la nota de arriba — un índice de
+ * búsqueda (Algolia, Pagefind, Fuse.js) es la misma sobre-ingeniería que ya
+ * se descartó una vez con GSAP: 43 KB para resolver algo que el navegador
+ * hace solo. El filtro esconde tarjetas ya renderizadas por Astro, así que
+ * Google sigue viendo el HTML completo — filtrar no le puede quitar
+ * indexación al único canal para el que existe esta página.
+ *
+ * Solo se listan las categorías que de verdad tienen algún post: mostrar un
+ * chip de "Casos" que siempre filtra a cero (la categoría sigue bloqueada,
+ * ver operacion/deuda-conocida.md punto 2 del otro repositorio) sería
+ * ofrecer una opción vacía.
+ */
+const categoryOrder = ['precios', 'guias', 'comparativas', 'casos', 'panama'] as const;
+const categoriesInUse = categoryOrder.filter((cat) => posts.some((p) => p.data.category === cat));
 ---
 
 <BaseLayout
@@ -86,6 +107,36 @@ const categoryLabels: Record<string, string> = {
           los clientes hacen antes de firmar.
         </p>
       </Reveal>
+
+      {posts.length > 0 && (
+        <Reveal delay={0.24} eager>
+          <div class="blog-filter" data-blog-filter>
+            <div class="blog-filter-search">
+              <label class="sr-only" for="blog-q">Buscar por tema</label>
+              <input
+                type="search"
+                id="blog-q"
+                class="blog-filter-input"
+                placeholder="Buscar por tema — precio, WhatsApp, WordPress…"
+                autocomplete="off"
+              />
+            </div>
+            <div class="blog-filter-row">
+              <div class="blog-filter-cats" role="group" aria-label="Filtrar por categoría">
+                <button type="button" class="blog-filter-chip is-active" data-filter-cat="todas">
+                  Todas
+                </button>
+                {categoriesInUse.map((cat) => (
+                  <button type="button" class="blog-filter-chip" data-filter-cat={cat}>
+                    {categoryLabels[cat] ?? cat}
+                  </button>
+                ))}
+              </div>
+              <p class="blog-filter-count" data-blog-count aria-live="polite"></p>
+            </div>
+          </div>
+        </Reveal>
+      )}
     </div>
   </section>
 
@@ -94,35 +145,153 @@ const categoryLabels: Record<string, string> = {
       {posts.length === 0 ? (
         <p class="blog-empty">Todavía no hay posts publicados. Vuelve en unos días.</p>
       ) : (
-        <ul class="blog-grid">
-          {posts.map((post) => {
-            const slug = post.id.replace(/\.md$/, '');
-            // as="li": un <ul> solo admite <li> como hijo directo, y con el
-            // reveal en medio la lista dejaba de ser una lista para quien usa
-            // lector de pantalla.
-            return (
-              <Reveal as="li">
-                <a class="blog-card" href={`/blog/${slug}/`}>
-                  <div class="blog-card-head">
-                    <span class="blog-card-cat">{categoryLabels[post.data.category] ?? post.data.category}</span>
-                    <time class="blog-card-date" datetime={post.data.date.toISOString()}>
-                      {fmtDate(post.data.date)}
-                    </time>
-                  </div>
-                  <h2 class="blog-card-title">{post.data.title}</h2>
-                  <p class="blog-card-desc">{post.data.description}</p>
-                  <span class="blog-card-more">
-                    Leer <span aria-hidden="true">→</span>
-                  </span>
-                </a>
-              </Reveal>
-            );
-          })}
-        </ul>
+        <>
+          <ul class="blog-grid">
+            {posts.map((post) => {
+              const slug = post.id.replace(/\.md$/, '');
+              const label = categoryLabels[post.data.category] ?? post.data.category;
+              // Todo lo que el buscador de texto puede tocar, ya normalizado
+              // a minúsculas en el build — así el script del cliente no
+              // recalcula nada en cada tecla, solo compara strings.
+              const searchBlob = [post.data.title, post.data.description, label, ...post.data.keywords]
+                .join(' ')
+                .toLowerCase();
+              // as="li": un <ul> solo admite <li> como hijo directo, y con el
+              // reveal en medio la lista dejaba de ser una lista para quien usa
+              // lector de pantalla.
+              return (
+                <Reveal as="li">
+                  <a
+                    class="blog-card"
+                    href={`/blog/${slug}/`}
+                    data-blog-card
+                    data-category={post.data.category}
+                    data-search={searchBlob}
+                  >
+                    <div class="blog-card-head">
+                      <span class="blog-card-cat">{label}</span>
+                      <time class="blog-card-date" datetime={post.data.date.toISOString()}>
+                        {fmtDate(post.data.date)}
+                      </time>
+                    </div>
+                    <h2 class="blog-card-title">{post.data.title}</h2>
+                    <p class="blog-card-desc">{post.data.description}</p>
+                    <span class="blog-card-more">
+                      Leer <span aria-hidden="true">→</span>
+                    </span>
+                  </a>
+                </Reveal>
+              );
+            })}
+          </ul>
+          <p class="blog-empty blog-empty-filtered" data-blog-empty-filtered hidden>
+            Ningún post coincide con tu búsqueda. Prueba con otra palabra o quita el filtro de categoría.
+          </p>
+        </>
       )}
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  /**
+   * Filtro de blog: categoría (chips) + texto (input), ambos del lado del
+   * cliente. Ver el porqué en el frontmatter de este archivo.
+   *
+   * Mismo patrón de arranque que Reveal.astro: el sitio navega con
+   * ClientRouter (View Transitions), así que un DOMContentLoaded solo no
+   * basta — hay que reengancharse en cada `astro:page-load`. El guard
+   * `data-bound` evita atar los listeners dos veces cuando ese evento y la
+   * llamada directa de la primera carga coinciden.
+   */
+  function normalize(s: string): string {
+    return s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '');
+  }
+
+  function initBlogFilter() {
+    const root = document.querySelector<HTMLElement>('[data-blog-filter]');
+    if (!root || root.dataset.bound === 'true') return;
+    root.dataset.bound = 'true';
+
+    const input = root.querySelector<HTMLInputElement>('.blog-filter-input');
+    const chips = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-filter-cat]'));
+    const items = Array.from(document.querySelectorAll<HTMLLIElement>('.blog-grid > li'));
+    const emptyMsg = document.querySelector<HTMLElement>('[data-blog-empty-filtered]');
+    const countEl = root.querySelector<HTMLElement>('[data-blog-count]');
+    if (!input || !items.length) return;
+
+    const params = new URLSearchParams(location.search);
+    const state = {
+      cat: params.get('categoria') || 'todas',
+      q: params.get('q') || '',
+    };
+    // Si la URL trae una categoría que hoy no tiene chip (borrada, o un link
+    // viejo compartido), se cae a "todas" en vez de dejar el filtro sin nada
+    // marcado como activo.
+    if (!chips.some((c) => c.dataset.filterCat === state.cat)) state.cat = 'todas';
+
+    input.value = state.q;
+    chips.forEach((c) => c.classList.toggle('is-active', c.dataset.filterCat === state.cat));
+
+    function apply() {
+      const q = normalize(state.q.trim());
+      let visible = 0;
+
+      for (const li of items) {
+        const card = li.querySelector<HTMLAnchorElement>('[data-blog-card]');
+        if (!card) continue;
+        const matchesCat = state.cat === 'todas' || card.dataset.category === state.cat;
+        const matchesQ = !q || normalize(card.dataset.search || '').includes(q);
+        const show = matchesCat && matchesQ;
+        li.classList.toggle('is-hidden', !show);
+        if (show) visible += 1;
+      }
+
+      if (emptyMsg) emptyMsg.hidden = visible > 0;
+      if (countEl) countEl.textContent = `${visible} de ${items.length}`;
+
+      // La URL refleja el filtro sin recargar ni ensuciar el historial —
+      // replaceState, no pushState: cada tecla no necesita su propia entrada
+      // de "atrás". Así un enlace a /blog/?categoria=guias llega pre-filtrado.
+      const next = new URLSearchParams();
+      if (state.cat !== 'todas') next.set('categoria', state.cat);
+      if (state.q.trim()) next.set('q', state.q.trim());
+      const qs = next.toString();
+      history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
+    }
+
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        state.cat = chip.dataset.filterCat || 'todas';
+        chips.forEach((c) => c.classList.toggle('is-active', c === chip));
+        apply();
+      });
+    });
+
+    // Debounce corto: con esta cantidad de tarjetas no hace falta más, pero
+    // filtrar en cada pulsación sin él repinta de sobra mientras se escribe.
+    let debounceId: ReturnType<typeof setTimeout>;
+    input.addEventListener('input', () => {
+      clearTimeout(debounceId);
+      debounceId = setTimeout(() => {
+        state.q = input.value;
+        apply();
+      }, 120);
+    });
+
+    apply();
+  }
+
+  document.addEventListener('astro:page-load', initBlogFilter);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBlogFilter, { once: true });
+  } else {
+    initBlogFilter();
+  }
+</script>
 
 <style>
   .blog-hero {
@@ -147,8 +316,89 @@ const categoryLabels: Record<string, string> = {
     color: var(--soft-white);
   }
 
+  /* ---------- FILTRO ---------- */
+  .blog-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 40px;
+  }
+  .blog-filter-input {
+    width: 100%;
+    max-width: 420px;
+    padding: 14px 20px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    color: var(--soft-white);
+    font-family: inherit;
+    font-size: 15px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .blog-filter-input:focus {
+    outline: none;
+    border-color: var(--flash-orange);
+    background: rgba(255, 81, 0, 0.05);
+  }
+  .blog-filter-input::placeholder {
+    color: rgba(255, 247, 247, 0.35);
+  }
+  /* El navegador dibuja su propio botón de "borrar" en type="search"; se dejan
+     los del sistema para no reinventar algo que WCAG ya resuelve. */
+
+  .blog-filter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .blog-filter-cats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .blog-filter-chip {
+    padding: 8px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--studio-gray);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .blog-filter-chip:hover {
+    border-color: rgba(255, 81, 0, 0.4);
+    color: var(--soft-white);
+  }
+  .blog-filter-chip.is-active {
+    border-color: var(--flash-orange);
+    background: rgba(255, 81, 0, 0.1);
+    color: var(--flash-orange);
+  }
+  .blog-filter-count {
+    font-size: 13px;
+    color: var(--studio-gray);
+    white-space: nowrap;
+  }
+
   .blog-list {
     padding: 40px 0 120px;
+  }
+  /* Colapsa la tarjeta oculta por el filtro sin dejar un hueco en la rejilla:
+     display:none en el <li> —el propio nodo de grid—, no solo en la tarjeta
+     de dentro. */
+  .blog-grid > li.is-hidden {
+    display: none;
+  }
+  /* Sigue siendo hermano de <ul>, no un item de grid — hereda .blog-empty y
+     solo necesita el margen de arriba para no pegarse a la última fila. */
+  .blog-empty-filtered {
+    margin-top: 20px;
   }
   .blog-grid {
     list-style: none;
