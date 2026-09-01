@@ -1,7 +1,7 @@
 ---
 title: "Tu sitio tarda 5 segundos en cargar: las causas más comunes en Panamá"
 description: "Fotos sin comprimir, WordPress con complementos de sobra, o el servidor equivocado: las razones reales por las que un sitio tarda cinco segundos, y cómo comprobar cuál es la tuya."
-date: 2026-08-25
+date: 2026-08-31
 category: guias
 keywords: ["velocidad", "wordpress", "rendimiento", "presupuesto"]
 readingTime: 5
