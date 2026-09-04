@@ -1,7 +1,7 @@
 ---
 title: "WhatsApp Business vs. eBot: cuándo el gratis alcanza y cuándo no"
 description: "WhatsApp Business ya trae respuestas rápidas y mensaje de ausencia, gratis. La diferencia real con eBot no es el precio: es si contesta solo, o si tienes que elegir tú cada vez."
-date: 2026-09-04
+date: 2026-09-03
 category: comparativas
 keywords: ["whatsapp", "redes sociales", "ebot"]
 readingTime: 3
