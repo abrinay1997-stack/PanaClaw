@@ -318,6 +318,37 @@ const breadcrumbSchema = {
     border-radius: 4px;
     font-size: 15px;
   }
+  /* Tablas comparativas: el navegador no trae ningún estilo por defecto que
+     sirva sobre fondo oscuro (encabezado centrado, sin bordes ni aire). El
+     wrapper en `display: block` + `overflow-x: auto` es lo que evita que una
+     tabla ancha rompa el layout en móvil, sin tocar el markdown de origen. */
+  .post-body :global(table) {
+    width: 100%;
+    margin: 8px 0 32px;
+    border-collapse: collapse;
+    font-size: 15px;
+    display: block;
+    overflow-x: auto;
+  }
+  .post-body :global(th),
+  .post-body :global(td) {
+    padding: 12px 16px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .post-body :global(th) {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--flash-orange);
+    white-space: nowrap;
+    border-bottom: 1px solid rgba(255, 81, 0, 0.4);
+  }
+  .post-body :global(tr:last-child td) {
+    border-bottom: none;
+  }
 
   .post-cta {
     margin-top: 64px;
