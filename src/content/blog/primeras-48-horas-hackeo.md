@@ -39,4 +39,4 @@ Regalarlo dentro de un precio cerrado significaría prometer un plazo y un alcan
 
 Esto no encaja en el cotizador — cada hackeo es distinto y necesita que alguien lo mire antes de decir un número. Si tu sitio ya está comprometido, [escríbenos directo](/contacto/) y lo vemos como lo que es: un caso urgente, no una cotización estándar.
 
-Una vez esté limpio y en pie otra vez, vale la pena revisar [por dónde entraron y cómo se cierra cada puerta](/por-donde-entran-a-tu-wordpress/) para que no vuelva a pasar.
+Una vez esté limpio y en pie otra vez, vale la pena revisar [por dónde entraron y cómo se cierra cada puerta](/blog/por-donde-entran-a-tu-wordpress/) para que no vuelva a pasar.
