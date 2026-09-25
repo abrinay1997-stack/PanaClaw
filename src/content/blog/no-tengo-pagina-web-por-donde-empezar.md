@@ -31,8 +31,8 @@ El reloj en los dos casos empieza cuando entregas tu material y la mitad del pag
 
 ## Cuál de los dos te toca
 
-Si solo necesitas existir en internet, ya, es Start ($295). Si ya pagas publicidad y necesitas dónde caiga ese clic, es Launch ($450). Ninguno de los dos trae panel para que edites tú mismo después — para eso hace falta un plan más grande, y no tiene sentido pagarlo si todavía no lo necesitas.
+Si solo necesitas existir en internet, ya, es Start ($295). Si ya pagas publicidad y necesitas dónde caiga ese clic, es Launch ($450). Ninguno de los dos trae panel para que edites tú mismo después, para eso hace falta un plan más grande, y no tiene sentido pagarlo si todavía no lo necesitas.
 
 ## Cómo lo hacemos en PanaClaw
 
-Los dos planes están [publicados en /planes](/planes/), con precio y fecha cerrados por escrito antes de empezar. El código y el dominio quedan a tu nombre al terminar — si el día de mañana quieres cambiar de proveedor, te lo llevas todo. Si no estás seguro de cuál te toca, [el cotizador](/cotizador/) te lo dice en cuatro preguntas, sin pedirte datos primero.
+Los dos planes están [publicados en /planes](/planes/), con precio y fecha cerrados por escrito antes de empezar. El código y el dominio quedan a tu nombre al terminar, si el día de mañana quieres cambiar de proveedor, te lo llevas todo. Si no estás seguro de cuál te toca, [el cotizador](/cotizador/) te lo dice en cuatro preguntas, sin pedirte datos primero.
