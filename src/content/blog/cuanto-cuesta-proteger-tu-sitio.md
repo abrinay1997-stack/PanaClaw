@@ -43,7 +43,7 @@ Todo lo de Web Protegida, sin esperar a que pase algo: revisión completa cada m
 
 Ninguno de los dos planes mensuales se puede contratar sin ella antes. No es un requisito para vender más: proteger un sitio sin haberlo revisado es proteger a ciegas, y podrías estar pagando un filtro delante de una puerta que ya está abierta por otro lado.
 
-Así que la Auditoría no es solo el precio de entrada más bajo — es la puerta por la que se pasa siempre, la contrates o no después.
+Así que la Auditoría no es solo el precio de entrada más bajo, es la puerta por la que se pasa siempre, la contrates o no después.
 
 ## Lo que ninguno de los tres cubre
 
