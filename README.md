@@ -1,4 +1,4 @@
-# PanaClaw.
+# PanaClaw
 
 Sitio web de PanaClaw, agencia de sitios web en Panamá. Astro con salida
 estática pura, desplegado en Netlify.
