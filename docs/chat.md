@@ -134,8 +134,9 @@ puede publicar un precio falso.
 2. En **Site settings → Environment variables**, añade **una** de estas:
    - `ANTHROPIC_API_KEY` — si está, tiene prioridad; mejores respuestas
    - `GROQ_API_KEY` — alternativa más barata y rápida
+   - `META_API_KEY` — Muse Spark, de Meta (la misma llave de los CRM; no el token de Messenger). Modelo por defecto `muse-spark-1.2-contributor`, el más barato **porque Meta entrena con lo que recibe**, es decir, con lo que escriban los visitantes. Para el que no entrena: `META_MODEL=muse-spark-1.3`
 3. Opcionales:
-   - `CHAT_PROVIDER` — la **palabra** `groq` o `anthropic`, no la clave. Fija
+   - `CHAT_PROVIDER` — la **palabra** `groq`, `anthropic` o `meta`, no la clave. Fija
      cuál se usa e ignora el otro. **Léete el aviso de abajo antes de darlo por
      innecesario.**
    - `CHAT_MODEL` — fija el modelo. Solo se aplica cuando hay una única clave

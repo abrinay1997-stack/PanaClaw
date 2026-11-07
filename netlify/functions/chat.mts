@@ -97,7 +97,7 @@ interface Provider {
  * andamiaje da mejores respuestas. Lo que cambia es que si falla se prueba el
  * siguiente.
  */
-const CONOCIDOS = ['anthropic', 'groq'];
+const CONOCIDOS = ['anthropic', 'groq', 'meta'];
 
 /**
  * Cómo se describe CHAT_PROVIDER en el registro.
@@ -154,6 +154,17 @@ const MODELOS_ANTHROPIC = ['claude-haiku-4-5-20251001'];
 const MODELOS_GROQ = ['openai/gpt-oss-120b', 'qwen/qwen3.6-27b'];
 
 /**
+ * Muse Spark, de Meta: el mismo cerebro que usan los CRM. Su API habla el
+ * formato de mensajes de Anthropic, en `api.meta.ai/v1/messages`, con otra llave.
+ *
+ * El primero es el Contributor (el más barato). Lo es PORQUE Meta entrena con lo
+ * que recibe: aquí, lo que escriban los visitantes en el chat. El segundo es
+ * `muse-spark-1.3`, que no entrena, y entra solo si el primero deja de existir.
+ * Para pasar al que no entrena basta `META_MODEL=muse-spark-1.3` en el Worker.
+ */
+const MODELOS_META = ['muse-spark-1.2-contributor', 'muse-spark-1.3'];
+
+/**
  * Los sustitutos de Llama razonan antes de contestar, y ese razonamiento gasta
  * del mismo presupuesto de tokens que la respuesta: con los 260 de siempre lo
  * que llega al visitante sale cortado o vacío. El techo alto no encarece los
@@ -199,6 +210,12 @@ function pickProviders(): Provider[] {
   const forzado = proveedorForzado();
   const anthropic = forzado && forzado !== 'anthropic' ? undefined : process.env.ANTHROPIC_API_KEY;
   const groq = forzado && forzado !== 'groq' ? undefined : process.env.GROQ_API_KEY;
+  // La llave de Meta es `META_API_KEY` (o `MODEL_API_KEY`, como la llama Meta).
+  // NO es el token de Messenger/Instagram: ese jamás se manda a `api.meta.ai`.
+  const meta =
+    forzado && forzado !== 'meta'
+      ? undefined
+      : process.env.META_API_KEY?.trim() || process.env.MODEL_API_KEY?.trim() || undefined;
 
   /*
    * CHAT_MODEL solo manda cuando hay una sola clave configurada. Con dos, el
@@ -206,7 +223,7 @@ function pickProviders(): Provider[] {
    * garantizaría romper la de repuesto justo cuando hace falta. Para fijar el
    * modelo de un proveedor concreto están ANTHROPIC_MODEL y GROQ_MODEL.
    */
-  const generico = [anthropic, groq].filter(Boolean).length === 1 ? process.env.CHAT_MODEL : undefined;
+  const generico = [anthropic, groq, meta].filter(Boolean).length === 1 ? process.env.CHAT_MODEL : undefined;
 
   const out: Provider[] = [];
 
@@ -244,6 +261,31 @@ function pickProviders(): Provider[] {
         messages: [{ role: 'system', content: system }, ...msgs],
       }),
       extract: (j) => j?.choices?.[0]?.message?.content ?? '',
+    });
+  }
+
+  if (meta) {
+    out.push({
+      name: 'meta',
+      url: 'https://api.meta.ai/v1/messages',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': meta,
+        'anthropic-version': '2023-06-01',
+      },
+      models: listaModelos(process.env.META_MODEL, generico, ...MODELOS_META),
+      body: (model, system, msgs) => ({
+        model,
+        max_tokens: 260,
+        temperature: 0.3,
+        system,
+        messages: msgs,
+      }),
+      extract: (j) =>
+        (Array.isArray(j?.content) ? j.content : [])
+          .filter((b: any) => b?.type === 'text')
+          .map((b: any) => b.text)
+          .join(''),
     });
   }
 
@@ -385,7 +427,8 @@ export async function atender(req: Request, entorno: Entorno): Promise<Response>
     console.error(
       `[chat] ningún proveedor disponible. CHAT_PROVIDER ${describeChatProvider()}; ` +
         `ANTHROPIC_API_KEY ${process.env.ANTHROPIC_API_KEY ? 'presente' : 'ausente'}; ` +
-        `GROQ_API_KEY ${process.env.GROQ_API_KEY ? 'presente' : 'ausente'}`
+        `GROQ_API_KEY ${process.env.GROQ_API_KEY ? 'presente' : 'ausente'}; ` +
+        `META_API_KEY ${process.env.META_API_KEY || process.env.MODEL_API_KEY ? 'presente' : 'ausente'}`
     );
     return json({
       reply: `El asistente todavía no está conectado. Escríbenos por WhatsApp al ${kb.site.whatsapp} y te contestamos directo.`,

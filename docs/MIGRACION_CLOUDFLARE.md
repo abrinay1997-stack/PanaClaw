@@ -85,7 +85,7 @@ si importan: se pierden con el sitio.
 ## El día del cambio
 
 1. **Secretos del Worker**, una vez:
-   `npx wrangler secret put ANTHROPIC_API_KEY` (y `GROQ_API_KEY` si se usa). Probar
+   `npx wrangler secret put ANTHROPIC_API_KEY` (y `GROQ_API_KEY` o `META_API_KEY` si se usan). Probar
    el chat en la dirección de `workers.dev` antes de seguir.
 2. **Formulario**: decidir el camino de arriba y dejarlo hecho.
 3. **Dominio**: añadir `panaclaw.com` a Cloudflare (si no está ya) y, en
