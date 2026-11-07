@@ -37,6 +37,13 @@ npm run cloudflare:dev       # el sitio y el chat en local, en :8787
 `cloudflare:probar` también corre en CI en cada PR, así que una configuración rota
 no llega a `main`.
 
+**`wrangler` no es una dependencia del sitio, a propósito.** Se baja con `npx` en la
+versión fijada de `package.json`. Mientras el sitio siga en Netlify, su instalación
+tiene que ser idéntica a la de siempre: añadir `wrangler` a las dependencias
+cambiaba el `package-lock.json` entero y la instalación de cada build de Netlify,
+y la vista previa de este mismo PR falló por ello. El día que salga de Netlify, se
+puede pasar a `devDependencies`.
+
 Para publicar el ensayo en `panaclaw-sitio.<cuenta>.workers.dev`: pestaña Actions →
 «Desplegar el sitio en Cloudflare» → Run workflow. Necesita `CLOUDFLARE_API_TOKEN`.
 

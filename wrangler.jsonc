@@ -1,5 +1,4 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "panaclaw-sitio",
   "main": "worker/index.ts",
   "compatibility_date": "2026-08-01",

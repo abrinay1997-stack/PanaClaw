@@ -17,9 +17,9 @@
     "medir:enlaces": "node scripts/check-links.mjs",
     "astro": "astro",
     "build:cloudflare": "astro build && node scripts/cloudflare-assets.mjs",
-    "cloudflare:probar": "npm run build:cloudflare && wrangler deploy --dry-run",
-    "cloudflare:dev": "npm run build:cloudflare && wrangler dev",
-    "cloudflare:desplegar": "npm run build:cloudflare && wrangler deploy"
+    "cloudflare:probar": "npm run build:cloudflare && npx --yes wrangler@4.158.0 deploy --dry-run",
+    "cloudflare:dev": "npm run build:cloudflare && npx --yes wrangler@4.158.0 dev",
+    "cloudflare:desplegar": "npm run build:cloudflare && npx --yes wrangler@4.158.0 deploy"
   },
   "repository": {
     "type": "git",
@@ -40,7 +40,6 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@netlify/functions": "^5.3.0",
-    "typescript": "^6.0.3",
-    "wrangler": "^4.158.0"
+    "typescript": "^6.0.3"
   }
 }
