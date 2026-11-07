@@ -1,0 +1,56 @@
+# Cabeceras del sitio en Cloudflare.
+#
+# Es el equivalente de los `[[headers]]` de `netlify.toml` y NO vive en `public/`
+# a propósito: Netlify también lee un `_headers` que esté en la carpeta publicada,
+# y su sintaxis no entiende la línea `! Cache-Control` de más abajo. Este archivo
+# lo copia a `dist/` solo `scripts/cloudflare-assets.mjs`, que corre únicamente en
+# el build de Cloudflare. Mientras el sitio siga en Netlify, esto no se publica.
+#
+# LA DIFERENCIA QUE OBLIGA A ESCRIBIRLO ASÍ
+#
+# Netlify resuelve un conflicto quedándose con la regla más específica. Cloudflare
+# no: aplica TODAS las reglas que coinciden y, si dos ponen la misma cabecera, las
+# junta en una sola con las dos cifras. Un `/_astro/app.js` con la regla general
+# (`max-age=0`) y la suya (`immutable`) saldría con las dos pegadas, y el
+# navegador haría caso a quien quisiera.
+#
+# Por eso cada excepción empieza con `! Cache-Control`, que le quita a esa ruta la
+# cabecera heredada antes de ponerle la suya, y por eso van en orden de menos a
+# más específica: la última que coincide gana. Un `/_astro/x.svg` coincide con
+# `/*.svg` y con `/_astro/*`; el año de caché inmutable tiene que ganar, así que
+# `/_astro/*` va al final.
+#
+# Estas cabeceras solo se aplican a los archivos estáticos. Las respuestas del
+# Worker (`/api/chat`) llevan las suyas.
+
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Assets sueltos de public/ (favicons, imagen para redes, iconos). No llevan hash
+# en el nombre, así que no pueden ser `immutable`, pero sí un mes de caché.
+/*.svg
+  ! Cache-Control
+  Cache-Control: public, max-age=2592000
+
+/*.png
+  ! Cache-Control
+  Cache-Control: public, max-age=2592000
+
+/*.jpg
+  ! Cache-Control
+  Cache-Control: public, max-age=2592000
+
+/*.ico
+  ! Cache-Control
+  Cache-Control: public, max-age=2592000
+
+# Lo que Astro deja en `_astro/` lleva un hash en el nombre: un archivo concreto
+# no cambia nunca, así que un año de caché inmutable. Va al final, ver arriba.
+/_astro/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable

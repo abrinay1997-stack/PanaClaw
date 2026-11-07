@@ -15,7 +15,11 @@
     "medir:movil": "node scripts/check-mobile.mjs",
     "medir:cotizador": "node scripts/check-cotizador.mjs",
     "medir:enlaces": "node scripts/check-links.mjs",
-    "astro": "astro"
+    "astro": "astro",
+    "build:cloudflare": "astro build && node scripts/cloudflare-assets.mjs",
+    "cloudflare:probar": "npm run build:cloudflare && npx --yes wrangler@4.158.0 deploy --dry-run",
+    "cloudflare:dev": "npm run build:cloudflare && npx --yes wrangler@4.158.0 dev",
+    "cloudflare:desplegar": "npm run build:cloudflare && npx --yes wrangler@4.158.0 deploy"
   },
   "repository": {
     "type": "git",

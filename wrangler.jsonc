@@ -1,0 +1,40 @@
+{
+  "name": "panaclaw-sitio",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-01",
+
+  // El chat lee sus claves de `process.env`. Con esta bandera, y esa fecha, los
+  // secretos y variables del Worker aparecen ahí, y el chat no cambia.
+  "compatibility_flags": ["nodejs_compat"],
+
+  // NO HAY `account_id` AQUÍ, igual que en el hub y en el CRM: es un dato de
+  // QUIÉN despliega, no del proyecto. Se pasa con `CLOUDFLARE_ACCOUNT_ID`.
+
+  // Mientras el sitio siga en Netlify, esta es la dirección de ensayo:
+  // `panaclaw-sitio.<cuenta>.workers.dev`. Servirla no toca el dominio.
+  "workers_dev": true,
+
+  // EL DOMINIO NO ESTÁ AQUÍ A PROPÓSITO.
+  //
+  // Escribir `routes` con `custom_domain: true` hace que el próximo despliegue
+  // tome `panaclaw.com` y cambie su DNS, y eso es el día del cambio, no un
+  // despliegue de ensayo. Está en `docs/MIGRACION_CLOUDFLARE.md`, paso a paso.
+
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // `/contacto/` y no `/contacto.html`: es lo que declara Astro con
+    // `trailingSlash: 'always'` y `format: 'directory'`, y es lo que ya está
+    // indexado. Es el valor por defecto de Cloudflare; se escribe para que nadie
+    // lo cambie sin saber qué cuesta.
+    "html_handling": "auto-trailing-slash",
+    // Sirve `404.html` con estado 404 en vez de la portada.
+    "not_found_handling": "404-page",
+    // Solo la API despierta al Worker. Todo lo demás sale del borde, gratis.
+    "run_worker_first": ["/api/*"]
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

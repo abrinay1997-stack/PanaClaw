@@ -42,3 +42,7 @@ BRANDING.html
 
 # Instrucciones internas para Claude
 CLAUDE.md
+
+# Cloudflare
+.wrangler/
+.dev.vars
