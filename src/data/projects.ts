@@ -35,6 +35,8 @@ import bukoflowPlay from '../assets/proyectos/bukoflow-play.jpg';
 import livesyncPro from '../assets/proyectos/livesync-pro.jpg';
 import acusticaSuperior from '../assets/proyectos/acustica-superior.jpg';
 import bukoflowTienda from '../assets/proyectos/bukoflow-tienda.jpg';
+import dcasapty from '../assets/proyectos/dcasapty.jpg';
+import byslogistics from '../assets/proyectos/byslogistics.jpg';
 
 export interface ProjectMetric {
   /**
@@ -125,6 +127,34 @@ export const projects: Project[] = [
     sector: 'Música',
     summary:
       'Una tienda de beats con licencia inmediata: catálogo, compra en línea y servicios de producción a medida.',
+    // TODO(contenido): year, challenge, solution, capabilities.
+    // TODO(medición): `npm run medir` → metrics + measuredAt.
+  },
+  {
+    slug: 'dcasapty',
+    name: "D'CASA Panamá",
+    domain: 'dcasapty.com',
+    url: 'https://dcasapty.com/',
+    image: dcasapty,
+    sector: 'Mueblería',
+    // Todo lo que dice esta frase está en la propia portada del sitio: el
+    // rubro, las categorías, los precios claros y las zonas de entrega.
+    summary:
+      'El sitio de una mueblería de La Chorrera: catálogo de salas, recámaras, colchones y zapateras con precios claros, carrito, cuenta de cliente y entregas en Panamá Oeste, Panamá y Colón.',
+    // TODO(contenido): year, challenge, solution, capabilities.
+    // TODO(medición): `npm run medir` → metrics + measuredAt.
+  },
+  {
+    slug: 'byslogistics',
+    name: 'B&S Logistics',
+    domain: 'byslogistics.com.co',
+    url: 'https://byslogistics.com.co/',
+    image: byslogistics,
+    sector: 'Seguridad preventiva',
+    // Sacado de la portada del sitio: a qué se dedica la empresa y qué ofrece
+    // el sitio (catálogo, recursos, cotización y asistente).
+    summary:
+      'El sitio de una empresa que distribuye y comercializa elementos de seguridad preventiva, como precintos: catálogo de productos, recursos, cotización en línea y un asistente de chat.',
     // TODO(contenido): year, challenge, solution, capabilities.
     // TODO(medición): `npm run medir` → metrics + measuredAt.
   },
