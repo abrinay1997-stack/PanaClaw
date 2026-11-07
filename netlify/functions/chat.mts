@@ -31,14 +31,34 @@ interface ChatMessage {
  * Base de conocimiento
  * ------------------------------------------------------------------ */
 
+/**
+ * Lo único que la lógica del chat necesita saber de dónde corre.
+ *
+ * El chat no es «de Netlify»: recibe una petición y contesta una respuesta. Lo
+ * que cambia de una plataforma a otra son dos datos —la IP de quien escribe y
+ * cómo se llega a `kb.json`— y viajan aquí, para que el mismo código sirva hoy en
+ * Netlify y mañana en un Worker de Cloudflare sin que haya dos copias que se
+ * desvíen.
+ */
+export interface Entorno {
+  ip: string;
+  /** Cómo obtener `kb.json`. Sin esto se descarga del propio origen. */
+  cargarKb?: (origin: string) => Promise<Kb>;
+}
+
+async function descargarKb(origin: string): Promise<Kb> {
+  const res = await fetch(`${origin}/kb.json`);
+  if (!res.ok) throw new Error(`kb.json devolvió ${res.status}`);
+  return (await res.json()) as Kb;
+}
+
 let kbCache: { kb: Kb; at: number } | null = null;
 const KB_TTL_MS = 10 * 60 * 1000;
 
-async function loadKb(origin: string): Promise<Kb> {
+async function loadKb(origin: string, cargar?: Entorno['cargarKb']): Promise<Kb> {
   if (kbCache && Date.now() - kbCache.at < KB_TTL_MS) return kbCache.kb;
-  const res = await fetch(`${origin}/kb.json`);
-  if (!res.ok) throw new Error(`kb.json devolvió ${res.status}`);
-  const kb = (await res.json()) as Kb;
+  // En un Worker el archivo se pide al binding de los estáticos, no a la red.
+  const kb = cargar ? await cargar(origin) : await descargarKb(origin);
   kbCache = { kb, at: Date.now() };
   return kb;
 }
@@ -316,13 +336,12 @@ const json = (data: unknown, status = 200) =>
     headers: { 'content-type': 'application/json; charset=utf-8' },
   });
 
-export default async (req: Request, context: Context) => {
+export async function atender(req: Request, entorno: Entorno): Promise<Response> {
   if (req.method !== 'POST') return json({ error: 'Método no permitido' }, 405);
 
   if (!allowedOrigin(req)) return json({ error: 'Origen no permitido' }, 403);
 
-  const ip = context.ip || req.headers.get('x-nf-client-connection-ip') || 'anon';
-  if (rateLimited(ip)) {
+  if (rateLimited(entorno.ip)) {
     return json({ reply: 'Vas muy rápido. Espera un momento y vuelve a preguntar.' }, 429);
   }
 
@@ -345,7 +364,7 @@ export default async (req: Request, context: Context) => {
 
   let kb: Kb;
   try {
-    kb = await loadKb(origin);
+    kb = await loadKb(origin, entorno.cargarKb);
   } catch {
     return json({
       reply: `Ahora mismo no puedo consultar los datos. Escríbenos por WhatsApp y te respondemos: ${
@@ -459,6 +478,10 @@ export default async (req: Request, context: Context) => {
   }
 
   return json({ reply, sources: facts.map((f) => f.id) });
-};
+}
+
+/** El adaptador de Netlify: pone la IP que Netlify entrega y nada más. */
+export default async (req: Request, context: Context) =>
+  atender(req, { ip: context.ip || req.headers.get('x-nf-client-connection-ip') || 'anon' });
 
 export const config: Config = { path: '/api/chat' };

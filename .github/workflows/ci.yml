@@ -40,6 +40,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      # El simulacro de Cloudflare: construye lo que Cloudflare publicaría y valida
+      # el Worker y su configuración, sin credenciales. Una regla de cabeceras rota
+      # o un Worker que no compila se enteran aquí, no el día del cambio.
+      - name: Cloudflare (simulacro de despliegue)
+        run: |
+          node scripts/cloudflare-assets.mjs
+          npx wrangler deploy --dry-run
+
       - name: Enlaces internos rotos
         run: npm run medir:enlaces
 

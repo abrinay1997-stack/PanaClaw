@@ -1,0 +1,61 @@
+# Publicar el sitio en Cloudflare SIN abrir una terminal.
+#
+# Es el mismo resultado que `npm run cloudflare:desplegar`, pero desde el
+# navegador. Hoy sirve para ensayar: publica en `panaclaw-sitio.<cuenta>.workers.dev`
+# y NO toca `panaclaw.com`, que sigue en Netlify. El día del cambio, los pasos
+# están en `docs/MIGRACION_CLOUDFLARE.md`.
+#
+# ── Lo único que hay que crear a mano (una vez) ─────────────────────────────
+#
+#   CLOUDFLARE_API_TOKEN  · dash.cloudflare.com → Manage Account → API Tokens →
+#                           Create Token → plantilla «Edit Cloudflare Workers».
+#                           Se guarda en GitHub: Settings → Secrets and variables →
+#                           Actions → New repository secret. Es la misma llave que
+#                           usa el hub; si ya existe en este repositorio, sirve.
+#   CLOUDFLARE_ACCOUNT_ID · opcional; solo si ese token ve más de una cuenta.
+#
+# ── Las claves del chat NO se guardan aquí ──────────────────────────────────
+#
+# `ANTHROPIC_API_KEY` y `GROQ_API_KEY` son secretos del Worker, no de GitHub:
+#
+#   npx wrangler secret put ANTHROPIC_API_KEY
+#
+# A propósito NO corre solo en cada empuje: sin el token configurado, un flujo
+# automático solo dejaría una cruz roja en cada empuje.
+
+name: Desplegar el sitio en Cloudflare
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: desplegar-sitio-cloudflare
+  cancel-in-progress: false
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Comprobar que está la llave
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Falta el secreto CLOUDFLARE_API_TOKEN. Se crea en GitHub: Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Construir y publicar
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm run cloudflare:desplegar
