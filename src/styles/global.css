@@ -735,3 +735,7 @@ h2.section-title .muted{color:var(--studio-gray);}
   -webkit-mask-image:radial-gradient(ellipse 80% 75% at 50% 50%,#000 35%,transparent 100%);
           mask-image:radial-gradient(ellipse 80% 75% at 50% 50%,#000 35%,transparent 100%);
 }
+
+/* Icono dentro de un botón: naranja sobre el botón claro, del color del texto sobre el transparente. */
+.btn .ico{flex:none;}
+.btn-primary .ico{color:var(--flash-orange);}
