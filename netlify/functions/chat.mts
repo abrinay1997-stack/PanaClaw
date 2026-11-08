@@ -75,10 +75,12 @@ interface Provider {
   models: string[];
   body: (model: string, system: string, msgs: ChatMessage[]) => unknown;
   /**
-   * La misma petición sin la orden de no razonar, para el caso de que el
-   * proveedor la rechace con un 400 que mencione `thinking`. Solo Meta la usa.
+   * Formas alternativas de la misma petición, de la preferida a la de último
+   * recurso. Se pasa a la siguiente si el proveedor rechaza la anterior con un
+   * 400 o si contesta sin texto. Se recuerda cuál funcionó (`variantePorModelo`),
+   * para no repetir el descubrimiento en cada pregunta. Solo Meta las usa.
    */
-  sinOrden?: (model: string, system: string, msgs: ChatMessage[]) => unknown;
+  variantes?: ((model: string, system: string, msgs: ChatMessage[]) => unknown)[];
   extract: (json: any) => string;
 }
 
@@ -282,28 +284,52 @@ function pickProviders(): Provider[] {
         'anthropic-version': '2023-06-01',
       },
       models: listaModelos(process.env.META_MODEL, generico, ...MODELOS_META),
-      // Muse Spark RAZONA antes de contestar y por defecto no se le puede poner
-      // tope: en el ensayo se gastó 1500 tokens enteros pensando, con cero de
-      // texto visible (`parada=max_tokens; bloques=[redacted_thinking:0]`), y cada
-      // pregunta tardaba 18 segundos para terminar en «se me cayó la conexión».
-      // Para un chat de preguntas y respuestas con el contexto ya dado, el
-      // razonamiento sobra: se pide apagado, y queda holgura por si lo ignora.
+      // Muse Spark RAZONA antes de contestar, y por defecto sin tope: en el ensayo
+      // gastó 1500 tokens enteros pensando, con cero de texto visible
+      // (`parada=max_tokens; bloques=[redacted_thinking:0]`), y cada pregunta
+      // tardaba 18 s para acabar en «se me cayó la conexión».
+      //
+      // `thinking: disabled` NO sirve: Meta lo traduce a «effort: none» y lo
+      // rechaza («reasoning_effort 'none' is not supported ... Supported values:
+      // [minimal, low, medium, high, xhigh, max]»). Hay que pedir poco
+      // razonamiento, no ninguno. Como no está publicado en qué campo, se prueban
+      // tres formas, de la más estándar a la de último recurso (sin orden y con
+      // mucho cupo), y se recuerda la que funcione.
+      //
       // El largo de lo que se publica lo sigue decidiendo `trimReply()`.
       body: (model, system, msgs) => ({
         model,
         max_tokens: 3000,
         temperature: 0.3,
-        thinking: { type: 'disabled' },
+        thinking: { type: 'enabled', budget_tokens: 1024 },
         system,
         messages: msgs,
       }),
-      sinOrden: (model, system, msgs) => ({
-        model,
-        max_tokens: 3000,
-        temperature: 0.3,
-        system,
-        messages: msgs,
-      }),
+      variantes: [
+        (model, system, msgs) => ({
+          model,
+          max_tokens: 3000,
+          temperature: 0.3,
+          thinking: { type: 'enabled', budget_tokens: 1024 },
+          system,
+          messages: msgs,
+        }),
+        (model, system, msgs) => ({
+          model,
+          max_tokens: 3000,
+          temperature: 0.3,
+          output_config: { effort: 'low' },
+          system,
+          messages: msgs,
+        }),
+        (model, system, msgs) => ({
+          model,
+          max_tokens: 6000,
+          temperature: 0.3,
+          system,
+          messages: msgs,
+        }),
+      ],
       extract: (j) =>
         (Array.isArray(j?.content) ? j.content : [])
           .filter((b: any) => b?.type === 'text')
@@ -352,6 +378,9 @@ function allowedOrigin(req: Request): boolean {
 /* ------------------------------------------------------------------ *
  * Límites de uso (best-effort, por instancia)
  * ------------------------------------------------------------------ */
+
+/** Qué variante de la petición funcionó con cada modelo (por instancia). */
+const variantePorModelo = new Map<string, number>();
 
 const hits = new Map<string, number[]>();
 const WINDOW_MS = 60_000;
@@ -477,76 +506,83 @@ export async function atender(req: Request, entorno: Entorno): Promise<Response>
   // con el primero que conteste; con una sola clave y un solo modelo el
   // comportamiento es idéntico al de antes.
   porProveedor: for (const provider of proveedores) {
-    for (const model of provider.models) {
-      try {
-        const pedir = (cuerpo: unknown) =>
-          fetch(provider.url, {
+    porModelo: for (const model of provider.models) {
+      const variantes = provider.variantes ?? [provider.body];
+      const clave = `${provider.name}:${model}`;
+      const desde = Math.min(variantePorModelo.get(clave) ?? 0, variantes.length - 1);
+
+      for (let v = desde; v < variantes.length; v++) {
+        const ultima = v === variantes.length - 1;
+        try {
+          const res = await fetch(provider.url, {
             method: 'POST',
             headers: provider.headers,
-            body: JSON.stringify(cuerpo),
+            body: JSON.stringify(variantes[v](model, system, messages)),
             signal: AbortSignal.timeout(20_000),
           });
 
-        let res = await pedir(provider.body(model, system, messages));
-
-        // Si el proveedor no entiende la orden de no razonar, se repite sin ella
-        // antes de dar el modelo por malo.
-        if (res.status === 400 && provider.sinOrden) {
-          const motivo = (await res.clone().text().catch(() => '')).slice(0, 500);
-          if (/thinking/i.test(motivo)) {
-            console.error(`[chat] ${provider.name} (${model}) rechazó la orden de no razonar: ${motivo}`);
-            res = await pedir(provider.sinOrden(model, system, messages));
+          if (!res.ok) {
+            /*
+             * El motivo real vive aquí y en ningún otro sitio: una clave mal pegada,
+             * una cuota agotada y un modelo retirado dan los tres el mismo "se me cayó
+             * la conexión" en pantalla. Sin este log había que adivinar. Va al registro
+             * de la función, que solo ve quien administra el sitio; al visitante nunca
+             * se le enseña el error del proveedor.
+             *
+             * El nombre del modelo va en la línea porque es la mitad del diagnóstico:
+             * distingue "la clave no sirve" de "ese modelo ya no existe", que es
+             * justo lo que costó una semana de chat mudo en agosto de 2026.
+             */
+            const detalle = (await res.text().catch(() => '')).slice(0, 500);
+            console.error(
+              `[chat] ${provider.name} (${model}) variante ${v} devolvió ${res.status}: ${detalle}`
+            );
+            fallo = `${provider.name}_http_${res.status}`;
+            // Un 400 puede ser la forma de la petición: se prueba la siguiente.
+            if (res.status === 400 && !ultima) continue;
+            // Si el problema es el modelo, el siguiente de la lista puede servir.
+            // Si es del proveedor, cambiarle el nombre al modelo no arregla nada.
+            if (modeloInservible(res.status, detalle)) continue porModelo;
+            continue porProveedor;
           }
-        }
 
-        if (!res.ok) {
+          const cuerpo = await res.json();
+          reply = trimReply(provider.extract(cuerpo).trim());
+          if (reply) {
+            variantePorModelo.set(clave, v);
+            break porProveedor;
+          }
+
           /*
-           * El motivo real vive aquí y en ningún otro sitio: una clave mal pegada,
-           * una cuota agotada y un modelo retirado dan los tres el mismo "se me cayó
-           * la conexión" en pantalla. Sin este log había que adivinar. Va al registro
-           * de la función (Netlify → Functions → chat), que solo ve quien administra
-           * el sitio; al visitante nunca se le enseña el error del proveedor.
-           *
-           * El nombre del modelo va en la línea porque es la mitad del diagnóstico:
-           * distingue "la clave no sirve" de "ese modelo ya no existe", que es
-           * justo lo que costó una semana de chat mudo en agosto de 2026.
+           * Qué forma tenía la respuesta, sin su texto ni su llave: por qué paró
+           * (`stop_reason` / `finish_reason`), qué bloques trajo y cuántos tokens
+           * gastó. Con eso se distingue «el modelo gastó todo en razonar» de «la
+           * respuesta viene con otra forma».
            */
-          const detalle = (await res.text().catch(() => '')).slice(0, 500);
-          console.error(`[chat] ${provider.name} (${model}) devolvió ${res.status}: ${detalle}`);
-          fallo = `${provider.name}_http_${res.status}`;
-          // Si el problema es el modelo, el siguiente de la lista puede servir.
-          // Si es del proveedor, cambiarle el nombre al modelo no arregla nada.
-          if (modeloInservible(res.status, detalle)) continue;
+          const bloques = Array.isArray(cuerpo?.content)
+            ? cuerpo.content
+                .map((b: any) => `${b?.type ?? '?'}:${String(b?.text ?? b?.thinking ?? '').length}`)
+                .join(',')
+            : typeof cuerpo?.choices !== 'undefined'
+              ? 'choices'
+              : `claves=${Object.keys(cuerpo ?? {}).join(',')}`;
+          console.error(
+            `[chat] ${provider.name} (${model}) variante ${v} respondió vacío; parada=${
+              cuerpo?.stop_reason ?? cuerpo?.choices?.[0]?.finish_reason ?? '?'
+            }; bloques=[${bloques}]; tokens_salida=${
+              cuerpo?.usage?.output_tokens ?? cuerpo?.usage?.completion_tokens ?? '?'
+            }`
+          );
+          fallo = `${provider.name}_vacio`;
+          // Vacío con una variante: la siguiente puede razonar menos.
+          if (!ultima) continue;
+        } catch (err) {
+          // Un corte de red o un tiempo agotado son del proveedor, no del modelo:
+          // reintentar aquí solo suma otros 20 segundos de espera al visitante.
+          console.error(`[chat] fallo llamando a ${provider.name} (${model}):`, err);
+          fallo = `${provider.name}_network`;
           continue porProveedor;
         }
-
-        const cuerpo = await res.json();
-        reply = trimReply(provider.extract(cuerpo).trim());
-        if (reply) break porProveedor;
-
-        /*
-         * Qué forma tenía la respuesta, sin su texto ni su llave: por qué paró
-         * (`stop_reason` / `finish_reason`), qué bloques trajo y cuántos tokens
-         * gastó. Con eso se distingue «el modelo gastó todo en razonar» de «la
-         * respuesta viene con otra forma».
-         */
-        const bloques = Array.isArray(cuerpo?.content)
-          ? cuerpo.content.map((b: any) => `${b?.type ?? '?'}:${String(b?.text ?? b?.thinking ?? '').length}`).join(',')
-          : typeof cuerpo?.choices !== 'undefined'
-            ? 'choices'
-            : `claves=${Object.keys(cuerpo ?? {}).join(',')}`;
-        console.error(
-          `[chat] ${provider.name} (${model}) respondió vacío; parada=${
-            cuerpo?.stop_reason ?? cuerpo?.choices?.[0]?.finish_reason ?? '?'
-          }; bloques=[${bloques}]; tokens_salida=${cuerpo?.usage?.output_tokens ?? cuerpo?.usage?.completion_tokens ?? '?'}`
-        );
-        fallo = `${provider.name}_vacio`;
-      } catch (err) {
-        // Un corte de red o un tiempo agotado son del proveedor, no del modelo:
-        // reintentar aquí solo suma otros 20 segundos de espera al visitante.
-        console.error(`[chat] fallo llamando a ${provider.name} (${model}):`, err);
-        fallo = `${provider.name}_network`;
-        continue porProveedor;
       }
     }
   }
