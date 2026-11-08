@@ -14,11 +14,19 @@
   // `panaclaw-sitio.<cuenta>.workers.dev`. Servirla no toca el dominio.
   "workers_dev": true,
 
-  // EL DOMINIO NO ESTÁ AQUÍ A PROPÓSITO.
+  // EL DOMINIO. Se sirve por RUTAS DE ZONA, no por `custom_domain`.
   //
-  // Escribir `routes` con `custom_domain: true` hace que el próximo despliegue
-  // tome `panaclaw.com` y cambie su DNS, y eso es el día del cambio, no un
-  // despliegue de ensayo. Está en `docs/MIGRACION_CLOUDFLARE.md`, paso a paso.
+  // `custom_domain: true` exige que NO exista ningún registro DNS del nombre: hay
+  // que borrar el A y el CNAME que apuntan a Netlify y el sitio queda caído hasta
+  // que el despliegue termina. Con rutas no se borra nada: mientras los registros
+  // `A @` y `CNAME www` estén en NUBE GRIS (DNS only) el tráfico va directo a
+  // Netlify y esta ruta no recibe nada. El cambio real ocurre cuando se ponen en
+  // NUBE NARANJA (Proxied): desde ese segundo atiende el Worker. Y para volver
+  // atrás basta ponerlas otra vez en gris. Pasos en `docs/MIGRACION_CLOUDFLARE.md`.
+  "routes": [
+    { "pattern": "panaclaw.com/*", "zone_name": "panaclaw.com" },
+    { "pattern": "www.panaclaw.com/*", "zone_name": "panaclaw.com" }
+  ],
 
   "assets": {
     "directory": "./dist",
