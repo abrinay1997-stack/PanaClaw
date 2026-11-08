@@ -197,10 +197,10 @@ const showcase = ['start', 'corporate']
 <style>
   /* Sin hero: el nav flotante necesita aire propio arriba */
   .planes {
-    padding-top: 168px;
+    padding-top: var(--e7);
   }
   .planes-head {
-    margin-bottom: 54px;
+    margin-bottom: var(--e5);
   }
   .planes-title {
     font-size: clamp(38px, 5.6vw, 72px);
@@ -218,9 +218,9 @@ const showcase = ['start', 'corporate']
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 14px 20px;
-    margin-top: 54px;
-    padding-top: 34px;
+    gap: var(--e2) var(--e2);
+    margin-top: var(--e5);
+    padding-top: var(--e4);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
   .planes-next-label {
@@ -237,13 +237,13 @@ const showcase = ['start', 'corporate']
 
   /* ---------- RESPALDO ---------- */
   .promise {
-    padding: 100px 0;
+    padding: var(--e6) 0;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
   .promise-grid {
     display: grid;
     grid-template-columns: 0.9fr 1.1fr;
-    gap: 60px;
+    gap: var(--e5);
     align-items: start;
   }
   .promise-title {
@@ -258,7 +258,7 @@ const showcase = ['start', 'corporate']
   }
   .promise-facts {
     display: grid;
-    gap: 28px;
+    gap: var(--e3);
   }
   .promise-k {
     display: block;
@@ -266,7 +266,7 @@ const showcase = ['start', 'corporate']
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--flash-orange);
-    margin-bottom: 10px;
+    margin-bottom: var(--e1);
   }
   .promise-fact p {
     font-size: 16px;
@@ -282,7 +282,7 @@ const showcase = ['start', 'corporate']
     min-height: 78vh;
     display: flex;
     align-items: center;
-    padding: 110px 0;
+    padding: var(--e6) 0;
     overflow: hidden;
   }
   .showcase-scene .container {
@@ -301,7 +301,7 @@ const showcase = ['start', 'corporate']
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--flash-orange);
-    margin-bottom: 18px;
+    margin-bottom: var(--e2);
   }
   .showcase-copy h2 {
     font-size: clamp(40px, 6vw, 80px);
@@ -309,7 +309,7 @@ const showcase = ['start', 'corporate']
     line-height: 0.95;
     letter-spacing: -0.03em;
     text-transform: uppercase;
-    margin-bottom: 22px;
+    margin-bottom: var(--e3);
     text-shadow: 0 4px 40px rgba(16, 1, 1, 0.85);
   }
   .showcase-desc {
@@ -322,8 +322,8 @@ const showcase = ['start', 'corporate']
   .showcase-meta {
     display: flex;
     align-items: baseline;
-    gap: 18px;
-    margin: 26px 0 30px;
+    gap: var(--e2);
+    margin: var(--e3) 0 var(--e3);
   }
   .showcase-price {
     font-size: 46px;
@@ -340,15 +340,15 @@ const showcase = ['start', 'corporate']
 
   @media (max-width: 900px) {
     .planes {
-      padding-top: 140px;
+      padding-top: var(--e7);
     }
     .promise-grid {
       grid-template-columns: 1fr;
-      gap: 34px;
+      gap: var(--e4);
     }
     .showcase-scene {
       min-height: 0;
-      padding: 84px 0;
+      padding: var(--e5) 0;
     }
     .showcase-scene[data-side='right'] .showcase-copy {
       margin-left: 0;

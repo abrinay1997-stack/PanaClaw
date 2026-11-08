@@ -125,7 +125,7 @@ const itemListSchema = {
 
 <style>
   .proyectos {
-    padding: 20px 0 120px;
+    padding: var(--e2) 0 var(--e6);
   }
   /*
     Dos columnas fijas en vez de auto-fit: con cuatro fichas, `auto-fit` deja una
@@ -135,11 +135,11 @@ const itemListSchema = {
   .proyectos-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
+    gap: var(--e3);
     align-items: start;
   }
   .proyectos-nota {
-    margin-top: 44px;
+    margin-top: var(--e4);
     max-width: 68ch;
     font-size: 14px;
     font-weight: 300;
@@ -151,7 +151,7 @@ const itemListSchema = {
   .proyectos-cta {
     position: relative;
     overflow: hidden;
-    padding: 130px 0;
+    padding: var(--e6) 0;
     text-align: center;
   }
   .proyectos-cta .container {
@@ -167,7 +167,7 @@ const itemListSchema = {
     text-shadow: 0 4px 40px rgba(16, 1, 1, 0.85);
   }
   .proyectos-cta p {
-    margin: 22px auto 0;
+    margin: var(--e3) auto 0;
     max-width: 52ch;
     font-size: 17px;
     font-weight: 300;
@@ -177,10 +177,10 @@ const itemListSchema = {
   }
   .proyectos-cta-actions {
     display: flex;
-    gap: 14px;
+    gap: var(--e2);
     justify-content: center;
     flex-wrap: wrap;
-    margin-top: 38px;
+    margin-top: var(--e4);
   }
 
   @media (max-width: 900px) {
@@ -188,10 +188,10 @@ const itemListSchema = {
       grid-template-columns: 1fr;
     }
     .proyectos {
-      padding-bottom: 90px;
+      padding-bottom: var(--e6);
     }
     .proyectos-cta {
-      padding: 96px 0;
+      padding: var(--e6) 0;
     }
   }
 </style>

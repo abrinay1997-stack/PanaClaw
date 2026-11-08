@@ -42,7 +42,7 @@ const num = String(idx + 1).padStart(2, '0');
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 26px 26px 24px;
+    padding: var(--e3) var(--e3) var(--e3);
     border: 1px solid rgba(255, 255, 255, 0.09);
     border-radius: 18px;
     background:
@@ -78,7 +78,7 @@ const num = String(idx + 1).padStart(2, '0');
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 18px;
+    margin-bottom: var(--e2);
   }
   .mod-num {
     font-size: 12px;
@@ -109,7 +109,7 @@ const num = String(idx + 1).padStart(2, '0');
     font-weight: 600;
     line-height: 1.25;
     letter-spacing: -0.01em;
-    margin-bottom: 20px;
+    margin-bottom: var(--e2);
     flex: 1;
   }
 
@@ -117,8 +117,8 @@ const num = String(idx + 1).padStart(2, '0');
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 14px;
-    padding-top: 16px;
+    gap: var(--e2);
+    padding-top: var(--e2);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
   .mod-price {
@@ -140,7 +140,7 @@ const num = String(idx + 1).padStart(2, '0');
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    margin-top: 16px;
+    margin-top: var(--e2);
     font-size: 12px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -149,7 +149,7 @@ const num = String(idx + 1).padStart(2, '0');
   }
   .module:hover .mod-cta {
     color: var(--flash-orange);
-    gap: 12px;
+    gap: var(--e1);
   }
 
   @media (prefers-reduced-motion: reduce) {

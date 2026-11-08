@@ -202,11 +202,11 @@ import { routes } from '../data/links';
   /* ---------- CATÁLOGO ---------- */
   /* Sin hero: el nav flotante necesita su aire arriba, igual que en /planes. */
   .cat {
-    padding-top: 168px;
-    padding-bottom: 80px;
+    padding-top: var(--e7);
+    padding-bottom: var(--e5);
   }
   .cat-head {
-    margin-bottom: 50px;
+    margin-bottom: var(--e4);
   }
   .cat-head h1 {
     font-size: clamp(38px, 5.6vw, 72px);
@@ -220,7 +220,7 @@ import { routes } from '../data/links';
     color: var(--studio-gray);
   }
   .cat-lead {
-    margin-top: 22px;
+    margin-top: var(--e3);
     max-width: 62ch;
     font-size: 17px;
     font-weight: 300;
@@ -238,14 +238,14 @@ import { routes } from '../data/links';
     display: grid;
     grid-template-columns: 1fr auto 28px;
     align-items: center;
-    gap: 30px;
-    padding: 26px 8px 26px 0;
+    gap: var(--e3);
+    padding: var(--e3) 8px var(--e3) 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     transition: background 0.25s, padding-left 0.25s;
   }
   .cat-link:hover {
     background: rgba(255, 81, 0, 0.05);
-    padding-left: 14px;
+    padding-left: var(--e2);
   }
   .cat-link:focus-visible {
     outline: 2px solid var(--flash-orange);
@@ -266,7 +266,7 @@ import { routes } from '../data/links';
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--flash-orange);
-    margin-bottom: 10px;
+    margin-bottom: var(--e1);
   }
   .cat-desc {
     display: block;
@@ -305,7 +305,7 @@ import { routes } from '../data/links';
     transform: translateX(4px);
   }
   .cat-foot {
-    margin-top: 34px;
+    margin-top: var(--e4);
     font-size: 15px;
     font-weight: 300;
     color: var(--studio-gray);
@@ -323,12 +323,12 @@ import { routes } from '../data/links';
 
   /* ---------- CARE ---------- */
   .care-lead {
-    padding-top: 40px;
-    padding-bottom: 90px;
+    padding-top: var(--e4);
+    padding-bottom: var(--e6);
     scroll-margin-top: 110px;
   }
   .care-head {
-    margin-bottom: 54px;
+    margin-bottom: var(--e5);
   }
   .care-title {
     font-size: clamp(32px, 4.4vw, 56px);
@@ -343,7 +343,7 @@ import { routes } from '../data/links';
   }
   .care-otro {
     max-width: 64ch;
-    margin-top: 26px;
+    margin-top: var(--e3);
     font-size: 15px;
     font-weight: 300;
     color: var(--studio-gray);
@@ -357,7 +357,7 @@ import { routes } from '../data/links';
     text-decoration-thickness: 1px;
   }
   .care-lead-text {
-    margin-top: 24px;
+    margin-top: var(--e3);
     max-width: 54ch;
     font-size: 18px;
     font-weight: 300;
@@ -367,14 +367,14 @@ import { routes } from '../data/links';
 
   /* ---------- DIAGNÓSTICO ---------- */
   .diag {
-    padding: 40px 0 100px;
+    padding: var(--e4) 0 var(--e6);
   }
   .diag-card {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 44px;
+    gap: var(--e4);
     align-items: center;
-    padding: 44px 46px;
+    padding: var(--e4) var(--e4);
     border-radius: 24px;
     background: linear-gradient(120deg, rgba(255, 81, 0, 0.16), rgba(238, 0, 0, 0.06));
     border: 1px solid rgba(255, 81, 0, 0.4);
@@ -384,13 +384,13 @@ import { routes } from '../data/links';
     font-weight: 600;
     letter-spacing: -0.02em;
     line-height: 1.05;
-    margin: 6px 0 16px;
+    margin: 6px 0 var(--e2);
   }
   /* Con `.diag-copy` delante a propósito: la regla `.diag-copy p` de abajo tiene
      más especificidad y se comía el tamaño y el color de esta nota. Es la
      trampa que `convenciones.md` documenta para `.container`. */
   .diag-copy .diag-frontera {
-    margin-top: 14px;
+    margin-top: var(--e2);
     max-width: 58ch;
     font-size: 14px;
     font-weight: 300;
@@ -406,7 +406,7 @@ import { routes } from '../data/links';
     font-weight: 300;
     color: var(--soft-white);
     line-height: 1.65;
-    margin-bottom: 28px;
+    margin-bottom: var(--e3);
   }
   .diag-price {
     text-align: right;
@@ -420,7 +420,7 @@ import { routes } from '../data/links';
   }
   .diag-price-k {
     display: block;
-    margin-top: 10px;
+    margin-top: var(--e1);
     font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -433,7 +433,7 @@ import { routes } from '../data/links';
     min-height: 88vh;
     display: flex;
     align-items: center;
-    padding: 120px 0;
+    padding: var(--e6) 0;
     overflow: hidden;
   }
   .service-scene .container {
@@ -452,7 +452,7 @@ import { routes } from '../data/links';
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--flash-orange);
-    margin-bottom: 20px;
+    margin-bottom: var(--e2);
   }
   .service-copy h2 {
     font-size: clamp(38px, 5.4vw, 68px);
@@ -460,14 +460,14 @@ import { routes } from '../data/links';
     line-height: 0.98;
     letter-spacing: -0.025em;
     text-transform: uppercase;
-    margin-bottom: 26px;
+    margin-bottom: var(--e3);
     text-shadow: 0 4px 40px rgba(16, 1, 1, 0.85);
   }
   .service-short {
     font-size: 20px;
     font-weight: 400;
     color: var(--soft-white);
-    margin-bottom: 22px;
+    margin-bottom: var(--e3);
     line-height: 1.4;
     text-shadow: 0 2px 24px rgba(16, 1, 1, 0.9);
   }
@@ -481,15 +481,15 @@ import { routes } from '../data/links';
 
   @media (max-width: 900px) {
     .cat {
-      padding-top: 140px;
+      padding-top: var(--e7);
     }
     /* El precio baja debajo del texto, no encoge: en una lista de compra, la
        cifra apretada contra el borde en dos líneas es lo primero que deja de
        leerse. La flecha se va — en un teléfono no hay hover que la explique. */
     .cat-link {
       grid-template-columns: 1fr;
-      gap: 16px;
-      padding: 24px 0;
+      gap: var(--e2);
+      padding: var(--e3) 0;
     }
     .cat-link:hover {
       padding-left: 0;
@@ -505,15 +505,15 @@ import { routes } from '../data/links';
     }
     .diag-card {
       grid-template-columns: 1fr;
-      gap: 26px;
-      padding: 32px 26px;
+      gap: var(--e3);
+      padding: var(--e3) var(--e3);
     }
     .diag-price {
       text-align: left;
     }
     .service-scene {
       min-height: 0;
-      padding: 90px 0;
+      padding: var(--e6) 0;
     }
     .service-scene[data-side='right'] .service-copy {
       margin-left: 0;
