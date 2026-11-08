@@ -79,23 +79,9 @@ export interface Project {
   featured?: boolean;
 }
 
-// El orden es el de la página: lo más reciente va primero, porque es lo primero
-// que ve quien llega. Un proyecto nuevo se añade ARRIBA, no al final.
+// El orden es el de la página. D'CASA va primero por decisión de la dueña (8-nov-2026):
+// es la primera captura que ve quien llega. Un proyecto nuevo se añade después.
 export const projects: Project[] = [
-  {
-    slug: 'byslogistics',
-    name: 'B&S Logistics',
-    domain: 'byslogistics.com.co',
-    url: 'https://byslogistics.com.co/',
-    image: byslogistics,
-    sector: 'Seguridad preventiva',
-    // Sacado de la portada del sitio: a qué se dedica la empresa y qué ofrece
-    // el sitio (catálogo, recursos, cotización y asistente).
-    summary:
-      'El sitio de una empresa que distribuye y comercializa elementos de seguridad preventiva, como precintos: catálogo de productos, recursos, cotización en línea y un asistente de chat.',
-    // TODO(contenido): year, challenge, solution, capabilities.
-    // TODO(medición): `npm run medir` → metrics + measuredAt.
-  },
   {
     slug: 'dcasapty',
     name: "D'CASA Panamá",
@@ -107,6 +93,20 @@ export const projects: Project[] = [
     // rubro, las categorías, los precios claros y las zonas de entrega.
     summary:
       'El sitio de una mueblería de La Chorrera: catálogo de salas, recámaras, colchones y zapateras con precios claros, carrito, cuenta de cliente y entregas en Panamá Oeste, Panamá y Colón.',
+    // TODO(contenido): year, challenge, solution, capabilities.
+    // TODO(medición): `npm run medir` → metrics + measuredAt.
+  },
+  {
+    slug: 'byslogistics',
+    name: 'B&S Logistics',
+    domain: 'byslogistics.com.co',
+    url: 'https://byslogistics.com.co/',
+    image: byslogistics,
+    sector: 'Seguridad preventiva',
+    // Sacado de la portada del sitio: a qué se dedica la empresa y qué ofrece
+    // el sitio (catálogo, recursos, cotización y asistente).
+    summary:
+      'El sitio de una empresa que distribuye y comercializa elementos de seguridad preventiva, como precintos: catálogo de productos, recursos, cotización en línea y un asistente de chat.',
     // TODO(contenido): year, challenge, solution, capabilities.
     // TODO(medición): `npm run medir` → metrics + measuredAt.
   },

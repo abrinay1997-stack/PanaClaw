@@ -1,7 +1,7 @@
 ---
+import Icono from '../components/Icono.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Reveal from '../components/Reveal.astro';
-import SectionNav from '../components/SectionNav.astro';
 import { faqGroups, faq } from '../data/faq';
 import { getCollection } from 'astro:content';
 import { routes } from '../data/links';
@@ -41,82 +41,92 @@ const faqSchema = {
   activePath={routes.ayuda}
   jsonLd={[faqSchema]}
 >
-  <section class="ayuda">
+  <section class="ayuda" data-sin-iman>
     <div class="container">
       <header class="ayuda-head">
         <span class="eyebrow">Ayuda</span>
         <h1>Las preguntas <span class="muted">que de verdad importan.</span></h1>
         <p class="ayuda-lead">
-          Escritas para alguien que nunca ha encargado una web y no tiene por qué saber qué
-          preguntar. Sin tecnicismos: si hace falta una palabra rara, se explica ahí mismo.
+          Para alguien que nunca ha encargado una web. Busca tu duda o elige un tema: todo está en
+          esta misma pantalla.
         </p>
       </header>
 
-      <!-- Índice: la página es larga y hay que poder saltar -->
-      <div class="ayuda-index">
-        <SectionNav
-          label="Secciones de ayuda"
-          items={[...faqGroups.map((g) => ({ href: `#${g.id}`, label: g.title })), { href: '#blog', label: 'Del blog' }]}
-        />
+      <!--
+        UN SOLO PANEL. Ayuda es la única página que no necesita secciones de
+        pantalla completa: aquí se viene a encontrar una respuesta rápido. Buscador
+        arriba, temas a la izquierda, preguntas a la derecha y el blog como un tema
+        más. Sin JavaScript se ve todo en una sola lista; con él, un tema a la vez.
+      -->
+      <div class="ayuda-panel" data-ayuda>
+        <div class="ayuda-barra">
+          <label class="sr-only" for="ayuda-q">Buscar en la ayuda</label>
+          <input id="ayuda-q" class="ayuda-buscar" type="search" autocomplete="off" placeholder="Busca tu duda: precio, plazo, el código, pagos…" data-ayuda-q />
+          <p class="ayuda-cuenta" data-ayuda-cuenta aria-live="polite"></p>
+        </div>
+
+        <div class="ayuda-cuerpo">
+          <div class="ayuda-cats" role="group" aria-label="Temas de ayuda">
+            <button type="button" class="ayuda-cat is-activa" data-cat="todas">Todas</button>
+            {faqGroups.map((g) => (
+              <button type="button" class="ayuda-cat" data-cat={g.id}>{g.title}<span class="ayuda-n">{g.items.length}</span></button>
+            ))}
+            <button type="button" class="ayuda-cat" data-cat="blog">Del blog<span class="ayuda-n">{recientes.length}</span></button>
+          </div>
+
+          <div class="ayuda-contenido">
+            {faqGroups.map((group) => (
+              <section class="ayuda-group" id={group.id} data-grupo={group.id} aria-label={group.title}>
+                <header class="ayuda-group-head">
+                  <h2>{group.title}</h2>
+                  <p>{group.intro}</p>
+                </header>
+                <div class="ayuda-items">
+                  {group.items.map((item) => (
+                    <details class="ayuda-item">
+                      <summary>
+                        <span>{item.q}</span>
+                        <span class="ayuda-mark" aria-hidden="true"></span>
+                      </summary>
+                      <p>{item.a}</p>
+                    </details>
+                  ))}
+                </div>
+              </section>
+            ))}
+
+            <section class="ayuda-group ayuda-blog" id="blog" data-grupo="blog" aria-label="Del blog">
+              <header class="ayuda-group-head">
+                <h2>Del blog</h2>
+                <p>Lo último que escribimos, sin jerga y con datos reales. <a href={routes.blog}>Ver los {posts.length} artículos →</a></p>
+              </header>
+              <ul class="ayuda-posts">
+                {recientes.map((post) => (
+                  <li data-post>
+                    <a class="ayuda-post" href={`/blog/${post.id.replace(/\.md$/, '')}/`}>
+                      <span class="ayuda-post-meta">{etiquetas[post.data.category] ?? post.data.category} · {fecha(post.data.date)}</span>
+                      <span class="ayuda-post-title">{post.data.title}</span>
+                      <span class="ayuda-post-go" aria-hidden="true">→</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <p class="ayuda-vacio" data-ayuda-vacio hidden>
+              Nada coincide con tu búsqueda. Prueba con otra palabra, o pregúntanos directo abajo.
+            </p>
+          </div>
+        </div>
       </div>
 
-      {faqGroups.map((group) => (
-        <section class="ayuda-group" id={group.id}>
-          <div class="ayuda-group-head">
-            <h2>{group.title}</h2>
-            <p>{group.intro}</p>
-          </div>
-
-          <div class="ayuda-items">
-            {group.items.map((item) => (
-              <Reveal>
-                <details class="ayuda-item">
-                  <summary>
-                    <span>{item.q}</span>
-                    <span class="ayuda-mark" aria-hidden="true"></span>
-                  </summary>
-                  <p>{item.a}</p>
-                </details>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-      ))}
-
-      <!-- El blog vive aquí también: la duda que no está en las preguntas suele estar en un artículo. -->
-      <section class="ayuda-group ayuda-blog" id="blog">
-        <div class="ayuda-group-head">
-          <h2>Del blog</h2>
-          <p>Lo último que escribimos, sin jerga y con datos reales.</p>
-          <a class="ayuda-blog-todos" href={routes.blog}>Ver los {posts.length} artículos →</a>
-        </div>
-        <ul class="ayuda-posts">
-          {recientes.map((post) => (
-            <Reveal as="li">
-              <a class="ayuda-post" href={`/blog/${post.id.replace(/\.md$/, '')}/`}>
-                <span class="ayuda-post-meta">
-                  {etiquetas[post.data.category] ?? post.data.category} · {fecha(post.data.date)}
-                </span>
-                <span class="ayuda-post-title">{post.data.title}</span>
-                <span class="ayuda-post-go" aria-hidden="true">→</span>
-              </a>
-            </Reveal>
-          ))}
-        </ul>
-      </section>
-
-      <!-- Salida para lo que no esté cubierto -->
       <aside class="ayuda-more">
-        <div>
-          <h2>¿No está tu pregunta aquí?</h2>
-          <p>
-            Escríbenos y te respondemos en horario laboral ({contact.horario}). Contesta la misma
-            persona que programaría tu sitio, así que no hay que explicar nada dos veces.
-          </p>
-        </div>
+        <p>
+          <strong>¿No está tu pregunta?</strong> Te respondemos en horario laboral ({contact.horario}); contesta la misma persona que programaría tu sitio.
+        </p>
         <div class="ayuda-more-actions">
           <a class="btn btn-primary" href={waLink(`Hola ${site.name}, tengo una pregunta`)} target="_blank" rel="noopener">
-            <span class="dot"></span> Preguntar por WhatsApp
+            <Icono nombre="whatsapp" /> Preguntar por WhatsApp
           </a>
           <a class="btn btn-ghost" href={routes.contacto}>Escribir un mensaje</a>
         </div>
@@ -126,189 +136,137 @@ const faqSchema = {
 </BaseLayout>
 
 <style>
-  .ayuda {
-    padding-top: var(--e7);
-    padding-bottom: var(--e6);
-  }
-  .ayuda-head {
-    margin-bottom: var(--e4);
-  }
+  .ayuda { padding: 100px 0 var(--e5); }
+  .ayuda-head { margin-bottom: var(--e3); }
   .ayuda-head h1 {
-    font-size: clamp(38px, 5.6vw, 72px);
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: -0.025em;
-    text-transform: uppercase;
-    max-width: 17ch;
+    font-size: clamp(30px, 4vw, 54px);
+    font-weight: 600; line-height: 1; letter-spacing: -0.025em; text-transform: uppercase; max-width: none;
   }
-  .ayuda-head h1 .muted {
-    color: var(--studio-gray);
-  }
-  .ayuda-lead {
-    margin-top: var(--e3);
-    max-width: 58ch;
-    font-size: 18px;
-    font-weight: 300;
-    color: var(--studio-gray);
-    line-height: 1.6;
-  }
+  .ayuda-head h1 .muted { color: var(--studio-gray); }
+  .ayuda-lead { margin-top: var(--e1); max-width: 60ch; font-size: 16px; font-weight: 300; color: var(--studio-gray); line-height: 1.55; }
 
-  /* Las píldoras las pone <SectionNav>; aquí solo el aire que la separa del
-     primer grupo. */
-  .ayuda-index {
-    padding-bottom: var(--e5);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  .ayuda-barra { display: flex; align-items: center; gap: var(--e3); margin-bottom: var(--e2); }
+  .ayuda-buscar {
+    flex: 1; min-width: 0; font: inherit; font-size: 16px; color: var(--soft-white);
+    padding: 14px var(--e3); border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.04);
+    transition: border-color .2s, background .2s;
   }
+  .ayuda-buscar::placeholder { color: rgba(255, 247, 247, 0.4); }
+  .ayuda-buscar:focus { outline: none; border-color: var(--flash-orange); background: rgba(255, 81, 0, 0.06); }
+  .ayuda-cuenta { font-size: 13px; letter-spacing: .06em; color: var(--studio-gray); white-space: nowrap; min-width: 9ch; text-align: right; }
 
-  .ayuda-group {
-    display: grid;
-    grid-template-columns: 0.75fr 1.25fr;
-    gap: var(--e5);
-    padding: var(--e5) 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    /* El nav flotante no puede tapar el titular al saltar por ancla */
-    scroll-margin-top: 110px;
+  .ayuda-cuerpo { display: grid; grid-template-columns: 250px 1fr; gap: var(--e4); align-items: start; }
+  .ayuda-cats { position: sticky; top: 96px; display: grid; gap: 4px; }
+  .ayuda-cat {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--e1);
+    text-align: left; font: inherit; font-size: 15px; color: var(--studio-gray); cursor: pointer;
+    padding: 11px var(--e2); border-radius: 12px; border: 1px solid transparent; background: transparent;
+    transition: color .2s, background .2s, border-color .2s;
   }
-  .ayuda-group-head h2 {
-    font-size: clamp(26px, 3.2vw, 40px);
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.05;
-    margin-bottom: var(--e2);
-  }
-  .ayuda-group-head p {
-    font-size: 15px;
-    font-weight: 300;
-    color: var(--studio-gray);
-    line-height: 1.6;
-    max-width: 30ch;
-  }
+  .ayuda-cat:hover { color: var(--soft-white); background: rgba(255, 255, 255, 0.05); }
+  .ayuda-cat:focus-visible { outline: 2px solid var(--flash-orange); outline-offset: 2px; }
+  .ayuda-cat.is-activa { color: var(--soft-white); border-color: rgba(255, 81, 0, 0.55); background: rgba(255, 81, 0, 0.1); }
+  .ayuda-n { font-size: 12px; color: var(--flash-orange); font-variant-numeric: tabular-nums; }
 
-  .ayuda-items {
-    display: grid;
-    gap: 2px;
-  }
-  .ayuda-item {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  }
+  .ayuda-group { padding-bottom: var(--e3); scroll-margin-top: 100px; }
+  .ayuda-group:not([hidden]) ~ .ayuda-group:not([hidden]) { padding-top: var(--e3); border-top: 1px solid rgba(255, 255, 255, 0.08); }
+  .ayuda-group-head h2 { font-size: clamp(22px, 2.4vw, 30px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+  .ayuda-group-head p { margin: 6px 0 var(--e2); font-size: 14.5px; font-weight: 300; color: var(--studio-gray); line-height: 1.5; max-width: 62ch; }
+  .ayuda-group-head a { color: var(--flash-orange); text-decoration: underline; text-underline-offset: .18em; text-decoration-thickness: 1px; }
+
+  .ayuda-item { border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
   .ayuda-item summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--e3);
-    padding: var(--e2) 0;
-    font-size: 17px;
-    font-weight: 500;
-    line-height: 1.4;
-    cursor: pointer;
-    list-style: none;
+    display: flex; align-items: center; justify-content: space-between; gap: var(--e3);
+    padding: 14px 0; font-size: 16px; font-weight: 500; line-height: 1.4; cursor: pointer; list-style: none;
   }
-  .ayuda-item summary::-webkit-details-marker {
-    display: none;
-  }
-  .ayuda-item summary:hover {
-    color: var(--flash-orange);
-  }
-  /* Signo dibujado con dos barras: rota en vez de cambiar de carácter, que
-     provocaba un salto de una pixelada a otra. */
-  .ayuda-mark {
-    position: relative;
-    flex-shrink: 0;
-    width: 16px;
-    height: 16px;
-  }
-  .ayuda-mark::before,
-  .ayuda-mark::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    margin: auto;
-    background: var(--flash-orange);
-    transition: transform 0.25s ease;
-  }
-  .ayuda-mark::before {
-    width: 16px;
-    height: 1.5px;
-  }
-  .ayuda-mark::after {
-    width: 1.5px;
-    height: 16px;
-  }
-  .ayuda-item[open] .ayuda-mark::after {
-    transform: rotate(90deg);
-  }
-  .ayuda-item p {
-    padding: 0 0 var(--e3);
-    max-width: 68ch;
-    font-size: 16px;
-    font-weight: 300;
-    color: var(--studio-gray);
-    line-height: 1.75;
-  }
+  .ayuda-item summary::-webkit-details-marker { display: none; }
+  .ayuda-item summary:hover { color: var(--flash-orange); }
+  .ayuda-mark { position: relative; flex-shrink: 0; width: 16px; height: 16px; }
+  .ayuda-mark::before, .ayuda-mark::after { content: ''; position: absolute; inset: 0; margin: auto; background: var(--flash-orange); transition: transform .25s ease; }
+  .ayuda-mark::before { width: 16px; height: 1.5px; }
+  .ayuda-mark::after { width: 1.5px; height: 16px; }
+  .ayuda-item[open] .ayuda-mark::after { transform: rotate(90deg); }
+  .ayuda-item p { padding: 0 0 var(--e2); max-width: 68ch; font-size: 15.5px; font-weight: 300; color: var(--studio-gray); line-height: 1.7; }
 
-
-  .ayuda-blog-todos { display: inline-block; margin-top: var(--e2); font-size: 14px; color: var(--flash-orange); text-decoration: underline; text-underline-offset: .18em; text-decoration-thickness: 1px; }
   .ayuda-posts { list-style: none; display: grid; }
   .ayuda-post {
-    display: grid; grid-template-columns: 1fr auto; gap: 4px var(--e3); align-items: center;
-    padding: var(--e2) 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: grid; grid-template-columns: 1fr auto; gap: 2px var(--e3); align-items: center;
+    padding: 13px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     transition: padding-left .25s, background .25s;
   }
   .ayuda-post:hover { padding-left: var(--e1); background: rgba(255, 81, 0, 0.05); }
   .ayuda-post:focus-visible { outline: 2px solid var(--flash-orange); outline-offset: -2px; }
-  .ayuda-post-meta { grid-column: 1; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--flash-orange); }
-  .ayuda-post-title { grid-column: 1; font-size: 18px; font-weight: 500; line-height: 1.35; }
+  .ayuda-post-meta { grid-column: 1; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--flash-orange); }
+  .ayuda-post-title { grid-column: 1; font-size: 16.5px; font-weight: 500; line-height: 1.35; }
   .ayuda-post-go { grid-column: 2; grid-row: 1 / span 2; color: var(--studio-gray); transition: transform .25s, color .25s; }
   .ayuda-post:hover .ayuda-post-go { color: var(--flash-orange); transform: translateX(4px); }
 
-  /* Una pregunta-grupo, una pantalla. */
-  .ayuda-group { min-height: 100svh; align-content: center; }
+  .ayuda-vacio { padding: var(--e4) 0; color: var(--studio-gray); font-size: 16px; }
 
   .ayuda-more {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--e4);
-    flex-wrap: wrap;
-    margin-top: var(--e5);
-    padding: var(--e4) var(--e4);
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.03);
+    display: flex; align-items: center; justify-content: space-between; gap: var(--e3); flex-wrap: wrap;
+    margin-top: var(--e3); padding: var(--e2) var(--e3);
+    border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.03);
   }
-  .ayuda-more h2 {
-    font-size: clamp(24px, 3vw, 34px);
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    margin-bottom: var(--e1);
-  }
-  .ayuda-more p {
-    max-width: 52ch;
-    font-size: 16px;
-    font-weight: 300;
-    color: var(--studio-gray);
-    line-height: 1.65;
-  }
-  .ayuda-more-actions {
-    display: flex;
-    gap: var(--e1);
-    flex-wrap: wrap;
-  }
+  .ayuda-more p { max-width: 62ch; font-size: 15px; font-weight: 300; color: var(--studio-gray); line-height: 1.55; }
+  .ayuda-more strong { color: var(--soft-white); font-weight: 600; }
+  .ayuda-more-actions { display: flex; gap: var(--e1); flex-wrap: wrap; }
 
   @media (max-width: 900px) {
-    .ayuda {
-      padding-top: var(--e7);
-    }
-    .ayuda-group {
-      grid-template-columns: 1fr;
-      gap: var(--e3);
-      padding: var(--e4) 0;
-    }
-    .ayuda-group-head p {
-      max-width: none;
-    }
-    .ayuda-more {
-      padding: var(--e3) var(--e3);
-    }
+    .ayuda { padding-top: 104px; }
+    .ayuda-barra { flex-direction: column; align-items: stretch; gap: 6px; }
+    .ayuda-cuenta { text-align: left; min-height: 1.2em; }
+    .ayuda-cuerpo { grid-template-columns: 1fr; gap: var(--e2); }
+    /* En el teléfono los temas son una fila que se desliza de lado, no una columna. */
+    .ayuda-cats { position: static; display: flex; overflow-x: auto; gap: 8px; padding-bottom: 4px; scrollbar-width: none; margin-inline: calc(var(--e3) * -1); padding-inline: var(--e3); }
+    .ayuda-cats::-webkit-scrollbar { display: none; }
+    .ayuda-cat { flex: none; white-space: nowrap; border-color: rgba(255, 255, 255, 0.14); border-radius: 999px; }
   }
 </style>
+
+<script>
+  /**
+   * Panel de ayuda: un tema a la vez, y un buscador que mira todas las preguntas.
+   * Sin este script la página muestra todo en una sola lista (ver `data-js`).
+   */
+  function iniciarAyuda() {
+    const raiz = document.querySelector<HTMLElement>('[data-ayuda]');
+    if (!raiz || raiz.dataset.listo) return;
+    raiz.dataset.listo = '1';
+    raiz.dataset.js = '1';
+    const cats = Array.from(raiz.querySelectorAll<HTMLButtonElement>('.ayuda-cat'));
+    const grupos = Array.from(raiz.querySelectorAll<HTMLElement>('.ayuda-group'));
+    const q = raiz.querySelector<HTMLInputElement>('[data-ayuda-q]')!;
+    const cuenta = raiz.querySelector<HTMLElement>('[data-ayuda-cuenta]')!;
+    const vacio = raiz.querySelector<HTMLElement>('[data-ayuda-vacio]')!;
+    const norm = (t: string) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    let activa = cats[1]?.dataset.cat ?? 'todas'; // el primer tema, no todos
+
+    function pintar() {
+      const term = norm(q.value.trim());
+      let total = 0;
+      grupos.forEach((g) => {
+        const propio = activa === 'todas' || g.dataset.grupo === activa || term !== '';
+        let visibles = 0;
+        g.querySelectorAll<HTMLElement>('.ayuda-item, [data-post]').forEach((el) => {
+          const ok = !term || norm(el.textContent ?? '').includes(term);
+          el.hidden = !ok;
+          if (ok) visibles += 1;
+        });
+        const mostrar = propio && visibles > 0;
+        g.hidden = !mostrar;
+        if (mostrar) total += visibles;
+      });
+      vacio.hidden = total > 0;
+      cuenta.textContent = term ? `${total} ${total === 1 ? 'resultado' : 'resultados'}` : '';
+      cats.forEach((c) => c.classList.toggle('is-activa', !term && c.dataset.cat === activa));
+    }
+
+    cats.forEach((c) => c.addEventListener('click', () => { q.value = ''; activa = c.dataset.cat ?? 'todas'; pintar(); }));
+    q.addEventListener('input', pintar);
+    pintar();
+  }
+  iniciarAyuda();
+  document.addEventListener('astro:page-load', iniciarAyuda);
+</script>

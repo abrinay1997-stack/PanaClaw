@@ -1,4 +1,5 @@
 ---
+import Icono from '../components/Icono.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Reveal from '../components/Reveal.astro';
 import HeroShader from '../components/HeroShader.astro';
@@ -12,6 +13,12 @@ import { services } from '../data/services';
 import { projects } from '../data/projects';
 import { procesoVisual } from '../data/images';
 import { routes } from '../data/links';
+
+// De menor a mayor precio: la escalera se lee de izquierda a derecha.
+const precioNum = (p: string) => Number(p.replace(/[^0-9]/g, ''));
+const planesOrdenados = [...plans].sort((a, b) => precioNum(a.price) - precioNum(b.price));
+// Una frase corta por pilar, tomada de lo que ya dice su descripción (nada nuevo que prometer).
+const pruebas = ['Menos de un segundo', 'Sin complementos que se rompan', '72 horas o tres semanas'];
 ---
 
 <BaseLayout
@@ -20,6 +27,8 @@ import { routes } from '../data/links';
   activePath={routes.home}
 >
   <!-- HERO CINEMÁTICO -->
+  <!-- Portada: el héroe y la franja de proyectos suman exactamente una pantalla. -->
+  <div class="portada">
   <section class="hero hero-cinematic" id="top">
     <HeroShader />
 
@@ -49,7 +58,7 @@ import { routes } from '../data/links';
       <Reveal delay={0.35} eager>
         <div class="hero-actions">
           <a class="btn btn-primary" href={routes.cotizador}>
-            <span class="dot"></span> Cotizar mi sitio
+            <Icono nombre="calculadora" /> Cotizar mi sitio
           </a>
           <a class="btn btn-ghost" href={waLink()} target="_blank" rel="noopener">
             Hablar por WhatsApp
@@ -99,118 +108,85 @@ import { routes } from '../data/links';
       </div>
     </div>
   </section>
+  </div>
 
-  <!-- PREVIEW SERVICIOS -->
-  <section class="services" id="servicios">
+  <!-- LOS TRES PILARES: una pantalla, tres franjas -->
+  <section class="pil fondo-brasa" id="servicios" aria-labelledby="pil-titulo">
     <div class="container">
-      <div class="section-head">
+      <div class="pil-head">
         <div>
           <span class="eyebrow">Servicios</span>
           <Reveal>
-            <h2 class="section-title">Tres pilares. <span class="muted">Cero atajos.</span></h2>
+            <h2 class="section-title" id="pil-titulo">Tres pilares. <span class="muted">Cero atajos.</span></h2>
           </Reveal>
         </div>
         <Reveal delay={0.15}>
-          <a class="section-link" href={routes.servicios}>
-            Ver todo <span aria-hidden="true">→</span>
-          </a>
+          <a class="section-link" href={routes.servicios}>Ver todo <span aria-hidden="true">→</span></a>
         </Reveal>
       </div>
-      <!--
-        Las tres tarjetas ya NO son enlaces. Las tres llevaban a la misma
-        página que el «Ver todo» de arriba, así que eran cuatro clics para un
-        solo destino: cuatro acciones contadas, una decisión real. Son un
-        argumento —el porqué—, y un argumento no necesita ser un botón.
-      -->
-      <div class="service-list">
-        {services.map((s) => (
-          <Reveal>
-            <div class="service-card">
-              <span class="idx">{s.idx}</span>
-              <h3>{s.title}</h3>
-              <p>{s.desc}</p>
-            </div>
+      <!-- Son un argumento, no botones: el único enlace es el «Ver todo» de arriba. -->
+      <ol class="pil-list">
+        {services.map((s, i) => (
+          <Reveal as="li" class="pil-item" delay={i * 0.08} x={i % 2 === 0 ? -28 : 28}>
+            <span class="pil-num" aria-hidden="true">{s.idx}</span>
+            <h3>{s.title}</h3>
+            <p>{s.desc}</p>
+            <span class="pil-prueba">{pruebas[i]}</span>
           </Reveal>
         ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- PREVIEW PLANES -->
-  <section class="planes-preview">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">Planes</span>
-          <Reveal>
-            <h2 class="section-title">Precios fijos. <span class="muted">Cero letra chica.</span></h2>
-          </Reveal>
-        </div>
-        <!--
-          Sin «Ver planes en detalle» aquí: las cuatro tarjetas de abajo ya
-          llevan al mismo sitio, y un quinto enlace al mismo destino no añade
-          un camino, añade ruido.
-        -->
-      </div>
-      <div class="plans-preview-grid">
-        {plans.map((plan) => (
-          <Reveal>
-            <a class="plan-mini" href={routes.planes} data-featured={plan.featured}>
-              {plan.featured && <span class="plan-mini-badge">Recomendado</span>}
-              <div class="plan-mini-name">{plan.name.replace('PanaClaw ', '')}</div>
-              <div class="plan-mini-price">{plan.price}</div>
-              <div class="plan-mini-delivery">{plan.delivery}</div>
-            </a>
-          </Reveal>
-        ))}
-      </div>
+      </ol>
     </div>
   </section>
 
   <!--
-    NO SOLO WEBS.
+    PRECIOS Y MÁS, EN UNA SOLA PANTALLA.
 
-    eBot y Seguridad llevaban meses existiendo sin aparecer en la portada: solo
-    estaban en la barra, en el pie y en el chat, así que quien entraba por aquí y
-    no miraba el menú no se enteraba de que existen. Y son justo los dos
-    productos que nadie viene buscando —quien llega busca una web—, o sea los que
-    más dependen de que la portada los nombre.
-
-    Van después de los planes a propósito: primero lo que trae a la gente, y
-    cuando ya tiene el precio de su sitio en la cabeza, lo que puede sumarle.
+    Los planes y «Y además» eran dos secciones sueltas con el mismo titular a
+    medio camino. Ahora son una: arriba la escalera de planes, de menor a mayor
+    precio (antes salían en desorden: 850, 450, 1.200, 295), y debajo, separado
+    por una línea, lo que no es una web: eBot y Seguridad, que antes solo se
+    descubrían por el menú. Primero lo que trae a la gente; cuando ya tiene el
+    precio de su sitio en la cabeza, lo que puede sumarle.
   -->
-  <section class="extras">
+  <section class="pre fondo-brasa" id="precios" aria-labelledby="pre-titulo">
     <div class="container">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">Y además</span>
-          <Reveal>
-            <h2 class="section-title">No solo hacemos webs. <span class="muted">Esto también.</span></h2>
-          </Reveal>
-        </div>
-        <!--
-          Sin enlace de sección: las dos tarjetas ya son los dos destinos, y el
-          «Ver todo →» de los pilares, tres secciones más arriba, lleva a la
-          misma página. Dos enlaces al mismo sitio en una portada que ya tenía
-          diecisiete acciones es exactamente lo que se está quitando.
-        -->
+      <div class="pre-head">
+        <span class="eyebrow">Planes</span>
+        <Reveal>
+          <h2 class="section-title" id="pre-titulo">Precios fijos. <span class="muted">Cero letra chica.</span></h2>
+        </Reveal>
       </div>
 
-      <div class="extras-grid">
+      <ol class="escalera">
+        {planesOrdenados.map((plan, i) => (
+          <Reveal as="li" class="escalon" delay={i * 0.07}>
+            <a class="plan-mini" href={routes.planes} data-featured={plan.featured} style={`--alto:${28 + i * 24}%`}>
+              {plan.featured && <span class="plan-mini-badge">Recomendado</span>}
+              <span class="plan-mini-name">{plan.name.replace('PanaClaw ', '')}</span>
+              <span class="plan-mini-price">{plan.price}</span>
+              <span class="plan-mini-delivery">{plan.delivery}</span>
+              <span class="escalon-barra" aria-hidden="true"></span>
+            </a>
+          </Reveal>
+        ))}
+      </ol>
+
+      <div class="ademas">
+        <span class="ademas-rotulo">Y además</span>
         <Reveal>
-          <a class="extra" href={routes.ebot}>
-            <span class="extra-k">{ebot.name}</span>
-            <span class="extra-price">{ebot.price}</span>
-            <p>Un agente de inteligencia artificial que conoce tu negocio y contesta por WhatsApp, Instagram, Messenger y Telegram a cualquier hora, con un panel donde ves cada conversación.</p>
-            <span class="extra-go" aria-hidden="true">→</span>
+          <a class="ademas-fila" href={routes.ebot}>
+            <span class="ademas-nombre">{ebot.name}</span>
+            <span class="ademas-precio">{ebot.price}</span>
+            <span class="ademas-texto">Un agente de inteligencia artificial que conoce tu negocio y contesta por WhatsApp, Instagram, Messenger y Telegram a cualquier hora, con un panel donde ves cada conversación.</span>
+            <span class="ademas-go" aria-hidden="true">→</span>
           </a>
         </Reveal>
-        <Reveal delay={0.1}>
-          <a class="extra" href={routes.seguridad}>
-            <span class="extra-k">{seguridad.name}</span>
-            <span class="extra-price">Desde {revision.price.split('–')[0]}</span>
-            <p>{seguridad.tagline} Revisamos el sitio que ya tienes, te decimos por dónde podrían entrar y lo cerramos.</p>
-            <span class="extra-go" aria-hidden="true">→</span>
+        <Reveal delay={0.08}>
+          <a class="ademas-fila" href={routes.seguridad}>
+            <span class="ademas-nombre">{seguridad.name}</span>
+            <span class="ademas-precio">Desde {revision.price.split('–')[0]}</span>
+            <span class="ademas-texto">{seguridad.tagline} Revisamos el sitio que ya tienes, te decimos por dónde podrían entrar y lo cerramos.</span>
+            <span class="ademas-go" aria-hidden="true">→</span>
           </a>
         </Reveal>
       </div>
@@ -230,7 +206,7 @@ import { routes } from '../data/links';
           Cada día sin sitio propio es un cliente que buscó lo que vendes y encontró a otro.
         </div>
         <div class="quote-actions">
-          <a class="btn btn-primary" href={routes.cotizador}><span class="dot"></span> Calcular mi precio</a>
+          <a class="btn btn-primary" href={routes.cotizador}><Icono nombre="calculadora" /> Calcular mi precio</a>
           <a class="btn btn-ghost" href={waLink('Hola PanaClaw, quiero un sitio para mi negocio')} target="_blank" rel="noopener">Hablar por WhatsApp</a>
         </div>
       </Reveal>
@@ -241,6 +217,8 @@ import { routes } from '../data/links';
 
 <style>
   /* ---------- HERO CINEMÁTICO ---------- */
+  .portada { display: flex; flex-direction: column; min-height: 100svh; }
+  .portada .hero-cinematic { flex: 1 1 auto; height: auto; min-height: 0; max-height: none; }
   .hero-cinematic {
     position: relative;
     min-height: 100svh;
@@ -393,15 +371,6 @@ import { routes } from '../data/links';
   }
 
   /* ---------- RESTO DE LA HOME ---------- */
-  .section-head {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: var(--e3);
-    margin-bottom: var(--e5);
-    flex-wrap: wrap;
-  }
-  .section-head h2.section-title { margin-bottom: 0; }
   .section-link {
     display: inline-flex;
     align-items: center;
@@ -420,75 +389,122 @@ import { routes } from '../data/links';
     background: rgba(255, 81, 0, 0.1);
     border-color: var(--flash-orange);
   }
-  /* Ya no es un enlace: bloque, sin cursor de mano. */
-  .service-card { display: block; }
+  .pil, .pre {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 84px 0 var(--e3);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .pil > .container, .pre > .container { width: 100%; }
 
-  /* ---------- NO SOLO WEBS ---------- */
-  .extras {
-    padding-top: 0;
+  /* ---------- PILARES ---------- */
+  .pil-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: var(--e3); flex-wrap: wrap; margin-bottom: var(--e3);
   }
-  .extras-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--e2);
-  }
-  .extra {
+  .pil-head h2.section-title { margin-bottom: 0; }
+  .pil-list { list-style: none; border-top: 1px solid rgba(255, 255, 255, 0.14); }
+  :global(.pil-item) {
     position: relative;
-    display: block;
-    height: 100%;
-    padding: var(--e4) var(--e3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 22px;
-    background: rgba(255, 255, 255, 0.02);
-    transition: border-color 0.25s, background 0.25s, transform 0.25s;
+    display: grid;
+    grid-template-columns: minmax(150px, 0.45fr) minmax(0, 1.25fr) minmax(0, 1.2fr) 14.5rem;
+    align-items: center;
+    gap: var(--e3);
+    padding: var(--e3) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    transition: padding-left 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
-  .extra:hover {
-    border-color: var(--flash-orange);
-    background: rgba(255, 81, 0, 0.05);
-    transform: translateY(-4px);
+  /* La línea naranja se dibuja de izquierda a derecha al pasar el cursor. */
+  :global(.pil-item)::after {
+    content: ''; position: absolute; left: 0; bottom: -1px; height: 2px; width: 100%;
+    background: var(--flash-orange); transform: scaleX(0); transform-origin: left;
+    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
-  .extra-k {
-    display: block;
-    font-size: 22px;
+  :global(.pil-item):hover { padding-left: var(--e2); }
+  :global(.pil-item):hover::after { transform: scaleX(1); }
+  /* Cifra hueca: solo contorno, se llena de naranja al acercarse. */
+  .pil-num {
+    font-size: clamp(56px, 7vw, 104px);
+    font-weight: 700;
+    line-height: .85;
+    letter-spacing: -0.05em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.4);
+    transition: color 0.35s, -webkit-text-stroke-color 0.35s;
+  }
+  :global(.pil-item):hover .pil-num { color: var(--flash-orange); -webkit-text-stroke-color: var(--flash-orange); }
+  :global(.pil-item) h3 {
+    font-size: clamp(24px, 2.8vw, 38px);
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
   }
-  .extra-price {
-    display: block;
-    margin: 6px 0 var(--e2);
-    font-size: 14px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--flash-orange);
+  :global(.pil-item) p { font-size: 16px; font-weight: 300; color: var(--studio-gray); line-height: 1.6; max-width: 44ch; }
+  .pil-prueba {
+    justify-self: stretch; text-align: center;
+    font-size: 12px; letter-spacing: 0.07em; line-height: 1.35; text-transform: uppercase; color: var(--flash-orange);
+    border: 1px solid rgba(255, 81, 0, 0.4); border-radius: 999px; padding: 9px var(--e2);
   }
-  .extra p {
-    max-width: 46ch;
-    font-size: 15px;
-    font-weight: 300;
-    color: var(--studio-gray);
-    line-height: 1.6;
+
+  /* ---------- PRECIOS Y MÁS ---------- */
+  .pre-head { margin-bottom: var(--e4); }
+  .pre-head h2.section-title { margin-bottom: 0; }
+  .escalera {
+    list-style: none;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--e2);
+    align-items: end;
   }
-  .extra-go {
-    position: absolute;
-    top: 34px;
-    right: 30px;
-    font-size: 20px;
-    color: var(--studio-gray);
-    transition: transform 0.25s, color 0.25s;
+  .escalon { display: block; }
+  .plan-mini {
+    position: relative;
+    display: flex; flex-direction: column;
+    min-height: 210px;
+    padding: var(--e3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    overflow: hidden;
+    transition: border-color 0.25s, transform 0.3s;
   }
-  .extra:hover .extra-go {
-    color: var(--flash-orange);
-    transform: translateX(4px);
+  .plan-mini:hover { border-color: var(--flash-orange); transform: translateY(-6px); }
+  .plan-mini[data-featured='true'] { border-color: var(--flash-orange); }
+  /* La barra de abajo sube con el precio: la escalera se ve antes de leerse. */
+  .escalon-barra {
+    position: absolute; left: 0; right: 0; bottom: 0; height: var(--alto, 30%); z-index: 0;
+    background: linear-gradient(180deg, rgba(255, 81, 0, 0.0), rgba(255, 81, 0, 0.16));
+    transition: opacity 0.3s;
   }
+  .plan-mini[data-featured='true'] .escalon-barra { background: linear-gradient(180deg, rgba(255, 81, 0, 0.05), rgba(255, 81, 0, 0.3)); }
+  .plan-mini > span:not(.escalon-barra) { position: relative; z-index: 1; }
+  .plan-mini-badge {
+    position: absolute !important; top: -1px; right: var(--e2);
+    background: var(--flash-orange); color: var(--deep-black);
+    font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 6px var(--e1); border-radius: 0 0 10px 10px;
+  }
+  .plan-mini-name { font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--studio-gray); margin-bottom: var(--e2); }
+  .plan-mini-price { font-size: clamp(36px, 4vw, 54px); font-weight: 600; letter-spacing: -0.03em; line-height: 1; margin-bottom: var(--e1); }
+  .plan-mini-delivery { font-size: 12px; color: var(--flash-orange); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .ademas { margin-top: var(--e4); border-top: 1px solid rgba(255, 255, 255, 0.14); padding-top: var(--e2); }
+  .ademas-rotulo { display: block; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--flash-orange); margin-bottom: var(--e1); }
+  .ademas-fila {
+    display: grid; grid-template-columns: 0.55fr 0.4fr 2fr auto; align-items: center; gap: var(--e3);
+    padding: var(--e2) 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: padding-left 0.3s, background 0.3s;
+  }
+  .ademas-fila:hover { padding-left: var(--e1); background: rgba(255, 81, 0, 0.05); }
+  .ademas-fila:focus-visible { outline: 2px solid var(--flash-orange); outline-offset: -2px; }
+  .ademas-nombre { font-size: clamp(22px, 2.4vw, 30px); font-weight: 600; letter-spacing: -0.015em; }
+  .ademas-precio { font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--flash-orange); }
+  .ademas-texto { font-size: 15px; font-weight: 300; color: var(--studio-gray); line-height: 1.55; max-width: 62ch; }
+  .ademas-go { font-size: 20px; color: var(--studio-gray); transition: transform 0.25s, color 0.25s; }
+  .ademas-fila:hover .ademas-go { color: var(--flash-orange); transform: translateX(4px); }
 
   @media (prefers-reduced-motion: reduce) {
-    .extra,
-    .extra-go {
-      transition: none;
-    }
-    .extra:hover {
-      transform: none;
-    }
+    :global(.pil-item), :global(.pil-item)::after, .pil-num, .plan-mini, .ademas-fila, .ademas-go { transition: none; }
   }
 
   /* La cita se apoya sobre la textura líquida a sangre */
@@ -515,72 +531,22 @@ import { routes } from '../data/links';
     text-shadow: 0 2px 20px rgba(16, 1, 1, 0.9);
   }
 
-  .planes-preview { padding: var(--e6) 0; }
-  .plans-preview-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--e2);
-  }
-  .plan-mini {
-    display: flex;
-    flex-direction: column;
-    padding: var(--e3) var(--e3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.02);
-    transition: border-color 0.25s, transform 0.25s, background 0.25s;
-    position: relative;
-  }
-  .plan-mini:hover {
-    border-color: var(--flash-orange);
-    transform: translateY(-4px);
-    background: rgba(255, 81, 0, 0.04);
-  }
-  .plan-mini[data-featured='true'] {
-    border-color: var(--flash-orange);
-    background: linear-gradient(180deg, rgba(255, 81, 0, 0.1), rgba(255, 81, 0, 0) 60%);
-  }
-  .plan-mini-badge {
-    position: absolute;
-    top: -12px;
-    left: 20px;
-    background: var(--flash-orange);
-    color: var(--deep-black);
-    font-size: 11.5px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 5px var(--e1);
-    border-radius: 20px;
-  }
-  .plan-mini-name {
-    font-size: 13px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--studio-gray);
-    margin-bottom: var(--e1);
-  }
-  .plan-mini-price {
-    font-size: 40px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1;
-    margin-bottom: 6px;
-  }
-  .plan-mini-delivery {
-    font-size: 12px;
-    color: var(--flash-orange);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
   @media (max-width: 900px) {
-    .plans-preview-grid { grid-template-columns: repeat(2, 1fr); }
-    .section-head { flex-direction: column; align-items: flex-start; gap: var(--e2); }
-    .hero-cinematic { min-height: 90vh; height: auto; padding: var(--e6) 0 var(--e6); }
+    .escalera { grid-template-columns: repeat(2, 1fr); align-items: stretch; }
+    :global(.pil-item) { grid-template-columns: auto 1fr; gap: var(--e1) var(--e3); padding: var(--e3) 0; }
+    :global(.pil-item) h3, :global(.pil-item) p, .pil-prueba { grid-column: 2; }
+    .pil-num { grid-row: 1 / span 3; font-size: 64px; }
+    .pil-prueba { justify-self: start; margin-top: var(--e1); }
+    .pil-head { flex-direction: column; align-items: flex-start; gap: var(--e2); }
+    .ademas-fila { grid-template-columns: 1fr auto; gap: 4px var(--e2); }
+    .ademas-texto { grid-column: 1 / -1; }
+    .ademas-precio { grid-column: 1; grid-row: 2; }
+    .ademas-go { grid-column: 2; grid-row: 1; }
+    .hero-cinematic, .portada .hero-cinematic { min-height: 90svh; height: auto; padding: var(--e6) 0 var(--e6); }
     .hero-title { font-size: clamp(44px, 12vw, 88px); }
   }
   @media (max-width: 640px) {
-    .plans-preview-grid { grid-template-columns: 1fr; }
-    .extras-grid { grid-template-columns: 1fr; }
+    .escalera { grid-template-columns: 1fr; }
+    .plan-mini { min-height: 0; }
   }
 </style>

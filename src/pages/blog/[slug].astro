@@ -1,4 +1,5 @@
 ---
+import Icono from '../../components/Icono.astro';
 /**
  * /blog/[slug]/ — cada post individual.
  *
@@ -157,7 +158,7 @@ const breadcrumbSchema = {
         </p>
         <div class="post-cta-actions">
           <a class="btn btn-primary" href={routes.cotizador}>
-            <span class="dot"></span> Calcular mi precio
+            <Icono nombre="calculadora" /> Calcular mi precio
           </a>
           <a class="btn btn-ghost" href={waLink(`Hola PanaClaw, leí ${post.data.title} y quiero cotizar`)} target="_blank" rel="noopener">
             Escribir por WhatsApp

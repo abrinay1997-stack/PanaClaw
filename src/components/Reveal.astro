@@ -191,6 +191,14 @@ const styleVars = `--reveal-delay:${delay}s;--reveal-duration:${duration}s;--rev
     }
   }
 
+  /* En pantallas chicas la entrada lateral desborda la página antes de aparecer: allí solo sube. */
+  @media (max-width: 900px) {
+    [data-reveal],
+    [data-reveal-eager] {
+      --reveal-x: 0px !important;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     [data-reveal] {
       opacity: 1 !important;

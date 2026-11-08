@@ -26,6 +26,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Reveal from '../components/Reveal.astro';
 import SceneBg from '../components/SceneBg.astro';
 import SectionNav from '../components/SectionNav.astro';
+import Icono from '../components/Icono.astro';
 
 import {
   ebot,
@@ -96,6 +97,21 @@ const canalNames = ebotCanales.map((c) => c.name).join(', ');
  * exactamente la clase de dato inventado que la regla 14 prohíbe.
  */
 const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
+
+// Icono de cada canal, por nombre (monocromo: la marca no usa los colores de las redes).
+const iconos: Record<string, 'whatsapp' | 'instagram' | 'messenger' | 'telegram'> = {
+  WhatsApp: 'whatsapp',
+  Instagram: 'instagram',
+  Messenger: 'messenger',
+  Telegram: 'telegram',
+};
+// Conversación de ejemplo por canal. Solo tono: ni cifras, ni plazos, ni promesas.
+const mensajes: Record<string, [string, string]> = {
+  WhatsApp: ['Hola, ¿hacen envíos?', '¡Hola! Sí. Dime a qué zona y te cuento cómo es.'],
+  Instagram: ['Vi su publicación, ¿cómo hago un pedido?', '¡Qué bueno que escribes! Dime qué te interesa y lo armamos juntos.'],
+  Messenger: ['¿Atienden por aquí también?', 'Sí, aquí mismo. Cuéntame qué necesitas y te ayudo.'],
+  Telegram: ['Buenas, tengo una duda.', 'Claro, dime tu duda y te respondo al momento.'],
+};
 ---
 
 <BaseLayout
@@ -174,16 +190,54 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
         />
       </div>
 
-      <div class="ebot-canal-grid">
-        {ebotCanales.map((canal) => (
-          <Reveal>
-            <div class="ebot-canal">
-              <h3>{canal.name}</h3>
-              <p>{canal.desc}</p>
-              {canal.nota && <p class="ebot-canal-nota">{canal.nota}</p>}
+      <!--
+        Los cuatro canales como un escenario: a la izquierda eliges por dónde te
+        escribe tu cliente, a la derecha se ve la conversación en ese canal. La
+        conversación es un EJEMPLO, y así se rotula: no hay cifras ni promesas
+        en ella, solo el tono. Cambia sola cada pocos segundos (se detiene al
+        tocarla y con «reducir movimiento» no se anima).
+      -->
+      <div class="canales" data-canales>
+        <ul class="canales-lista" role="tablist" aria-label="Canales de conversación">
+          {ebotCanales.map((canal, i) => (
+            <li role="presentation">
+              <button
+                type="button"
+                class="canal-tab"
+                role="tab"
+                id={`canal-tab-${i}`}
+                aria-selected={i === 0 ? 'true' : 'false'}
+                aria-controls="canal-tel"
+                data-canal={i}
+                data-nombre={canal.name}
+                data-icono={iconos[canal.name] ?? 'whatsapp'}
+              >
+                <span class="canal-ico"><Icono nombre={iconos[canal.name] ?? 'whatsapp'} /></span>
+                <span class="canal-cuerpo">
+                  <span class="canal-nombre">{canal.name}</span>
+                  <span class="canal-desc">{canal.desc}</span>
+                  {canal.nota && <span class="canal-nota">{canal.nota}</span>}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <figure class="canales-tel" id="canal-tel" role="tabpanel" aria-live="polite">
+          <figcaption class="tel-ejemplo">Así se ve una conversación (ejemplo)</figcaption>
+          <div class="tel">
+            <div class="tel-cab">
+              <span class="tel-ico" data-tel-ico></span>
+              <span class="tel-quien"><strong data-tel-nombre>{ebotCanales[0].name}</strong><small>{ebot.name} · responde al momento</small></span>
+              <span class="tel-pulso" aria-hidden="true"></span>
             </div>
-          </Reveal>
-        ))}
+            <div class="tel-chat" data-tel-chat>
+              <p class="burbuja burbuja--cliente" data-tel-cliente>{mensajes[ebotCanales[0].name]?.[0]}</p>
+              <p class="burbuja burbuja--bot" data-tel-bot>{mensajes[ebotCanales[0].name]?.[1]}</p>
+            </div>
+          </div>
+        </figure>
+        <script type="application/json" id="canales-mensajes" set:html={JSON.stringify(mensajes)} />
       </div>
     </div>
   </section>
@@ -253,48 +307,49 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
         <h2 class="section-title">{ebot.price} una vez. <span class="muted">Y dos cuentas que no nos pagas a nosotros.</span></h2>
       </Reveal>
 
-      <Reveal>
-        <div class="ebot-precio-card">
-          <div class="ebot-precio-copy">
-            <h3>Lo que nos pagas a nosotros</h3>
-            <p class="ebot-precio-desc">
-              Una sola vez, por montarlo y dejarlo funcionando en tu cuenta. No hay cuota de
-              plataforma, ni límite de mensajes, ni un precio que suba el año que viene.
-            </p>
-            <ul class="ebot-check">
-              {ebotIncluye.map((item) => <li>{item}</li>)}
-            </ul>
-          </div>
-          <div class="ebot-precio-tag">
-            <span class="ebot-precio-v">{ebot.price}</span>
-            <span class="ebot-precio-k">{ebot.priceKicker}</span>
-            <a class="btn btn-primary" href={ebotContactHref}>
-              <span class="dot"></span> Pedir {ebot.name}
-            </a>
-          </div>
-        </div>
-      </Reveal>
-
-      <div class="ebot-costos">
+      <div class="ebot-precio-grid">
         <Reveal>
-          <h3 class="ebot-sub">Lo que pagas por tu cuenta, cada mes</h3>
-          <p class="ebot-intro">
-            Estas dos no pasan por nosotros: las contratas tú, a tu nombre, y son las que hacen
-            que el agente sea tuyo de verdad. Son aproximadas y para un negocio normal; el panel te
-            enseña el gasto al día para que nunca sea una sorpresa.
-          </p>
+          <div class="ebot-precio-card">
+            <div class="ebot-precio-copy">
+              <h3>Lo que nos pagas a nosotros</h3>
+              <p class="ebot-precio-desc">
+                Una sola vez, por montarlo y dejarlo funcionando en tu cuenta. No hay cuota de
+                plataforma, ni límite de mensajes, ni un precio que suba el año que viene.
+              </p>
+              <ul class="ebot-check">
+                {ebotIncluye.map((item) => <li>{item}</li>)}
+              </ul>
+            </div>
+            <div class="ebot-precio-tag">
+              <span class="ebot-precio-v">{ebot.price}</span>
+              <span class="ebot-precio-k">{ebot.priceKicker}</span>
+              <a class="btn btn-primary" href={ebotContactHref}>
+                <span class="dot"></span> Pedir {ebot.name}
+              </a>
+            </div>
+          </div>
         </Reveal>
-        <div class="ebot-costo-grid">
-          {ebotCostos.map((costo) => (
-            <Reveal>
-              <div class="ebot-costo">
-                <span class="ebot-costo-k">{costo.concepto}</span>
-                <span class="ebot-costo-v">{costo.price}</span>
-                <span class="ebot-costo-a">{costo.aQuien}</span>
-                <p>{costo.desc}</p>
-              </div>
-            </Reveal>
-          ))}
+
+        <div class="ebot-costos">
+          <Reveal>
+            <h3 class="ebot-sub">Lo que pagas por tu cuenta, cada mes</h3>
+            <p class="ebot-costos-intro">
+              Estas dos no pasan por nosotros: las contratas tú, a tu nombre. Son aproximadas y para
+              un negocio normal; el panel te enseña el gasto al día.
+            </p>
+          </Reveal>
+          <div class="ebot-costo-grid">
+            {ebotCostos.map((costo) => (
+              <Reveal>
+                <div class="ebot-costo">
+                  <span class="ebot-costo-k">{costo.concepto}</span>
+                  <span class="ebot-costo-v">{costo.price}</span>
+                  <span class="ebot-costo-a">{costo.aQuien}</span>
+                  <p>{costo.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -310,57 +365,145 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   </section>
 
   <!-- PROPIEDAD -->
-  <section class="ebot-propiedad">
+  <!-- ES TUYO + PREGUNTAS: una sola pantalla -->
+  <section class="ebot-cierre" id="preguntas">
     <div class="container">
-      <div class="ebot-propiedad-grid">
-        <Reveal>
-          <h2 class="ebot-propiedad-title">Es tuyo. <span class="muted">Igual que el código de tu sitio.</span></h2>
-        </Reveal>
-        <div class="ebot-propiedad-facts">
-          {ebotPropiedad.map((hecho, i) => (
-            <Reveal delay={0.1 + i * 0.08}>
-              <div class="ebot-propiedad-fact">
-                <span class="ebot-propiedad-k">{hecho.k}</span>
-                <p>{hecho.desc}</p>
-              </div>
-            </Reveal>
-          ))}
+      <div class="ebot-cierre-grid">
+        <div class="ebot-cierre-izq">
+          <Reveal>
+            <h2 class="ebot-propiedad-title">Es tuyo. <span class="muted">Igual que el código de tu sitio.</span></h2>
+          </Reveal>
+          <div class="ebot-propiedad-facts">
+            {ebotPropiedad.map((hecho, i) => (
+              <Reveal delay={0.1 + i * 0.08}>
+                <div class="ebot-propiedad-fact">
+                  <span class="ebot-propiedad-k">{hecho.k}</span>
+                  <p>{hecho.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+
+        <div class="ebot-cierre-der">
+          <Reveal>
+            <span class="eyebrow">Preguntas</span>
+            <h2 class="ebot-cierre-titulo">Lo que se pregunta <span class="muted">antes de decir que sí.</span></h2>
+          </Reveal>
+          <div class="ebot-faq-items">
+            {ebotFaq.map((item) => (
+              <Reveal>
+                <details class="ebot-faq-item">
+                  <summary>
+                    <span>{item.q}</span>
+                    <span class="ebot-mark" aria-hidden="true"></span>
+                  </summary>
+                  <p>{item.a}</p>
+                </details>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal>
+            <p class="ebot-faq-foot">
+              ¿Otra duda? Está el <a href={routes.ayuda}>centro de ayuda</a>, y si tampoco está ahí,
+              contesta la misma persona que montaría tu agente.
+            </p>
+          </Reveal>
         </div>
       </div>
     </div>
   </section>
-
-  <!-- PREGUNTAS -->
-  <section class="ebot-faq" id="preguntas">
-    <div class="container">
-      <Reveal>
-        <span class="eyebrow">Preguntas</span>
-        <h2 class="section-title">Lo que se pregunta <span class="muted">antes de decir que sí.</span></h2>
-      </Reveal>
-
-      <div class="ebot-faq-items">
-        {ebotFaq.map((item) => (
-          <Reveal>
-            <details class="ebot-faq-item">
-              <summary>
-                <span>{item.q}</span>
-                <span class="ebot-mark" aria-hidden="true"></span>
-              </summary>
-              <p>{item.a}</p>
-            </details>
-          </Reveal>
-        ))}
-      </div>
-
-      <Reveal>
-        <p class="ebot-faq-foot">
-          ¿Otra duda? Está el <a href={routes.ayuda}>centro de ayuda</a>, y si tampoco está ahí,
-          contesta la misma persona que montaría tu agente.
-        </p>
-      </Reveal>
-    </div>
-  </section>
 </BaseLayout>
+
+<script>
+  /**
+   * Escenario de canales: elegir un canal cambia la cabecera del teléfono y repite la
+   * conversación de ejemplo (cliente, «escribiendo…», respuesta). Cambia solo cada 6 s
+   * hasta que alguien lo toca; con «reducir movimiento» no se anima ni rota.
+   */
+  function iniciarCanales() {
+    const raiz = document.querySelector<HTMLElement>('[data-canales]');
+    if (!raiz || raiz.dataset.listo) return;
+    raiz.dataset.listo = '1';
+    const tabs = Array.from(raiz.querySelectorAll<HTMLButtonElement>('.canal-tab'));
+    const nombre = raiz.querySelector('[data-tel-nombre]')!;
+    const iconoCab = raiz.querySelector<HTMLElement>('[data-tel-ico]')!;
+    const chat = raiz.querySelector<HTMLElement>('[data-tel-chat]')!;
+    const mensajes = JSON.parse(document.getElementById('canales-mensajes')?.textContent ?? '{}') as Record<string, [string, string]>;
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let actual = 0;
+    let timers: number[] = [];
+    let auto: number | undefined;
+
+    const limpiar = () => { timers.forEach(clearTimeout); timers = []; };
+    const iconoDe = (tab: HTMLButtonElement) => tab.querySelector('.canal-ico')!.innerHTML;
+
+    function mostrar(i: number, animar: boolean) {
+      limpiar();
+      actual = i;
+      tabs.forEach((t, k) => {
+        t.setAttribute('aria-selected', k === i ? 'true' : 'false');
+        t.tabIndex = k === i ? 0 : -1;
+      });
+      const tab = tabs[i];
+      const canal = tab.dataset.nombre ?? '';
+      const [cliente, bot] = mensajes[canal] ?? ['', ''];
+      nombre.textContent = canal;
+      iconoCab.innerHTML = iconoDe(tab);
+      chat.innerHTML = '';
+      const burbuja = (clase: string, texto: string) => {
+        const p = document.createElement('p');
+        p.className = `burbuja ${clase}`;
+        p.textContent = texto;
+        return p;
+      };
+      const c = burbuja('burbuja--cliente', cliente);
+      chat.append(c);
+      if (!animar || quieto) { chat.append(burbuja('burbuja--bot', bot)); return; }
+      c.classList.add('is-oculta');
+      requestAnimationFrame(() => requestAnimationFrame(() => c.classList.remove('is-oculta')));
+      timers.push(window.setTimeout(() => {
+        const t = document.createElement('p');
+        t.className = 'burbuja burbuja--bot burbuja--escribiendo';
+        t.innerHTML = '<i></i><i></i><i></i>';
+        chat.append(t);
+        timers.push(window.setTimeout(() => {
+          t.remove();
+          const b = burbuja('burbuja--bot is-oculta', bot);
+          chat.append(b);
+          requestAnimationFrame(() => requestAnimationFrame(() => b.classList.remove('is-oculta')));
+        }, 1100));
+      }, 700));
+    }
+
+    const programar = () => {
+      if (quieto) return;
+      window.clearInterval(auto);
+      auto = window.setInterval(() => mostrar((actual + 1) % tabs.length, true), 6500);
+    };
+    const parar = () => window.clearInterval(auto);
+
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => { parar(); mostrar(i, true); });
+      t.addEventListener('keydown', (e) => {
+        const salto = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : e.key === 'ArrowUp' || e.key === 'ArrowLeft' ? -1 : 0;
+        if (!salto) return;
+        e.preventDefault();
+        const k = (i + salto + tabs.length) % tabs.length;
+        parar(); mostrar(k, true); tabs[k].focus();
+      });
+    });
+    raiz.addEventListener('pointerenter', parar);
+    raiz.addEventListener('pointerleave', programar);
+    raiz.addEventListener('focusin', parar);
+    raiz.addEventListener('focusout', programar);
+    // Solo gira mientras se ve.
+    new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? programar() : parar())), { threshold: 0.35 }).observe(raiz);
+    mostrar(0, false);
+  }
+  iniciarCanales();
+  document.addEventListener('astro:page-load', iniciarCanales);
+</script>
 
 <style>
   /* ---------- HERO ---------- */
@@ -446,7 +589,8 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
 
   /* ---------- CANALES ---------- */
   .ebot-canales {
-    padding-bottom: var(--e6);
+    padding-top: 84px;
+    padding-bottom: var(--e3);
   }
   .ebot-intro {
     max-width: 62ch;
@@ -456,43 +600,94 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     color: var(--studio-gray);
     line-height: 1.7;
   }
-  .ebot-canal-grid {
+  /* ---------- CANALES: escenario ---------- */
+  .ebot-canales :global(h2.section-title) { font-size: clamp(30px, 3.8vw, 52px); max-width: none; margin-bottom: var(--e1); }
+  .ebot-canales .ebot-intro { max-width: 82ch; margin-bottom: var(--e2); font-size: 16px; line-height: 1.6; }
+  .ebot-canales .ebot-index { margin-bottom: var(--e2); padding-bottom: var(--e2); }
+  .canales {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--e2);
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: var(--e5);
+    align-items: center;
+    margin-top: var(--e3);
   }
-  .ebot-canal {
-    height: 100%;
-    padding: var(--e3) var(--e3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
+  .canales-lista { list-style: none; display: grid; gap: var(--e1); }
+  .canal-tab {
+    width: 100%; text-align: left; cursor: pointer; font: inherit; color: inherit;
+    display: grid; grid-template-columns: auto 1fr; gap: var(--e2); align-items: start;
+    padding: var(--e2);
+    border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px;
     background: rgba(255, 255, 255, 0.02);
-    transition: border-color 0.25s, background 0.25s;
+    transition: border-color .3s, background .3s, transform .3s;
   }
-  .ebot-canal:hover {
+  .canal-tab:hover { border-color: rgba(255, 81, 0, 0.5); }
+  .canal-tab:focus-visible { outline: 2px solid var(--flash-orange); outline-offset: 3px; }
+  .canal-tab[aria-selected='true'] {
     border-color: var(--flash-orange);
-    background: rgba(255, 81, 0, 0.06);
+    background: linear-gradient(120deg, rgba(255, 81, 0, 0.16), rgba(255, 81, 0, 0.02));
+    transform: translateX(8px);
   }
-  .ebot-canal h3 {
-    font-size: 21px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    margin-bottom: var(--e1);
+  .canal-ico {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 46px; height: 46px; border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.16); color: var(--soft-white);
+    transition: background .3s, color .3s, border-color .3s;
   }
-  .ebot-canal p {
-    font-size: 15px;
-    font-weight: 300;
-    color: var(--studio-gray);
-    line-height: 1.6;
+  .canal-ico :global(.ico) { width: 24px; height: 24px; }
+  .canal-tab[aria-selected='true'] .canal-ico { background: var(--flash-orange); color: var(--deep-black); border-color: var(--flash-orange); }
+  .canal-cuerpo { display: grid; gap: 4px; }
+  .canal-nombre { font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+  .canal-desc { font-size: 14.5px; font-weight: 300; color: var(--studio-gray); line-height: 1.5; }
+  .canal-nota { font-size: 13px; font-weight: 300; color: var(--studio-gray); line-height: 1.5; padding-top: 6px; border-top: 1px dashed rgba(255, 255, 255, 0.16); margin-top: 4px; }
+
+  .canales-tel { position: relative; margin: 0; display: grid; justify-items: center; gap: var(--e1); }
+  /* Resplandor y anillos detrás del teléfono. */
+  .canales-tel::before {
+    content: ''; position: absolute; inset: 6% -8% 2%; z-index: 0; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 81, 0, 0.30), rgba(255, 81, 0, 0) 72%);
+    filter: blur(8px);
   }
-  /* El trámite que no depende de nosotros se marca, no se esconde: quien lee
-     rápido tiene que verlo sin leerlo entero. */
-  .ebot-canal-nota {
-    margin-top: var(--e2);
-    padding-top: var(--e2);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 13.5px;
+  .tel-ejemplo { position: relative; z-index: 1; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--studio-gray); }
+  .tel {
+    position: relative; z-index: 1; width: min(100%, 340px);
+    border-radius: 34px; padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(180deg, #1c0707, #0d0202);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    transform: rotate(2deg);
   }
+  .tel-cab { display: flex; align-items: center; gap: var(--e1); padding: 10px 8px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+  .tel-ico { display: inline-flex; width: 38px; height: 38px; border-radius: 12px; align-items: center; justify-content: center; background: var(--flash-orange); color: var(--deep-black); flex: none; }
+  .tel-ico :global(.ico) { width: 20px; height: 20px; }
+  .tel-quien { display: grid; line-height: 1.25; flex: 1; min-width: 0; }
+  .tel-quien strong { font-size: 15px; }
+  .tel-quien small { font-size: 11.5px; color: var(--studio-gray); }
+  .tel-pulso { width: 9px; height: 9px; border-radius: 50%; background: var(--flash-orange); box-shadow: 0 0 0 0 rgba(255, 81, 0, .6); animation: tel-pulso 2s infinite; }
+  @keyframes tel-pulso { 70% { box-shadow: 0 0 0 10px rgba(255, 81, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 81, 0, 0); } }
+  .tel-chat { display: flex; flex-direction: column; gap: 10px; padding: var(--e2) 4px 8px; min-height: 190px; }
+  .burbuja {
+    max-width: 82%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.45;
+    opacity: 1; transform: none; transition: opacity .45s, transform .45s;
+  }
+  .burbuja--cliente { align-self: flex-start; background: rgba(255, 255, 255, 0.09); border-bottom-left-radius: 5px; }
+  .burbuja--bot { align-self: flex-end; background: var(--flash-orange); color: var(--deep-black); font-weight: 500; border-bottom-right-radius: 5px; }
+  .burbuja.is-oculta { opacity: 0; transform: translateY(8px); }
+  .burbuja--escribiendo { display: inline-flex; gap: 5px; align-items: center; }
+  .burbuja--escribiendo i { width: 6px; height: 6px; border-radius: 50%; background: var(--deep-black); opacity: .5; animation: tel-punto 1s infinite; }
+  .burbuja--escribiendo i:nth-child(2) { animation-delay: .15s; }
+  .burbuja--escribiendo i:nth-child(3) { animation-delay: .3s; }
+  @keyframes tel-punto { 50% { transform: translateY(-4px); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .tel-pulso, .burbuja--escribiendo i { animation: none; }
+    .burbuja, .canal-tab, .canal-ico { transition: none; }
+    .canal-tab[aria-selected='true'] { transform: none; }
+  }
+  @media (max-width: 900px) {
+    .canales { grid-template-columns: 1fr; gap: var(--e3); }
+    .canal-tab[aria-selected='true'] { transform: none; }
+    .tel { transform: none; }
+  }
+
 
   .ebot-index {
     display: flex;
@@ -521,13 +716,25 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     scroll-margin-top: 110px;
   }
   .ebot-hace {
-    padding-top: var(--e2);
+    padding-top: 84px;
+    padding-bottom: var(--e3);
   }
+  .ebot-hace :global(h2.section-title) {
+    font-size: clamp(30px, 3.8vw, 52px);
+    max-width: none;
+    margin-bottom: var(--e3);
+  }
+  /* Siete capacidades en cuatro columnas: la primera ocupa dos y las seis restantes
+     llenan el resto sin dejar una tarjeta huérfana. */
   .ebot-hace-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--e3);
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--e2);
   }
+  .ebot-hace-grid > :global(*:first-child) { grid-column: span 2; }
+  .ebot-hace-grid :global(.ebot-cap) { padding: var(--e2) var(--e3); }
+  .ebot-hace-grid :global(.ebot-cap h3) { font-size: 19px; }
+  .ebot-hace-grid :global(.ebot-cap p) { font-size: 14px; line-height: 1.55; }
   .ebot-cap {
     height: 100%;
     padding: var(--e3) var(--e3);
@@ -873,9 +1080,6 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
 
   /* ---------- RESPONSIVE ---------- */
   @media (max-width: 1024px) {
-    .ebot-canal-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
     .ebot-hace-grid,
     .ebot-panel-grid {
       grid-template-columns: 1fr;
@@ -916,16 +1120,11 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     entre ellas. Son ~1 200 px menos de scroll sin quitar una sola frase.
   */
   @media (max-width: 640px) {
-    .ebot-canal-grid {
-      grid-template-columns: 1fr;
-    }
-    .ebot-canal-grid,
     .ebot-hace-grid,
     .ebot-panel-grid,
     .ebot-costo-grid {
       gap: var(--e1);
     }
-    .ebot-canal,
     .ebot-cap,
     .ebot-panel-group,
     .ebot-costo {
@@ -945,6 +1144,68 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
       margin-top: var(--e4);
     }
   }
+
+  /* ---------- ES TUYO + PREGUNTAS ---------- */
+  .ebot-cierre { padding: 84px 0 var(--e3); }
+  .ebot-cierre-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: var(--e5); align-items: start; }
+  .ebot-cierre :global(.ebot-propiedad-title) {
+    font-size: clamp(28px, 3.4vw, 46px); font-weight: 600; line-height: 1.04; letter-spacing: -0.02em; text-transform: uppercase; margin-bottom: var(--e3);
+  }
+  .ebot-cierre :global(.ebot-propiedad-title .muted) { color: var(--studio-gray); }
+  .ebot-cierre :global(.ebot-cierre-titulo) {
+    font-size: clamp(24px, 2.6vw, 34px); font-weight: 600; line-height: 1.08; letter-spacing: -0.02em; text-transform: uppercase; margin-bottom: var(--e2);
+  }
+  .ebot-cierre :global(.ebot-cierre-titulo .muted) { color: var(--studio-gray); }
+  .ebot-cierre :global(.ebot-propiedad-facts) { display: grid; gap: var(--e2); }
+  @media (max-width: 900px) { .ebot-cierre-grid { grid-template-columns: 1fr; gap: var(--e4); } }
+
+  /* ---------- QUÉ CUESTA: UNA PANTALLA ---------- */
+  .ebot-precio { padding: 80px 0 var(--e2); }
+  .ebot-precio :global(h2.section-title), .ebot-panel :global(h2.section-title) {
+    font-size: clamp(26px, 3vw, 42px); max-width: none; margin-bottom: var(--e1);
+  }
+  .ebot-precio-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: var(--e2); align-items: start; margin-top: var(--e1); }
+  .ebot-precio-grid :global(.ebot-precio-card) { margin: 0; padding: var(--e2) var(--e3); }
+  .ebot-precio-grid :global(.ebot-check li) { padding-top: 3px; padding-bottom: 3px; font-size: 14px; line-height: 1.4; }
+  .ebot-precio-grid :global(.ebot-costos) { margin-top: 0; }
+  .ebot-precio-grid :global(.ebot-costo-grid) { grid-template-columns: 1fr; gap: var(--e1); }
+  .ebot-precio-grid :global(.ebot-costo) { padding: var(--e2); }
+  .ebot-costos-intro { font-size: 13.5px; font-weight: 300; color: var(--studio-gray); line-height: 1.55; margin: 6px 0 var(--e2); }
+  .ebot-precio :global(.ebot-no) { margin-top: var(--e2); }
+  @media (max-width: 1000px) { .ebot-precio-grid { grid-template-columns: 1fr; } }
+
+  /* ---------- PANEL: UNA PANTALLA ---------- */
+  .ebot-panel { padding: 84px 0 var(--e3); }
+  .ebot-panel .ebot-intro { max-width: 82ch; margin-bottom: var(--e2); font-size: 16px; line-height: 1.6; }
+  .ebot-panel :global(.ebot-panel-group) { padding: var(--e2) var(--e3); }
+
+  /* La tarjeta del precio se apila: el precio y el botón arriba, lo incluido en dos columnas. */
+  .ebot-precio-grid :global(.ebot-precio-card) { display: flex; flex-direction: column-reverse; gap: var(--e2); align-items: stretch; }
+  .ebot-precio-grid :global(.ebot-precio-tag) {
+    display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: var(--e2); flex-wrap: wrap;
+    text-align: left; padding: 0 0 var(--e2); border-bottom: 1px dashed rgba(255, 255, 255, 0.18);
+  }
+  .ebot-precio-grid :global(.ebot-precio-v) { font-size: clamp(40px, 4.4vw, 60px); line-height: 1; }
+  .ebot-precio-grid :global(.ebot-check) { display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--e3); }
+  .ebot-precio-grid :global(.ebot-check li) { break-inside: avoid; }
+  .ebot-precio-grid :global(.ebot-precio-copy h3) { font-size: 20px; }
+  .ebot-precio-grid :global(.ebot-precio-desc) { font-size: 14.5px; line-height: 1.55; margin: 6px 0 var(--e1); }
+  .ebot-precio-grid :global(.ebot-costo p) { font-size: 13.5px; line-height: 1.5; }
+  .ebot-precio-grid :global(.ebot-costo-v) { font-size: 26px; }
+  .ebot-precio :global(.ebot-cross) { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: var(--e3); }
+  .ebot-precio :global(.ebot-no) { padding: var(--e2) var(--e3); }
+  .ebot-precio :global(.ebot-no h3) { margin-bottom: var(--e1); font-size: 18px; }
+  .ebot-precio :global(.ebot-cross li) { break-inside: avoid; font-size: 14px; }
+  @media (max-width: 1000px) { .ebot-precio :global(.ebot-cross), .ebot-precio-grid :global(.ebot-check) { grid-template-columns: 1fr; } }
+
+  /* Las capacidades en pantallas chicas: dos columnas (la primera ocupa las dos) y luego una. */
+  @media (max-width: 1100px) {
+    .ebot-hace-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .ebot-hace-grid { grid-template-columns: 1fr; }
+    .ebot-hace-grid > :global(*:first-child) { grid-column: auto; }
+  }
 </style>
 
 <style is:global>
@@ -953,17 +1214,5 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
      que `global.css` aplica a las grids del resto del sitio, aquí con los
      nombres de esta página. Va en `is:global` porque el nodo intermedio lo
      genera el componente y no lleva el `data-astro-cid` de esta página. */
-  .ebot-canal-grid > .reveal,
-  .ebot-hace-grid > .reveal,
-  .ebot-panel-grid > .reveal,
-  .ebot-costo-grid > .reveal {
-    display: flex;
-    flex-direction: column;
-  }
-  .ebot-canal-grid > .reveal > *,
-  .ebot-hace-grid > .reveal > *,
-  .ebot-panel-grid > .reveal > *,
-  .ebot-costo-grid > .reveal > * {
-    flex: 1 1 auto;
-  }
+
 </style>
