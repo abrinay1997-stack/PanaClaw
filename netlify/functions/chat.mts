@@ -268,8 +268,11 @@ function pickProviders(): Provider[] {
     out.push({
       name: 'meta',
       url: 'https://api.meta.ai/v1/messages',
+      // Las dos credenciales, como en los CRM: Bearer y `x-api-key`. Con solo
+      // `x-api-key` el chat llegaba a Meta y volvía rechazado.
       headers: {
         'content-type': 'application/json',
+        authorization: `Bearer ${meta}`,
         'x-api-key': meta,
         'anthropic-version': '2023-06-01',
       },
