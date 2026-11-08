@@ -22,7 +22,7 @@ y comparación con el sitio de D'CASA (`addons/website_dcasa`).
 | Rendimiento | Muy bien **[medido]**: 95–100 en las 6 páginas probadas. En móvil, LCP de 2,3–2,6 s (simulado con red lenta): justo en el borde del umbral de Google (2,5 s). |
 | Accesibilidad y contraste | Muy bien **[medido]**: 100 en Lighthouse y **0 fallos** de axe en 22 combinaciones (11 páginas × escritorio y móvil). |
 | SEO técnico | Bien, con arreglos baratos y claros (§4). |
-| **Seguridad** | **Aquí está lo más urgente** (§5): el límite de uso del chat casi no protege, no hay política de contenido (CSP), el Píxel de Meta carga sin consentimiento, hay 10 vulnerabilidades en dependencias (una crítica, de compilación) y la dirección `workers.dev` sigue abierta. |
+| **Seguridad** | Detalle fuera del repositorio (ver §5). |
 | **Conversión** | **Aquí está lo que más cuesta dinero** (§2): la portada esconde sus mejores pruebas, la sección de cierre no tiene botón, la barra tiene 10 destinos y el formulario no guarda nada. |
 | Animación y vidrio | Lo que usted ve es cierto (§3): hay un solo efecto de entrada y la barra no es de vidrio (es un 88 % opaca). |
 | Tarjetas | Tiene razón (§2): todas salen de la misma receta y se ven de plantilla. Se rediseñan como un sistema de tipos distintos. |
@@ -286,7 +286,6 @@ vende «abre en menos de un segundo» y su LCP en móvil ya está en el borde
 | S6 | **Datos estructurados incompletos** | Solo hay `LocalBusiness` en la portada. No hay nada en `/contacto/`, `/cotizador/`, `/proceso/`, `/servicios/`, `/privacidad/`, `/terminos/` | `WebPage` + `BreadcrumbList` en todas; `Service` en servicios |
 | S7 | **Una sola imagen para compartir** (`og.png`) | Todas las páginas se comparten con la misma imagen | Una imagen por página clave (proyectos, planes, cotizador, blog) |
 | S8 | **Etiqueta «Webs» ≠ página `/planes/`** | La palabra «Webs» está en la barra pero la URL y el título dicen «planes» | Unificar: la URL y el nombre deben coincidir con lo que la gente busca |
-| S9 | **Duplicado en `workers.dev`** | `panaclaw-sitio.abrinay1997.workers.dev` sirve el mismo sitio. Tiene `canonical` al dominio, pero es una copia pública y indexable | Apagar `workers_dev` (también cierra una puerta al chat, §5) |
 
 **Lo que está bien [medido]:** `canonical` en todas las páginas indexables, una
 sola `h1` por página, ninguna imagen sin `alt` (las decorativas llevan `alt=""`),
@@ -303,31 +302,11 @@ la propiedad sigue verificada tras el cambio.
 
 ## 5. Seguridad y bloqueos
 
-Ordenado por gravedad.
-
-| # | Hallazgo | Por qué importa | Arreglo |
-|---|---|---|---|
-| **X1** | **El límite de uso del chat casi no protege.** El tope por minuto (12) y el diario (300) viven en la memoria de cada instancia del Worker. En Cloudflare hay muchas instancias y se reinician: cada una cuenta desde cero | Alguien puede lanzar miles de preguntas y pagar con su llave de Meta (barata, pero sin tope). La comprobación de origen la salta cualquiera con `curl` | **Regla de límite de tasa en Cloudflare** sobre `/api/chat`, el binding de límite de tasa del Worker y un tope diario global en un Durable Object. Turnstile (gratis) para que el navegador demuestre ser una persona antes de chatear |
-| **X2** | **`workers.dev` sigue abierta** | `panaclaw-sitio.abrinay1997.workers.dev/api/chat` llega al mismo chat y a las mismas llaves, fuera de las reglas que se pongan en el dominio | `workers_dev: false` en `wrangler.jsonc` |
-| **X3** | **No hay política de contenido (CSP)** | Si algún día se cuela un script, nada lo frena. El sitio carga el Píxel de Meta, así que la CSP necesita medida | Empezar en modo solo-informe (`Content-Security-Policy-Report-Only`), mirar los avisos una semana y activar. Añadir `Cross-Origin-Opener-Policy` y ampliar `Permissions-Policy` |
-| **X4** | **10 vulnerabilidades en dependencias** | **[medido]** 1 crítica (Astro: ejecución de código al optimizar imágenes AVIF), 8 altas, 1 moderada. Casi todas son de *compilación*, no del sitio publicado (que es estático); aun así hay que subirlas | `npm audit fix` en una rama y comprobar el sitio completo. Vigilar con Dependabot |
-| **X5** | **El Píxel de Meta carga sin pedir consentimiento** | **[visto]** No hay aviso de cookies; solo la página de privacidad lo declara. Es un riesgo legal (la ley panameña de protección de datos, Ley 81 de 2019, habla de consentimiento) | **Consulta con su abogado** antes de decidir. Opciones: aviso con aceptar/rechazar y píxel solo tras aceptar, o medir con Cloudflare Web Analytics (sin cookies) |
-| **X6** | **El chat envía lo que escriben los visitantes a Meta, que entrena con eso** | Elegido por usted con conocimiento. Falta decirlo en la política de privacidad, y la gente a veces escribe teléfonos y correos en un chat | Párrafo en `/privacidad/` (se lo redacto para que usted lo apruebe) y **ocultar teléfonos y correos** del texto antes de enviarlo |
-| **X7** | **Sin tope de tamaño de la petición al chat** | Se lee el cuerpo completo antes de recortarlo a 6 mensajes de 1000 caracteres | Rechazar peticiones de más de 8 KB y más de 12 mensajes |
-| **X8** | **Inyección de instrucciones («olvida tus reglas…»)** | **[visto]** Es un riesgo acotado: el chat solo contesta con el contexto, no ejecuta herramientas y la barandilla de precios bloquea cifras inventadas. Lo peor posible es una respuesta fuera de tema o que quede mal en una captura | Pruebas con un corpus de ataques, filtro de salida que quite enlaces ajenos, y registro de intentos |
-| **X9** | **Correo: los informes DMARC van a un buzón de GoDaddy** | **[visto]** `rua=mailto:dmarc_rua@onsecureserver.net`: nadie los lee | Mandarlos a un buzón propio o a un servicio de lectura; cuando estén limpios, subir de `quarantine` a `reject` |
-| **X10** | **Formulario futuro** | Cuando guarde datos tendrá que validarse y defenderse | Turnstile, límite de tasa, trampa para bots (honeypot), validación en el servidor, y que ningún campo llegue sin limpiar al correo (inyección de cabeceras) |
-| **X11** | **Cuenta de Cloudflare y GitHub** | El token de despliegue y la cuenta son la llave de todo | Token con el mínimo permiso y solo para la zona; verificación en dos pasos en Cloudflare, GitHub y GoDaddy; rotar la llave de Groq que quedó expuesta en un registro hace meses, si aún existe |
-| **X12** | **Menores** | Falta `/.well-known/security.txt`; DNSSEC desactivado (activarlo con la migración estable, en Cloudflare más el registro DS en GoDaddy); HSTS sin `preload`; revisar el CAA que solo permite Let's Encrypt | Una a una, sin urgencia |
-
-**Lo que ya está bien [visto]:** el chat no tiene herramientas ni acceso a datos
-privados, muestra el texto con `textContent` (sin riesgo de XSS), las cabeceras
-`X-Frame-Options`, `nosniff`, HSTS y `Referrer-Policy` están, el Worker solo
-responde `/api/*` (el resto sale del borde), las llaves están en secretos del
-Worker y no en el repositorio, y `Always Use HTTPS` y SSL Full (strict) están
-activos desde hoy.
-
----
+El detalle de esta sección (hallazgos, pruebas y estado de cada uno) se quitó del repositorio cuando
+pasó a ser público: una lista de debilidades no resueltas es una guía para quien quiera atacar. Se
+guarda fuera del repositorio. Lo ya resuelto está en el historial de cambios del sitio (límite de uso
+y tope de tamaño del chat, datos personales fuera del modelo, política de contenido en modo reporte,
+dependencias al día, `security.txt`).
 
 ## 6. Plan de trabajo
 
