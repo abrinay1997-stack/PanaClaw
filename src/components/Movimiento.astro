@@ -134,6 +134,8 @@
   [data-anim='item'] { transform: translate3d(0, 38px, 0) scale(0.96); }
   [data-anim='imagen'] { transform: scale(1.08); }
   [data-anim].is-in { opacity: 1; transform: none; filter: none; will-change: auto; }
+  /* Lo que todavía no apareció no recibe toques: su desplazamiento previo no puede tapar botones vecinos. */
+  [data-anim]:not(.is-in) { pointer-events: none; }
 
   /* Los fondos se mueven más despacio que el contenido. El zoom evita ver el borde. */
   .scene-bg img.con-parallax {
