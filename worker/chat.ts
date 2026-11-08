@@ -1,6 +1,4 @@
-import type { Config, Context } from '@netlify/functions';
-
-import { retrieve, invalidPrices, buildSystem, trimReply, type Kb } from './_retrieval.mts';
+import { retrieve, invalidPrices, buildSystem, trimReply, type Kb } from './retrieval.ts';
 
 /**
  * Endpoint del chat de PanaClaw.
@@ -34,11 +32,9 @@ interface ChatMessage {
 /**
  * Lo único que la lógica del chat necesita saber de dónde corre.
  *
- * El chat no es «de Netlify»: recibe una petición y contesta una respuesta. Lo
- * que cambia de una plataforma a otra son dos datos —la IP de quien escribe y
- * cómo se llega a `kb.json`— y viajan aquí, para que el mismo código sirva hoy en
- * Netlify y mañana en un Worker de Cloudflare sin que haya dos copias que se
- * desvíen.
+ * El chat recibe una petición y contesta una respuesta. Lo que depende de dónde
+ * corre son dos datos —la IP de quien escribe y cómo se llega a `kb.json`— y
+ * viajan aquí, para que la lógica se pueda probar sin levantar un Worker.
  */
 export interface Entorno {
   ip: string;
@@ -93,7 +89,7 @@ interface Provider {
  * se llegaba a mirar. Tener un repuesto que no entra a jugar no es tener
  * repuesto.
  *
- * Y las claves no siempre las pone uno: el entorno de Netlify puede traer un
+ * Y las claves no siempre las pone uno: el entorno de la plataforma puede traer un
  * `ANTHROPIC_API_KEY` inyectado por la plataforma que no aparece en la lista de
  * variables del panel y que la API rechaza si se le manda directamente. Por eso
  * existe `CHAT_PROVIDER`: con 'groq' o 'anthropic' se fija cuál se usa y se
@@ -188,7 +184,7 @@ const RAZONA = /gpt-oss|qwen/i;
  * Fijar un modelo es decir cuál prefieres, no renunciar a tener chat el día que
  * lo retiren: si el fijado ya no existe se sigue por el siguiente, en vez de
  * derivar a WhatsApp a todo el mundo. Esto importa hoy más que mañana, porque
- * el nombre retirado puede estar escrito en el panel de Netlify y no aquí.
+ * el nombre retirado puede estar escrito en el panel del Worker y no aquí.
  */
 function listaModelos(...fuentes: (string | undefined)[]): string[] {
   const out: string[] = [];
@@ -351,7 +347,7 @@ function pickProviders(): Provider[] {
  * El endpoint gasta la clave de Anthropic en cada llamada, así que sin esto
  * cualquiera puede apuntar un script contra `/api/chat` y facturarnos sus
  * conversaciones. Se compara contra el origen de la petición —no contra una
- * lista fija— para que las previews de Netlify, que viven en otro subdominio,
+ * lista fija— para que cualquier dirección del sitio (`workers.dev`, el dominio, una vista previa),
  * sigan funcionando sin mantener nada.
  *
  * Un `Origin` se puede falsificar con curl: esto no es autenticación, es quitar
@@ -399,12 +395,12 @@ function rateLimited(ip: string): boolean {
  * Techo de conversaciones al día para todo el sitio, no por visitante: es el
  * único límite que pone una cifra máxima a la factura del mes.
  *
- * Vive en memoria y cada instancia lleva su propia cuenta, así que Netlify
+ * Vive en memoria y cada instancia lleva su propia cuenta, así que Cloudflare
  * levantando varias lo multiplica. Es un tope aproximado a propósito: el
  * alternativo —un contador compartido— pide almacenamiento externo y una
  * llamada de red en cada mensaje, para proteger un endpoint que hoy responde
- * preguntas sobre precios. Si algún día el chat pesa más, se sube a Netlify
- * Blobs.
+ * preguntas sobre precios. Si algún día el chat pesa más, se sube a una regla de
+ * límite de tasa de Cloudflare o a un Durable Object.
  */
 const MAX_PER_DAY = Number(process.env.CHAT_MAX_PER_DAY || 300);
 let day = '';
@@ -610,9 +606,3 @@ export async function atender(req: Request, entorno: Entorno): Promise<Response>
 
   return json({ reply, sources: facts.map((f) => f.id) });
 }
-
-/** El adaptador de Netlify: pone la IP que Netlify entrega y nada más. */
-export default async (req: Request, context: Context) =>
-  atender(req, { ip: context.ip || req.headers.get('x-nf-client-connection-ip') || 'anon' });
-
-export const config: Config = { path: '/api/chat' };

@@ -39,7 +39,6 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
-    "@netlify/functions": "^5.3.0",
     "typescript": "^6.0.3"
   }
 }
