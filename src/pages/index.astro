@@ -86,7 +86,7 @@ const pruebas = ['Menos de un segundo', 'Sin complementos que se rompan', '72 ho
     visitante puede verificar sin fiarse de nosotros. Van los dominios y no unos
     logos: un logo se dibuja, un dominio se abre.
   -->
-  <section class="proof" aria-labelledby="proof-title">
+  <section class="proof" aria-labelledby="proof-title" data-sin-anim>
     <div class="container">
       <div class="proof-inner">
         <span class="eyebrow" id="proof-title">Trabajo publicado</span>
@@ -217,8 +217,31 @@ const pruebas = ['Menos de un segundo', 'Sin complementos que se rompan', '72 ho
 
 <style>
   /* ---------- HERO CINEMÁTICO ---------- */
-  .portada { display: flex; flex-direction: column; min-height: 100svh; }
-  .portada .hero-cinematic { flex: 1 1 auto; height: auto; min-height: 0; max-height: none; }
+  /* El héroe ocupa TODA la pantalla; la franja de proyectos se apoya en su borde de abajo
+     como una banda de vidrio (en el teléfono baja a su sitio, debajo). */
+  .portada { position: relative; }
+  @media (min-width: 901px) {
+    .portada .hero-cinematic { height: 100svh; min-height: 100svh; max-height: none; padding-bottom: 270px; }
+    .portada .proof {
+      position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+      padding: var(--e2) 0; overflow: hidden;
+      background: rgba(16, 1, 1, 0.5);
+      -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+      border-bottom: 0;
+    }
+    /* Pantallas medianas: la franja se acomoda en dos filas y el héroe le deja sitio. */
+    .portada .hero-scroll-cue { bottom: 190px; }
+  }
+  /* Pantallas anchas: la franja cabe en una sola línea, sin tocar el botón del chat. */
+  @media (min-width: 1280px) {
+    .portada .hero-cinematic { padding-bottom: 210px; }
+    .portada .hero-scroll-cue { bottom: 118px; }
+    .portada .proof .proof-link { margin-right: 150px; }
+    .portada .proof .proof-inner { flex-wrap: nowrap; gap: var(--e3); }
+    .portada .proof .proof-list { flex-wrap: nowrap; gap: var(--e2); }
+    .portada .proof .proof-list * { white-space: nowrap; font-size: 14px; }
+  }
+  }
   .hero-cinematic {
     position: relative;
     min-height: 100svh;

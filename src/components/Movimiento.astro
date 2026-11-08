@@ -38,6 +38,36 @@
   let fondos: HTMLElement[] = [];
   let atento = false;
 
+  /** Parte un título en palabras (cada una sube desde una máscara). Respeta los <span> internos. */
+  function partirEnPalabras(el: HTMLElement) {
+    if (el.dataset.palabras) return;
+    el.dataset.palabras = '1';
+    let n = 0;
+    const recorrer = (nodo: Node) => {
+      Array.from(nodo.childNodes).forEach((hijo) => {
+        if (hijo.nodeType === Node.TEXT_NODE) {
+          const partes = (hijo.textContent ?? '').split(/(\s+)/);
+          const frag = document.createDocumentFragment();
+          partes.forEach((t) => {
+            if (!t) return;
+            if (/^\s+$/.test(t)) { frag.append(t); return; }
+            const w = document.createElement('span');
+            w.className = 'pw';
+            const i = document.createElement('span');
+            i.textContent = t;
+            i.style.setProperty('--pi', String(n++));
+            w.append(i);
+            frag.append(w);
+          });
+          hijo.replaceWith(frag);
+        } else if (hijo.nodeType === Node.ELEMENT_NODE) {
+          recorrer(hijo);
+        }
+      });
+    };
+    recorrer(el);
+  }
+
   function marcar() {
     if (prefersReducedMotion()) return;
     observador?.disconnect();
@@ -59,20 +89,28 @@
         const k = hermanos.get(padre) ?? 0;
         hermanos.set(padre, k + 1);
         el.dataset.anim = tipo;
+        if (tipo === 'titulo' && !el.matches('.eyebrow')) partirEnPalabras(el);
         el.style.setProperty('--ad', `${Math.min(k, 6) * 0.08}s`);
         elegidos.push(el);
       });
     });
 
+    // Entra al aparecer y SALE al irse: por arriba se va hacia arriba y se apaga; por abajo vuelve a
+    // su sitio de espera. Así, al subir y bajar, todo vuelve a moverse (el sitio se siente vivo).
     observador = new IntersectionObserver(
       (entradas) => {
         entradas.forEach((e) => {
-          if (!e.isIntersecting) return;
-          (e.target as HTMLElement).classList.add('is-in');
-          observador!.unobserve(e.target);
+          const el = e.target as HTMLElement;
+          if (e.isIntersecting) {
+            el.classList.remove('sale-arriba');
+            el.classList.add('is-in');
+          } else if (el.classList.contains('is-in') || el.classList.contains('sale-arriba')) {
+            el.classList.remove('is-in');
+            el.classList.toggle('sale-arriba', e.boundingClientRect.top < 0);
+          }
         });
       },
-      { rootMargin: '0px 0px -8% 0px', threshold: 0.05 },
+      { rootMargin: '-4% 0px -8% 0px', threshold: 0.05 },
     );
     elegidos.forEach((el) => observador!.observe(el));
 
@@ -116,7 +154,7 @@
 
 <style is:global>
   .scroll-progreso {
-    position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 200;
+    position: fixed; bottom: 0; left: 0; right: 0; height: 3px; z-index: 200;
     background: var(--flash-orange); transform: scaleX(0); transform-origin: left;
     pointer-events: none; box-shadow: 0 0 12px rgba(255, 81, 0, 0.7);
   }
@@ -124,18 +162,37 @@
   [data-anim] {
     opacity: 0;
     will-change: opacity, transform;
+    /* Entrada: lenta y con rebote suave. */
     transition:
-      opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1) var(--ad, 0s),
-      transform 0.85s cubic-bezier(0.22, 1, 0.36, 1) var(--ad, 0s),
-      filter 0.85s cubic-bezier(0.22, 1, 0.36, 1) var(--ad, 0s);
+      opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--ad, 0s),
+      transform 0.95s cubic-bezier(0.22, 1, 0.36, 1) var(--ad, 0s),
+      filter 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--ad, 0s);
   }
-  [data-anim='titulo'] { transform: translate3d(0, 44px, 0); filter: blur(7px); }
-  [data-anim='texto'] { transform: translate3d(0, 24px, 0); }
-  [data-anim='item'] { transform: translate3d(0, 38px, 0) scale(0.96); }
-  [data-anim='imagen'] { transform: scale(1.08); }
+  [data-anim='titulo'] { transform: none; filter: none; }
+  [data-anim='texto'] { transform: translate3d(0, 34px, 0); filter: blur(4px); }
+  [data-anim='item'] { transform: translate3d(0, 56px, 0) scale(0.93); filter: blur(3px); }
+  [data-anim='imagen'] { transform: scale(1.14); filter: blur(5px); }
   [data-anim].is-in { opacity: 1; transform: none; filter: none; will-change: auto; }
+  /* Salida: al irse por arriba, sube y se apaga; más rápido que la entrada. */
+  [data-anim].sale-arriba:not(.is-in) {
+    opacity: 0; filter: blur(3px);
+    transition-duration: 0.45s; transition-delay: 0s;
+  }
+  [data-anim='texto'].sale-arriba:not(.is-in) { transform: translate3d(0, -28px, 0); }
+  [data-anim='item'].sale-arriba:not(.is-in) { transform: translate3d(0, -40px, 0) scale(0.96); }
+  [data-anim='imagen'].sale-arriba:not(.is-in) { transform: scale(0.96); }
   /* Lo que todavía no apareció no recibe toques: su desplazamiento previo no puede tapar botones vecinos. */
   [data-anim]:not(.is-in) { pointer-events: none; }
+
+  /* Títulos: cada palabra sube desde una máscara, una tras otra. */
+  .pw { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.14em; margin-bottom: -0.14em; }
+  .pw > span {
+    display: inline-block;
+    transform: translate3d(0, 112%, 0);
+    transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--pi, 0) * 70ms + var(--ad, 0s));
+  }
+  [data-anim='titulo'].is-in .pw > span { transform: none; }
+  [data-anim='titulo'].sale-arriba:not(.is-in) .pw > span { transform: translate3d(0, -112%, 0); transition-duration: 0.4s; transition-delay: 0s; }
 
   /* Los fondos se mueven más despacio que el contenido. El zoom evita ver el borde. */
   .scene-bg img.con-parallax {
@@ -150,6 +207,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     [data-anim] { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+    .pw > span { transform: none !important; transition: none !important; }
     .scene-bg img.con-parallax { transform: none; }
     .btn:hover { transform: none; }
   }

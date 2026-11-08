@@ -16,6 +16,14 @@ const { activePath = '' } = Astro.props;
   en cada `astro:page-load`.
 -->
 <header class="floating-nav" transition:persist="nav">
+  <!-- Filtro de refracción del vidrio líquido (el de D'CASA): ruido que desplaza lo que pasa por detrás. -->
+  <svg class="filtro-liquido" width="0" height="0" aria-hidden="true" focusable="false">
+    <filter id="liquido" x="-10%" y="-40%" width="120%" height="180%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.009 0.022" numOctaves="2" seed="7" result="ruido" />
+      <feGaussianBlur in="ruido" stdDeviation="1.5" result="ruido_suave" />
+      <feDisplacementMap in="SourceGraphic" in2="ruido_suave" scale="38" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
   <div class="nav-pill">
     {/*
       El avatar y el wordmark viajan juntos. El <img> se sirve del mismo
@@ -105,9 +113,81 @@ const { activePath = '' } = Astro.props;
 
     closeMenu(pill, toggle);
     syncCurrent();
+    initLiquido();
+    initGota();
     // Tras una navegación con View Transitions el scroll vuelve a 0 pero el nav
     // persiste, así que hay que reevaluar su tamaño en cada page-load.
     syncShrink();
+  }
+
+  /**
+   * Vidrio líquido: solo donde `backdrop-filter: url()` funciona (Chromium). La referencia
+   * va por una variable puesta aquí y no escrita en el CSS: el empaquetador reescribiría
+   * `url(#liquido)` como una ruta de archivo y el filtro no se aplicaría. El ruido se
+   * mueve lento (el vidrio «fluye»), en pausa con la pestaña oculta y sin movimiento si
+   * la persona pidió reducirlo.
+   */
+  function initLiquido() {
+    const filtro = document.querySelector<SVGSVGElement>('.filtro-liquido');
+    const ruido = filtro?.querySelector('feTurbulence');
+    if (!filtro || !ruido || filtro.dataset.listo) return;
+    filtro.dataset.listo = '1';
+    const chromium = (navigator as unknown as { userAgentData?: { brands?: { brand: string }[] } }).userAgentData?.brands?.some(
+      (b) => b.brand === 'Chromium',
+    );
+    if (!chromium || !window.CSS?.supports?.('backdrop-filter', 'url(#a)')) return;
+    document.documentElement.style.setProperty('--refraccion', 'url(#liquido) blur(3px) saturate(220%) brightness(1.08)');
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+    anim.setAttribute('attributeName', 'baseFrequency');
+    anim.setAttribute('dur', '18s');
+    anim.setAttribute('repeatCount', 'indefinite');
+    anim.setAttribute('values', '0.009 0.022;0.012 0.018;0.009 0.022');
+    ruido.appendChild(anim);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) filtro.pauseAnimations();
+      else filtro.unpauseAnimations();
+    });
+  }
+
+  /** La gota: una burbuja de vidrio que se desliza con rebote hasta el enlace bajo el puntero o con el foco. */
+  function initGota() {
+    const nav = document.querySelector<HTMLElement>('#nav-principal');
+    if (!nav) return;
+    let gota = nav.querySelector<HTMLElement>('.nav-gota');
+    const enlaces = Array.from(nav.querySelectorAll<HTMLAnchorElement>('.nav-links a'));
+    const activo = () => nav.querySelector<HTMLAnchorElement>('.nav-links a[aria-current="page"]');
+    if (!gota) {
+      gota = document.createElement('span');
+      gota.className = 'nav-gota';
+      gota.setAttribute('aria-hidden', 'true');
+      nav.prepend(gota);
+    }
+    const g = gota;
+    const moverA = (a: HTMLElement | null) => {
+      if (!a) { g.classList.remove('is-visible'); return; }
+      const caja = nav.getBoundingClientRect();
+      const r = a.getBoundingClientRect();
+      g.style.setProperty('--gota-x', `${r.left - caja.left}px`);
+      g.style.setProperty('--gota-y', `${r.top - caja.top}px`);
+      g.style.setProperty('--gota-ancho', `${r.width}px`);
+      g.style.setProperty('--gota-alto', `${r.height}px`);
+      g.classList.add('is-visible');
+    };
+    if (!nav.dataset.gotaLista) {
+      nav.dataset.gotaLista = '1';
+      enlaces.forEach((a) => {
+        a.addEventListener('mouseenter', () => moverA(a));
+        a.addEventListener('focus', () => moverA(a));
+      });
+      nav.addEventListener('mouseleave', () => moverA(activo()));
+      nav.addEventListener('focusout', (e) => { if (!nav.contains(e.relatedTarget as Node)) moverA(activo()); });
+      window.addEventListener('resize', () => moverA(activo()));
+      document.fonts?.ready.then(() => moverA(activo()));
+      // Al encoger o ensanchar el menú (bajar o subir) los enlaces se reacomodan: la gota los sigue.
+      if ('ResizeObserver' in window) new ResizeObserver(() => { if (!nav.matches(':hover') && !nav.contains(document.activeElement)) moverA(activo()); }).observe(nav);
+    }
+    requestAnimationFrame(() => moverA(activo()));
   }
 
   /**

@@ -173,6 +173,13 @@ const manifiesto = [
     trabajamos".
   -->
   <section class="cta">
+    <!-- Fondo de «salida»: una pista que avanza hacia ti y ondas que parten del botón, como una señal de arranque. -->
+    <div class="cta-salida" aria-hidden="true">
+      <span class="cta-pista"></span>
+      <span class="cta-onda"></span>
+      <span class="cta-onda"></span>
+      <span class="cta-onda"></span>
+    </div>
     <div class="container cta-inner">
       <Reveal>
         <h2>¿Empezamos?</h2>
@@ -450,4 +457,32 @@ const manifiesto = [
   @media (prefers-reduced-motion: reduce) {
     .linea::before, .linea-paso, .linea-nodo { animation: none; }
   }
+
+  /* ---------- CIERRE: «¿EMPEZAMOS?» ---------- */
+  .cta-salida { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  /* La pista: líneas que corren hacia quien mira, la sensación de arrancar. */
+  .cta-pista {
+    position: absolute; left: -30%; right: -30%; bottom: 0; height: 62%;
+    background:
+      repeating-linear-gradient(90deg, rgba(255, 81, 0, 0.5) 0 1px, transparent 1px 96px),
+      repeating-linear-gradient(0deg, rgba(255, 81, 0, 0.38) 0 1px, transparent 1px 64px);
+    background-size: auto, auto;
+    transform: perspective(520px) rotateX(64deg);
+    transform-origin: bottom center;
+    -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 92%);
+            mask-image: linear-gradient(to top, #000 10%, transparent 92%);
+    animation: pista-corre 1.6s linear infinite;
+  }
+  @keyframes pista-corre { from { background-position: 0 0, 0 0; } to { background-position: 0 0, 0 64px; } }
+  /* Ondas de arranque que parten del centro, donde está el botón. */
+  .cta-onda {
+    position: absolute; left: 50%; top: 56%; width: 36vmin; height: 36vmin; margin: -18vmin 0 0 -18vmin;
+    border-radius: 50%; border: 1.5px solid rgba(255, 81, 0, 0.65);
+    opacity: 0; transform: scale(0.2);
+    animation: onda-sale 4.5s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  }
+  .cta-onda:nth-child(3) { animation-delay: 1.5s; }
+  .cta-onda:nth-child(4) { animation-delay: 3s; }
+  @keyframes onda-sale { 0% { opacity: 0.8; transform: scale(0.2); } 100% { opacity: 0; transform: scale(2.6); } }
+  @media (prefers-reduced-motion: reduce) { .cta-pista, .cta-onda { animation: none; } .cta-onda { opacity: 0.25; transform: scale(1.2); } }
 </style>
