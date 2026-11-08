@@ -277,9 +277,12 @@ function pickProviders(): Provider[] {
         'anthropic-version': '2023-06-01',
       },
       models: listaModelos(process.env.META_MODEL, generico, ...MODELOS_META),
+      // Muse Spark razona antes de contestar: con 260 tokens, todo el cupo se
+      // puede ir en pensar y el texto sale vacío (pasó en el ensayo). El largo de
+      // lo que se publica lo sigue decidiendo `trimReply()`.
       body: (model, system, msgs) => ({
         model,
-        max_tokens: 260,
+        max_tokens: 1500,
         temperature: 0.3,
         system,
         messages: msgs,
@@ -487,10 +490,26 @@ export async function atender(req: Request, entorno: Entorno): Promise<Response>
           continue porProveedor;
         }
 
-        reply = trimReply(provider.extract(await res.json()).trim());
+        const cuerpo = await res.json();
+        reply = trimReply(provider.extract(cuerpo).trim());
         if (reply) break porProveedor;
 
-        console.error(`[chat] ${provider.name} (${model}) respondió vacío`);
+        /*
+         * Qué forma tenía la respuesta, sin su texto ni su llave: por qué paró
+         * (`stop_reason` / `finish_reason`), qué bloques trajo y cuántos tokens
+         * gastó. Con eso se distingue «el modelo gastó todo en razonar» de «la
+         * respuesta viene con otra forma».
+         */
+        const bloques = Array.isArray(cuerpo?.content)
+          ? cuerpo.content.map((b: any) => `${b?.type ?? '?'}:${String(b?.text ?? b?.thinking ?? '').length}`).join(',')
+          : typeof cuerpo?.choices !== 'undefined'
+            ? 'choices'
+            : `claves=${Object.keys(cuerpo ?? {}).join(',')}`;
+        console.error(
+          `[chat] ${provider.name} (${model}) respondió vacío; parada=${
+            cuerpo?.stop_reason ?? cuerpo?.choices?.[0]?.finish_reason ?? '?'
+          }; bloques=[${bloques}]; tokens_salida=${cuerpo?.usage?.output_tokens ?? cuerpo?.usage?.completion_tokens ?? '?'}`
+        );
         fallo = `${provider.name}_vacio`;
       } catch (err) {
         // Un corte de red o un tiempo agotado son del proveedor, no del modelo:
