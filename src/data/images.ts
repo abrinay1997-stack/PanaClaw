@@ -86,7 +86,7 @@ export const smarkVisual: Visual = {
 };
 
 /**
- * /ebot — la escena del hero del bot multicanal.
+ * /ebot — la escena del hero del agente de IA.
  *
  * Reutiliza `interfaz.png` (la mano tocando la esfera de datos) con encuadre y
  * brillo propios, igual que hace `smarkVisual`: es la imagen del catálogo que
