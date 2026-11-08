@@ -480,12 +480,7 @@ h2.section-title .muted{color:var(--studio-gray);}
 
 /* ---------- CTA ---------- */
 .cta{text-align:center;position:relative;overflow:hidden;}
-.cta::before{
-  content:"";position:absolute;inset:0;
-  background:radial-gradient(circle at 50% 120%,
-    var(--flash-orange),rgba(16,1,1,0) 60%);
-  z-index:0;
-}
+/* Sin resplandor naranja abajo (decisión de la dueña, 8-nov-2026): el cierre queda oscuro hasta el pie. */
 .cta-inner{position:relative;z-index:2;}
 /* El mínimo del clamp era 40px y a 320px de ancho un titular de una sola
    palabra larga ya no cabía en la caja. Con 32px y más peso de vw, escala. */
