@@ -72,5 +72,8 @@ jobs:
       - name: Chat
         run: npm run medir:chat
 
+      - name: Privacidad del chat
+        run: npm run medir:privacidad
+
       - name: Galería de proyectos
         run: npm run medir:galeria

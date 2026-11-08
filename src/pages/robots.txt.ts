@@ -13,14 +13,14 @@ import type { APIRoute } from 'astro';
  * Generándolo, el dominio sale de `Astro.site` como el canonical y el sitemap,
  * así que las tres cosas no pueden discrepar.
  *
- * Las rutas excluidas son las mismas que van con `noindex`, MENOS `/smark/`:
- * esa se enlaza desde la bio en redes y un `Disallow` impediría al rastreador
- * entrar a leer su propio `noindex`, con lo que acabaría indexada igual y sin
- * descripción. Es el mismo razonamiento que ya está escrito en el filtro del
+ * Ninguna ruta lleva `Disallow`: las que no deben indexarse (`/gracias/`, `/smark/`,
+ * la 404) ya van con `noindex`, y un `Disallow` impediría al rastreador entrar a
+ * leer ese `noindex`, con lo que acabarían indexadas igual y sin descripción.
+ * Antes `/gracias/` tenía las dos cosas a la vez, y se contradecían. Es el mismo razonamiento que ya está escrito en el filtro del
  * sitemap, en `astro.config.mjs`.
  */
 export const GET: APIRoute = ({ site }) => {
-  const lines = ['User-agent: *', 'Allow: /', 'Disallow: /gracias/', 'Disallow: /404.html'];
+  const lines = ['User-agent: *', 'Allow: /'];
 
   // `site` es `undefined` si `astro.config.mjs` no lo declara. No se inventa un
   // dominio: sin él se omite la línea, porque un `Sitemap:` relativo o apuntando

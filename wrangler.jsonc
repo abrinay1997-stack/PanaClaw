@@ -10,9 +10,12 @@
   // NO HAY `account_id` AQUÍ, igual que en el hub y en el CRM: es un dato de
   // QUIÉN despliega, no del proyecto. Se pasa con `CLOUDFLARE_ACCOUNT_ID`.
 
-  // Mientras el sitio siga en Netlify, esta es la dirección de ensayo:
-  // `panaclaw-sitio.<cuenta>.workers.dev`. Servirla no toca el dominio.
-  "workers_dev": true,
+  // Apagada (8-nov-2026): el dominio ya sirve desde Cloudflare y la dirección
+  // `panaclaw-sitio.<cuenta>.workers.dev` era una copia pública del sitio y una
+  // segunda puerta al chat, fuera de cualquier regla que se ponga en el dominio.
+  // Para ensayar algo, se enciende un momento y se vuelve a apagar.
+  "workers_dev": false,
+  "preview_urls": false,
 
   // EL DOMINIO. Se sirve por RUTAS DE ZONA, no por `custom_domain`.
   //

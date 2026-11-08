@@ -229,6 +229,10 @@ import { routes } from '../data/links';
         <div class="cite">
           Cada día sin sitio propio es un cliente que buscó lo que vendes y encontró a otro.
         </div>
+        <div class="quote-actions">
+          <a class="btn btn-primary" href={routes.cotizador}><span class="dot"></span> Calcular mi precio</a>
+          <a class="btn btn-ghost" href={waLink('Hola PanaClaw, quiero un sitio para mi negocio')} target="_blank" rel="noopener">Hablar por WhatsApp</a>
+        </div>
       </Reveal>
     </div>
   </section>
@@ -239,8 +243,8 @@ import { routes } from '../data/links';
   /* ---------- HERO CINEMÁTICO ---------- */
   .hero-cinematic {
     position: relative;
-    min-height: 100vh;
-    height: 100vh;
+    min-height: 100svh;
+    height: 100svh;
     max-height: 1080px;
     display: flex;
     flex-direction: column;
@@ -491,8 +495,14 @@ import { routes } from '../data/links';
   .quote {
     position: relative;
     overflow: hidden;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     padding: var(--e7) 0;
   }
+  .quote > .container { width: 100%; }
+  .quote-actions { display: flex; gap: var(--e2); flex-wrap: wrap; margin-top: var(--e4); }
   .quote .container {
     position: relative;
     z-index: 1;

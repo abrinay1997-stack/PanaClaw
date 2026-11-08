@@ -1,3 +1,4 @@
+import { redactarDatos, MAX_CUERPO_BYTES } from './privacidad.ts';
 import { retrieve, invalidPrices, buildSystem, trimReply, type Kb, type KbFact } from './retrieval.ts';
 
 /**
@@ -496,12 +497,18 @@ export async function atender(req: Request, entorno: Entorno): Promise<Response>
     return json({ reply: 'Vas muy rápido. Espera un momento y vuelve a preguntar.' }, 429);
   }
 
+  // Tope de tamaño: antes de leer, por la cabecera, y después, por lo realmente leído.
+  const declarado = Number(req.headers.get('content-length') || 0);
+  if (declarado > MAX_CUERPO_BYTES) return json({ error: 'Mensaje demasiado largo' }, 413);
+
   let messages: ChatMessage[];
   try {
-    const body = (await req.json()) as { messages?: ChatMessage[] };
+    const crudo = await req.text();
+    if (crudo.length > MAX_CUERPO_BYTES) return json({ error: 'Mensaje demasiado largo' }, 413);
+    const body = JSON.parse(crudo) as { messages?: ChatMessage[] };
     messages = (body.messages ?? [])
       .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
-      .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) }))
+      .map((m) => ({ role: m.role, content: redactarDatos(m.content.slice(0, 1000)) }))
       .slice(-6); // memoria corta a propósito: cada turno se re-recupera
   } catch {
     return json({ error: 'Cuerpo inválido' }, 400);

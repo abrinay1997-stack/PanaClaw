@@ -29,6 +29,11 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
+  # Política de contenido en MODO REPORTE (8-nov-2026): el navegador anota en su
+  # consola lo que bloquearía, pero no bloquea nada. Se pasa a `Content-Security-Policy`
+  # cuando una semana de visitas reales no muestre falsos positivos. `unsafe-inline`
+  # sigue porque Astro deja los guiones y estilos de cada página dentro del HTML.
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.facebook.com; font-src 'self' data:; connect-src 'self' https://www.facebook.com https://connect.facebook.net; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me; frame-ancestors 'self'
   Cache-Control: public, max-age=0, must-revalidate
 
 # Assets sueltos de public/ (favicons, imagen para redes, iconos). No llevan hash
