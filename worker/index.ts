@@ -19,6 +19,9 @@ import { atender } from './chat.ts';
 interface Env {
   /** Los archivos de `dist/`. */
   ASSETS: { fetch(peticion: Request): Promise<Response> };
+  /** Límites de Cloudflare (ver `wrangler.jsonc`). Opcionales: sin ellos queda el límite en memoria. */
+  CHAT_IP?: { limit(opciones: { key: string }): Promise<{ success: boolean }> };
+  CHAT_GLOBAL?: { limit(opciones: { key: string }): Promise<{ success: boolean }> };
 }
 
 const json = (datos: unknown, estado: number): Response =>
@@ -36,6 +39,20 @@ export default {
         // Cloudflare pone aquí la IP real de quien escribe. La cabecera no la
         // puede falsificar el visitante: Cloudflare la reescribe en el borde.
         ip: peticion.headers.get('cf-connecting-ip') || 'anon',
+        // Si algo falla al consultar el límite, se deja pasar: el límite en
+        // memoria y el techo diario siguen ahí, y un chat caído por su propio
+        // guardián es peor que uno con el límite flojo un momento.
+        excedeLimite: async (ip) => {
+          try {
+            const [porIp, global] = await Promise.all([
+              env.CHAT_IP?.limit({ key: ip }) ?? { success: true },
+              env.CHAT_GLOBAL?.limit({ key: 'sitio' }) ?? { success: true },
+            ]);
+            return !porIp.success || !global.success;
+          } catch {
+            return false;
+          }
+        },
         // `kb.json` es un archivo estático del propio sitio: se pide al binding
         // y no a la red, que sería salir a internet para llegar a casa.
         cargarKb: async (origen) => {

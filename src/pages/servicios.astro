@@ -63,7 +63,7 @@ import { routes } from '../data/links';
       */}
       <ul class="cat-list">
         {catalogo.map((item, i) => (
-          <Reveal as="li" class="tk-item" delay={(i % 2) * 0.08}>
+          <Reveal as="li" class="tk-item" delay={(i % 2) * 0.08} x={i % 2 === 0 ? -36 : 36}>
             <a class="tk" href={item.href} data-lado={i % 2 === 0 ? 'a' : 'b'}>
               <span class="tk-cuerpo">
                 <span class="tk-no" aria-hidden="true">Nº {String(i + 1).padStart(2, '0')}</span>

@@ -39,6 +39,8 @@ interface ChatMessage {
  */
 export interface Entorno {
   ip: string;
+  /** Límite de uso compartido (Cloudflare). `true` = demasiadas peticiones. */
+  excedeLimite?: (ip: string) => Promise<boolean>;
   /** Cómo obtener `kb.json`. Sin esto se descarga del propio origen. */
   cargarKb?: (origin: string) => Promise<Kb>;
 }
@@ -493,7 +495,7 @@ export async function atender(req: Request, entorno: Entorno): Promise<Response>
 
   if (!allowedOrigin(req)) return json({ error: 'Origen no permitido' }, 403);
 
-  if (rateLimited(entorno.ip)) {
+  if (rateLimited(entorno.ip) || (await entorno.excedeLimite?.(entorno.ip))) {
     return json({ reply: 'Vas muy rápido. Espera un momento y vuelve a preguntar.' }, 429);
   }
 
