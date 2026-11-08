@@ -191,14 +191,14 @@ const breadcrumbSchema = {
 
 <style>
   .post {
-    padding: 100px 0 120px;
+    padding: var(--e6) 0 var(--e6);
   }
   /* Un contenedor más estrecho que el resto del sitio: el texto largo se lee
      mejor en 720 px, no en 1280. Es la única página con esta anchura. */
   .container-post {
     max-width: 760px;
     margin: 0 auto;
-    padding: 0 24px;
+    padding: 0 var(--e3);
   }
 
   .post-crumbs {
@@ -207,7 +207,7 @@ const breadcrumbSchema = {
     gap: 8px;
     font-size: 13px;
     color: var(--studio-gray);
-    margin-bottom: 32px;
+    margin-bottom: var(--e3);
   }
   .post-crumbs a {
     color: var(--studio-gray);
@@ -221,21 +221,21 @@ const breadcrumbSchema = {
   }
 
   .post-head {
-    margin-bottom: 48px;
-    padding-bottom: 32px;
+    margin-bottom: var(--e4);
+    padding-bottom: var(--e3);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
   .post-meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: var(--e1);
+    margin-bottom: var(--e2);
     font-size: 13px;
     color: var(--studio-gray);
   }
   .post-cat {
-    padding: 4px 10px;
+    padding: 4px var(--e1);
     border: 1px solid rgba(255, 81, 0, 0.4);
     border-radius: 999px;
     font-size: 11px;
@@ -251,7 +251,7 @@ const breadcrumbSchema = {
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.15;
-    margin-bottom: 20px;
+    margin-bottom: var(--e2);
   }
   .post-lead {
     font-size: 19px;
@@ -271,17 +271,17 @@ const breadcrumbSchema = {
     font-size: 26px;
     font-weight: 600;
     letter-spacing: -0.01em;
-    margin: 48px 0 16px;
+    margin: var(--e4) 0 var(--e2);
     color: var(--soft-white);
   }
   .post-body :global(h3) {
     font-size: 20px;
     font-weight: 600;
-    margin: 32px 0 12px;
+    margin: var(--e3) 0 var(--e1);
     color: var(--soft-white);
   }
   .post-body :global(p) {
-    margin-bottom: 20px;
+    margin-bottom: var(--e2);
   }
   .post-body :global(strong) {
     color: var(--soft-white);
@@ -299,16 +299,16 @@ const breadcrumbSchema = {
   }
   .post-body :global(ul),
   .post-body :global(ol) {
-    margin: 20px 0 24px;
-    padding-left: 24px;
+    margin: var(--e2) 0 var(--e3);
+    padding-left: var(--e3);
   }
   .post-body :global(li) {
     margin-bottom: 8px;
   }
   .post-body :global(blockquote) {
     border-left: 3px solid var(--flash-orange);
-    padding: 4px 20px;
-    margin: 24px 0;
+    padding: 4px var(--e2);
+    margin: var(--e3) 0;
     font-style: italic;
     color: var(--studio-gray);
   }
@@ -324,7 +324,7 @@ const breadcrumbSchema = {
      tabla ancha rompa el layout en móvil, sin tocar el markdown de origen. */
   .post-body :global(table) {
     width: 100%;
-    margin: 8px 0 32px;
+    margin: 8px 0 var(--e3);
     border-collapse: collapse;
     font-size: 15px;
     display: block;
@@ -332,7 +332,7 @@ const breadcrumbSchema = {
   }
   .post-body :global(th),
   .post-body :global(td) {
-    padding: 12px 16px;
+    padding: var(--e1) var(--e2);
     text-align: left;
     vertical-align: top;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -351,8 +351,8 @@ const breadcrumbSchema = {
   }
 
   .post-cta {
-    margin-top: 64px;
-    padding: 40px 32px;
+    margin-top: var(--e5);
+    padding: var(--e4) var(--e3);
     border: 1px solid rgba(255, 81, 0, 0.3);
     border-radius: 20px;
     background: linear-gradient(180deg, rgba(255, 81, 0, 0.06), rgba(255, 81, 0, 0.02));
@@ -363,21 +363,21 @@ const breadcrumbSchema = {
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--flash-orange);
-    margin-bottom: 12px;
+    margin-bottom: var(--e1);
   }
   .post-cta-title {
     font-size: clamp(24px, 4vw, 32px);
     font-weight: 600;
     letter-spacing: -0.01em;
     line-height: 1.2;
-    margin-bottom: 12px;
+    margin-bottom: var(--e1);
   }
   .post-cta-title .ember {
     color: var(--flash-orange);
   }
   .post-cta-lead {
     max-width: 480px;
-    margin: 0 auto 24px;
+    margin: 0 auto var(--e3);
     font-size: 15px;
     color: var(--studio-gray);
     line-height: 1.55;
@@ -386,12 +386,12 @@ const breadcrumbSchema = {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: var(--e1);
   }
 
   .post-related {
-    margin-top: 64px;
-    padding-top: 40px;
+    margin-top: var(--e5);
+    padding-top: var(--e4);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
   .post-related-title {
@@ -399,17 +399,17 @@ const breadcrumbSchema = {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--studio-gray);
-    margin-bottom: 24px;
+    margin-bottom: var(--e3);
   }
   .post-related-list {
     list-style: none;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 16px;
+    gap: var(--e2);
   }
   .post-related-card {
     display: block;
-    padding: 24px;
+    padding: var(--e3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.02);
@@ -428,7 +428,7 @@ const breadcrumbSchema = {
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--flash-orange);
-    margin-bottom: 12px;
+    margin-bottom: var(--e1);
   }
   .post-related-card h3 {
     font-size: 17px;
@@ -440,7 +440,7 @@ const breadcrumbSchema = {
     font-size: 14px;
     color: var(--studio-gray);
     line-height: 1.5;
-    margin-bottom: 12px;
+    margin-bottom: var(--e1);
   }
   .post-related-arrow {
     color: var(--flash-orange);

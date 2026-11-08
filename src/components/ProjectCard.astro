@@ -160,7 +160,7 @@ const tags = [project.sector, project.year].filter(Boolean);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: var(--e3);
     text-align: center;
     font-size: clamp(17px, 2.2vw, 24px);
     font-weight: 600;
@@ -186,8 +186,8 @@ const tags = [project.sector, project.year].filter(Boolean);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
-    padding: 28px 26px 26px;
+    gap: var(--e2);
+    padding: var(--e3) var(--e3) var(--e3);
     flex: 1;
   }
   .proj-tags {
@@ -200,7 +200,7 @@ const tags = [project.sector, project.year].filter(Boolean);
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--flash-orange);
-    padding: 5px 11px;
+    padding: 5px var(--e1);
     border: 1px solid rgba(255, 81, 0, 0.35);
     border-radius: 999px;
   }
@@ -219,7 +219,7 @@ const tags = [project.sector, project.year].filter(Boolean);
 
   .proj-story {
     display: grid;
-    gap: 16px;
+    gap: var(--e2);
   }
   .proj-story dt {
     font-size: 12px;
@@ -237,13 +237,13 @@ const tags = [project.sector, project.year].filter(Boolean);
 
   .proj-metrics {
     width: 100%;
-    padding-top: 18px;
+    padding-top: var(--e2);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
   .proj-metrics ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 28px;
+    gap: var(--e3);
     list-style: none;
   }
   .proj-metric-v {
@@ -262,7 +262,7 @@ const tags = [project.sector, project.year].filter(Boolean);
     color: var(--studio-gray);
   }
   .proj-measured {
-    margin-top: 14px;
+    margin-top: var(--e2);
     font-size: 12px;
     color: var(--studio-gray);
     opacity: 0.75;
@@ -277,19 +277,19 @@ const tags = [project.sector, project.year].filter(Boolean);
   .proj-caps li {
     font-size: 12.5px;
     color: var(--studio-gray);
-    padding: 5px 11px;
+    padding: 5px var(--e1);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 999px;
   }
 
   .proj-actions {
     margin-top: auto;
-    padding-top: 14px;
+    padding-top: var(--e2);
     width: 100%;
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 18px;
+    gap: var(--e2);
     flex-wrap: wrap;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }

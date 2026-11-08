@@ -372,7 +372,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     display: flex;
     align-items: center;
     min-height: 88vh;
-    padding: 168px 0 110px;
+    padding: var(--e7) 0 var(--e6);
     overflow: hidden;
   }
   .ebot-hero .container {
@@ -407,7 +407,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     color: var(--studio-gray);
   }
   .ebot-lead {
-    margin-top: 26px;
+    margin-top: var(--e3);
     max-width: 56ch;
     font-size: 18px;
     font-weight: 300;
@@ -422,8 +422,8 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    gap: 8px 18px;
-    margin-top: 34px;
+    gap: 8px var(--e2);
+    margin-top: var(--e4);
   }
   .ebot-hero-amount {
     font-size: clamp(44px, 5.6vw, 68px);
@@ -439,18 +439,18 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   }
   .ebot-hero-actions {
     display: flex;
-    gap: 14px;
+    gap: var(--e2);
     flex-wrap: wrap;
-    margin-top: 34px;
+    margin-top: var(--e4);
   }
 
   /* ---------- CANALES ---------- */
   .ebot-canales {
-    padding-bottom: 100px;
+    padding-bottom: var(--e6);
   }
   .ebot-intro {
     max-width: 62ch;
-    margin-bottom: 44px;
+    margin-bottom: var(--e4);
     font-size: 17px;
     font-weight: 300;
     color: var(--studio-gray);
@@ -459,11 +459,11 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   .ebot-canal-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
+    gap: var(--e2);
   }
   .ebot-canal {
     height: 100%;
-    padding: 30px 26px;
+    padding: var(--e3) var(--e3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.02);
@@ -477,7 +477,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     font-size: 21px;
     font-weight: 600;
     letter-spacing: -0.01em;
-    margin-bottom: 12px;
+    margin-bottom: var(--e1);
   }
   .ebot-canal p {
     font-size: 15px;
@@ -488,8 +488,8 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   /* El trámite que no depende de nosotros se marca, no se esconde: quien lee
      rápido tiene que verlo sin leerlo entero. */
   .ebot-canal-nota {
-    margin-top: 14px;
-    padding-top: 14px;
+    margin-top: var(--e2);
+    padding-top: var(--e2);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     font-size: 13.5px;
   }
@@ -498,9 +498,9 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 14px 20px;
-    margin-bottom: 44px;
-    padding-bottom: 34px;
+    gap: var(--e2) var(--e2);
+    margin-bottom: var(--e4);
+    padding-bottom: var(--e4);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
   .ebot-index-label {
@@ -521,16 +521,16 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     scroll-margin-top: 110px;
   }
   .ebot-hace {
-    padding-top: 20px;
+    padding-top: var(--e2);
   }
   .ebot-hace-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 22px;
+    gap: var(--e3);
   }
   .ebot-cap {
     height: 100%;
-    padding: 32px 28px;
+    padding: var(--e3) var(--e3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.02);
@@ -547,7 +547,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     color: var(--flash-orange);
   }
   .ebot-cap h3 {
-    margin: 14px 0 12px;
+    margin: var(--e2) 0 var(--e1);
     font-size: 22px;
     font-weight: 600;
     letter-spacing: -0.01em;
@@ -564,11 +564,11 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   .ebot-panel-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 22px;
+    gap: var(--e3);
   }
   .ebot-panel-group {
     height: 100%;
-    padding: 30px 28px;
+    padding: var(--e3) var(--e3);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.03);
@@ -578,15 +578,15 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--flash-orange);
-    margin-bottom: 22px;
+    margin-bottom: var(--e3);
   }
   .ebot-panel-group ul {
     list-style: none;
     display: grid;
-    gap: 16px;
+    gap: var(--e2);
   }
   .ebot-panel-group li {
-    padding-bottom: 16px;
+    padding-bottom: var(--e2);
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   }
   .ebot-panel-group li:last-child {
@@ -611,9 +611,9 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   .ebot-precio-card {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 44px;
+    gap: var(--e4);
     align-items: center;
-    padding: 44px 46px;
+    padding: var(--e4) var(--e4);
     border-radius: 24px;
     background: linear-gradient(120deg, rgba(255, 81, 0, 0.16), rgba(238, 0, 0, 0.06));
     border: 1px solid rgba(255, 81, 0, 0.4);
@@ -623,7 +623,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     font-weight: 600;
     letter-spacing: -0.02em;
     line-height: 1.1;
-    margin-bottom: 14px;
+    margin-bottom: var(--e2);
   }
   .ebot-precio-desc {
     max-width: 58ch;
@@ -631,7 +631,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     font-weight: 300;
     color: var(--soft-white);
     line-height: 1.65;
-    margin-bottom: 22px;
+    margin-bottom: var(--e3);
   }
   .ebot-precio-tag {
     text-align: right;
@@ -645,7 +645,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   }
   .ebot-precio-k {
     display: block;
-    margin: 10px 0 22px;
+    margin: var(--e1) 0 var(--e3);
     font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -658,12 +658,12 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   .ebot-cross {
     list-style: none;
     display: grid;
-    gap: 10px;
+    gap: var(--e1);
   }
   .ebot-check li,
   .ebot-cross li {
     position: relative;
-    padding-left: 26px;
+    padding-left: var(--e3);
     font-size: 15.5px;
     font-weight: 300;
     line-height: 1.55;
@@ -691,22 +691,22 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   }
 
   .ebot-costos {
-    margin-top: 64px;
+    margin-top: var(--e5);
   }
   .ebot-sub {
     font-size: clamp(22px, 2.6vw, 30px);
     font-weight: 600;
     letter-spacing: -0.02em;
-    margin-bottom: 16px;
+    margin-bottom: var(--e2);
   }
   .ebot-costo-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
+    gap: var(--e2);
   }
   .ebot-costo {
     height: 100%;
-    padding: 30px 28px;
+    padding: var(--e3) var(--e3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.02);
@@ -720,7 +720,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   }
   .ebot-costo-v {
     display: block;
-    margin-top: 10px;
+    margin-top: var(--e1);
     font-size: clamp(30px, 3.4vw, 42px);
     font-weight: 700;
     letter-spacing: -0.03em;
@@ -728,14 +728,14 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   }
   .ebot-costo-a {
     display: block;
-    margin-top: 10px;
+    margin-top: var(--e1);
     font-size: 13px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--flash-orange);
   }
   .ebot-costo p {
-    margin-top: 16px;
+    margin-top: var(--e2);
     font-size: 15px;
     font-weight: 300;
     color: var(--studio-gray);
@@ -743,8 +743,8 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   }
 
   .ebot-no {
-    margin-top: 54px;
-    padding: 34px 36px;
+    margin-top: var(--e5);
+    padding: var(--e4) var(--e4);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 22px;
     background: rgba(255, 255, 255, 0.02);
@@ -753,12 +753,12 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   /* ---------- PROPIEDAD ---------- */
   .ebot-propiedad {
     border-top: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 100px 0;
+    padding: var(--e6) 0;
   }
   .ebot-propiedad-grid {
     display: grid;
     grid-template-columns: 0.9fr 1.1fr;
-    gap: 60px;
+    gap: var(--e5);
     align-items: start;
   }
   .ebot-propiedad-title {
@@ -773,7 +773,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   }
   .ebot-propiedad-facts {
     display: grid;
-    gap: 28px;
+    gap: var(--e3);
   }
   .ebot-propiedad-k {
     display: block;
@@ -781,7 +781,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--flash-orange);
-    margin-bottom: 10px;
+    margin-bottom: var(--e1);
   }
   .ebot-propiedad-fact p {
     max-width: 56ch;
@@ -806,8 +806,8 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
-    padding: 20px 0;
+    gap: var(--e3);
+    padding: var(--e2) 0;
     font-size: 17px;
     font-weight: 500;
     line-height: 1.4;
@@ -847,7 +847,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     transform: rotate(90deg);
   }
   .ebot-faq-item p {
-    padding: 0 0 24px;
+    padding: 0 0 var(--e3);
     max-width: 68ch;
     font-size: 16px;
     font-weight: 300;
@@ -855,7 +855,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     line-height: 1.75;
   }
   .ebot-faq-foot {
-    margin-top: 34px;
+    margin-top: var(--e4);
     font-size: 15px;
     font-weight: 300;
     color: var(--studio-gray);
@@ -884,15 +884,15 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
   @media (max-width: 900px) {
     .ebot-hero {
       min-height: 0;
-      padding: 150px 0 90px;
+      padding: var(--e7) 0 var(--e6);
     }
     .ebot-hero-copy {
       max-width: none;
     }
     .ebot-precio-card {
       grid-template-columns: 1fr;
-      gap: 26px;
-      padding: 32px 26px;
+      gap: var(--e3);
+      padding: var(--e3) var(--e3);
     }
     .ebot-precio-tag {
       text-align: left;
@@ -900,13 +900,13 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     .ebot-costo-grid,
     .ebot-propiedad-grid {
       grid-template-columns: 1fr;
-      gap: 26px;
+      gap: var(--e3);
     }
     .ebot-no {
-      padding: 28px 24px;
+      padding: var(--e3) var(--e3);
     }
     .ebot-propiedad {
-      padding: 80px 0;
+      padding: var(--e5) 0;
     }
   }
   /*
@@ -923,26 +923,26 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     .ebot-hace-grid,
     .ebot-panel-grid,
     .ebot-costo-grid {
-      gap: 12px;
+      gap: var(--e1);
     }
     .ebot-canal,
     .ebot-cap,
     .ebot-panel-group,
     .ebot-costo {
-      padding: 24px 22px;
+      padding: var(--e3) var(--e3);
     }
     .ebot-intro {
-      margin-bottom: 32px;
+      margin-bottom: var(--e3);
     }
     .ebot-index {
-      margin-bottom: 32px;
-      padding-bottom: 26px;
+      margin-bottom: var(--e3);
+      padding-bottom: var(--e3);
     }
     .ebot-costos {
-      margin-top: 44px;
+      margin-top: var(--e4);
     }
     .ebot-no {
-      margin-top: 38px;
+      margin-top: var(--e4);
     }
   }
 </style>

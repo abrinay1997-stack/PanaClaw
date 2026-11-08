@@ -5,6 +5,8 @@
   --studio-gray:#BABABA;
   --flash-orange:#FF5100;
   --ember-red:#FF1E1E;
+  /* Escala áurea (φ=1.618, base 16): única medida de espacio del sitio. Viene de Safetory. */
+  --e1:10px;--e2:16px;--e3:26px;--e4:42px;--e5:68px;--e6:110px;--e7:178px;--e8:288px;
   --font:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -29,7 +31,7 @@ a{color:inherit;text-decoration:none;}
 /* `width:100%` no es redundante: en cuanto una sección se vuelve flex o grid,
    .container pasa a ser un item y se encoge al ancho de su contenido, con lo que
    `margin:0 auto` lo centra y el texto deja de alinearse al carril izquierdo. */
-.container{width:100%;max-width:1280px;margin:0 auto;padding:0 40px;}
+.container{width:100%;max-width:1280px;margin:0 auto;padding:0 var(--e4);}
 
 /* Solo para lectores de pantalla: da nombre a una sección que visualmente no
    necesita titular, sin abrir un hueco en el diseño. */
@@ -49,7 +51,7 @@ a{color:inherit;text-decoration:none;}
   left:50%;
   z-index:200;
   transform:translate(-50%,-160%);
-  padding:12px 22px;
+  padding:var(--e1) var(--e3);
   border-radius:999px;
   background:var(--flash-orange);
   color:var(--deep-black);
@@ -232,7 +234,7 @@ a{color:inherit;text-decoration:none;}
   display:flex;flex-direction:column;justify-content:center;
   padding-top:100px;overflow:hidden;
 }
-.hero.hero-short{min-height:70vh;padding-top:120px;}
+.hero.hero-short{min-height:70vh;padding-top:var(--e6);}
 .hero::after{
   content:"";position:absolute;top:-10%;right:-10%;
   width:70vw;height:70vw;border-radius:50%;
@@ -247,7 +249,7 @@ a{color:inherit;text-decoration:none;}
    móvil de .container usa el shorthand `padding`. Con la misma especificidad
    ganaba por orden y dejaba el padding vertical en 0, metiendo el H1 debajo de
    .year/.handle. El selector extra lo blinda. */
-.hero .hero-inner{position:relative;z-index:2;padding-block:60px;}
+.hero .hero-inner{position:relative;z-index:2;padding-block:var(--e5);}
 .hero .year{
   position:absolute;top:24px;left:40px;font-size:14px;
   color:var(--studio-gray);letter-spacing:.1em;
@@ -264,14 +266,14 @@ a{color:inherit;text-decoration:none;}
 .hero.hero-short h1{font-size:clamp(40px,6vw,80px);}
 .hero h1 .muted{color:var(--studio-gray);}
 .hero p.lead{
-  margin-top:28px;max-width:52ch;
+  margin-top:var(--e3);max-width:52ch;
   font-size:18px;font-weight:300;color:var(--studio-gray);
 }
-.hero-actions{display:flex;gap:16px;margin-top:40px;flex-wrap:wrap;}
+.hero-actions{display:flex;gap:var(--e2);margin-top:var(--e4);flex-wrap:wrap;}
 
 .btn{
-  display:inline-flex;align-items:center;gap:12px;
-  padding:14px 26px;border-radius:40px;
+  display:inline-flex;align-items:center;gap:var(--e1);
+  padding:var(--e2) var(--e3);border-radius:40px;
   font-size:14px;font-weight:500;letter-spacing:.03em;
   cursor:pointer;border:none;transition:transform .2s,opacity .2s;
   font-family:inherit;
@@ -289,15 +291,15 @@ a{color:inherit;text-decoration:none;}
 .btn-ghost:hover{border-color:var(--flash-orange);color:var(--flash-orange);}
 
 /* ---------- SECTIONS ---------- */
-section{padding:120px 0;}
+section{padding:var(--e6) 0;}
 .eyebrow{
   font-size:14px;text-transform:uppercase;letter-spacing:.16em;
-  color:var(--flash-orange);margin-bottom:24px;display:block;
+  color:var(--flash-orange);margin-bottom:var(--e3);display:block;
 }
 h2.section-title{
   font-size:clamp(36px,5vw,64px);
   font-weight:600;line-height:1.02;letter-spacing:-.02em;
-  text-transform:uppercase;max-width:20ch;margin-bottom:60px;
+  text-transform:uppercase;max-width:20ch;margin-bottom:var(--e5);
 }
 h2.section-title .muted{color:var(--studio-gray);}
 
@@ -309,28 +311,28 @@ h2.section-title .muted{color:var(--studio-gray);}
   max-width:22ch;
 }
 .quote blockquote .muted{color:var(--studio-gray);}
-.quote .cite{margin-top:34px;font-size:15px;color:var(--studio-gray);}
+.quote .cite{margin-top:var(--e4);font-size:15px;color:var(--studio-gray);}
 
 /* ---------- SERVICES ---------- */
-.service-list{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+.service-list{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--e3);}
 .service-card{
   border:1px solid rgba(255,255,255,.1);border-radius:20px;
-  padding:36px 30px;background:rgba(255,255,255,.02);
+  padding:var(--e4) var(--e3);background:rgba(255,255,255,.02);
   transition:border-color .25s,background .25s;
 }
 .service-card:hover{border-color:var(--flash-orange);background:rgba(255,81,0,.06);}
 .service-card .idx{color:var(--flash-orange);font-size:14px;letter-spacing:.1em;}
-.service-card h3{font-size:24px;font-weight:600;margin:16px 0 12px;}
+.service-card h3{font-size:24px;font-weight:600;margin:var(--e2) 0 var(--e1);}
 .service-card p{color:var(--studio-gray);font-size:15px;font-weight:300;}
 
 /* ---------- PLANES ---------- */
 .plans-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:18px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:var(--e2);
 }
 .plan{
   display:flex;flex-direction:column;
   border:1px solid rgba(255,255,255,.1);border-radius:22px;
-  padding:32px 26px;background:rgba(255,255,255,.02);
+  padding:var(--e3) var(--e3);background:rgba(255,255,255,.02);
   transition:border-color .25s,transform .25s;
   position:relative;
 }
@@ -343,20 +345,20 @@ h2.section-title .muted{color:var(--studio-gray);}
   position:absolute;top:-12px;left:26px;
   background:var(--flash-orange);color:var(--deep-black);
   font-size:12px;font-weight:600;letter-spacing:.12em;
-  text-transform:uppercase;padding:5px 12px;border-radius:20px;
+  text-transform:uppercase;padding:5px var(--e1);border-radius:20px;
 }
 .plan .plan-name{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--studio-gray);}
 .plan .plan-name strong{color:var(--soft-white);font-weight:600;}
 .plan .price{
   font-size:44px;font-weight:600;letter-spacing:-.02em;
-  line-height:1;margin:14px 0 6px;
+  line-height:1;margin:var(--e2) 0 6px;
 }
 .plan .delivery{font-size:13px;color:var(--flash-orange);letter-spacing:.06em;text-transform:uppercase;}
-.plan .desc{font-size:14px;color:var(--studio-gray);font-weight:300;margin-top:18px;}
-.plan ul{list-style:none;margin-top:20px;flex:1;}
+.plan .desc{font-size:14px;color:var(--studio-gray);font-weight:300;margin-top:var(--e2);}
+.plan ul{list-style:none;margin-top:var(--e2);flex:1;}
 .plan ul li{
   font-size:14px;font-weight:300;color:var(--soft-white);
-  padding:8px 0 8px 22px;position:relative;
+  padding:8px 0 8px var(--e3);position:relative;
   border-top:1px solid rgba(255,255,255,.06);
 }
 .plan ul li:first-child{border-top:none;}
@@ -365,8 +367,8 @@ h2.section-title .muted{color:var(--studio-gray);}
   width:8px;height:8px;border-radius:50%;background:var(--flash-orange);
 }
 .plan .plan-cta{
-  margin-top:22px;text-align:center;
-  padding:12px 20px;border-radius:30px;
+  margin-top:var(--e3);text-align:center;
+  padding:var(--e1) var(--e2);border-radius:30px;
   border:1px solid rgba(255,255,255,.25);
   font-size:13px;font-weight:500;letter-spacing:.08em;
   text-transform:uppercase;transition:all .25s;
@@ -379,53 +381,53 @@ h2.section-title .muted{color:var(--studio-gray);}
    La tarjeta en sí vive en ModuleCard.astro con estilos propios. */
 .modules-intro{
   max-width:60ch;color:var(--studio-gray);font-size:17px;font-weight:300;
-  line-height:1.65;margin-top:-20px;margin-bottom:50px;
+  line-height:1.65;margin-top:-20px;margin-bottom:var(--e4);
 }
 .modules-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:var(--e2);
 }
 
 /* ---------- CARE ---------- */
 .care{background:rgba(255,255,255,.02);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);}
-.care-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.care-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--e2);}
 .care-card{
   border:1px solid rgba(255,255,255,.1);border-radius:22px;
-  padding:34px 30px;background:var(--deep-black);
+  padding:var(--e4) var(--e3);background:var(--deep-black);
   display:flex;flex-direction:column;
 }
 .care-card.featured{border-color:var(--flash-orange);}
 .care-card .care-name{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--studio-gray);}
-.care-card .care-price{font-size:40px;font-weight:600;letter-spacing:-.02em;margin:14px 0 4px;}
+.care-card .care-price{font-size:40px;font-weight:600;letter-spacing:-.02em;margin:var(--e2) 0 4px;}
 .care-card .care-price small{font-size:15px;color:var(--studio-gray);font-weight:400;letter-spacing:0;}
-.care-card ul{list-style:none;margin-top:22px;}
+.care-card ul{list-style:none;margin-top:var(--e3);}
 .care-card ul li{
   font-size:14px;font-weight:300;color:var(--soft-white);
-  padding:9px 0 9px 22px;position:relative;
+  padding:9px 0 9px var(--e3);position:relative;
 }
 .care-card ul li::before{
   content:"";position:absolute;left:0;top:14px;
   width:8px;height:8px;border-radius:50%;background:var(--flash-orange);
 }
 .care-note{
-  margin-top:34px;padding:22px 26px;border-radius:16px;
+  margin-top:var(--e4);padding:var(--e3) var(--e3);border-radius:16px;
   border:1px solid rgba(255,255,255,.1);
   color:var(--studio-gray);font-size:14px;font-weight:300;line-height:1.6;
 }
 .care-note strong{color:var(--soft-white);font-weight:500;}
 
 /* ---------- PROCESO ---------- */
-.proceso-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.proceso-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--e3);}
 
 /* ---------- FAQ ---------- */
 .faq details{
   border-top:1px solid rgba(255,255,255,.1);
-  padding:22px 0;
+  padding:var(--e3) 0;
 }
 .faq details:last-of-type{border-bottom:1px solid rgba(255,255,255,.1);}
 .faq summary{
   font-size:20px;font-weight:500;cursor:pointer;
   display:flex;justify-content:space-between;align-items:center;
-  list-style:none;gap:20px;
+  list-style:none;gap:var(--e2);
 }
 .faq summary::-webkit-details-marker{display:none;}
 .faq summary::after{
@@ -434,7 +436,7 @@ h2.section-title .muted{color:var(--studio-gray);}
 }
 .faq details[open] summary::after{content:"–";}
 .faq details p{
-  margin-top:16px;color:var(--studio-gray);font-size:16px;
+  margin-top:var(--e2);color:var(--studio-gray);font-size:16px;
   font-weight:300;line-height:1.6;max-width:70ch;
 }
 
@@ -454,8 +456,8 @@ h2.section-title .muted{color:var(--studio-gray);}
   text-transform:uppercase;letter-spacing:-.02em;line-height:.98;
   overflow-wrap:break-word;
 }
-.cta p{margin:24px auto 0;max-width:48ch;color:var(--studio-gray);font-weight:300;}
-.cta .btn{margin-top:40px;}
+.cta p{margin:var(--e3) auto 0;max-width:48ch;color:var(--studio-gray);font-weight:300;}
+.cta .btn{margin-top:var(--e4);}
 
 /* ---------- FOOTER ----------
    El footer vive entero en Footer.astro con estilos propios. */
@@ -466,14 +468,14 @@ h2.section-title .muted{color:var(--studio-gray);}
    formulario vive con estilos con scope en su propia página; aquí solo está
    lo que los dos comparten, para que un campo se vea igual en ambos.
    ============================================================ */
-.field{margin-bottom:22px;}
+.field{margin-bottom:var(--e3);}
 .field label{
   display:block;font-size:12px;font-weight:500;letter-spacing:.14em;
   text-transform:uppercase;color:var(--studio-gray);margin-bottom:8px;
 }
 .field label .req{color:var(--flash-orange);margin-left:4px;}
 .field input,.field select,.field textarea{
-  width:100%;padding:14px 16px;
+  width:100%;padding:var(--e2) var(--e2);
   background:rgba(255,255,255,.04);
   border:1px solid rgba(255,255,255,.12);
   border-radius:12px;
@@ -485,7 +487,7 @@ h2.section-title .muted{color:var(--studio-gray);}
   background-image:linear-gradient(45deg,transparent 50%,var(--flash-orange) 50%),
                    linear-gradient(135deg,var(--flash-orange) 50%,transparent 50%);
   background-position:calc(100% - 20px) 22px,calc(100% - 14px) 22px;
-  background-size:6px 6px,6px 6px;background-repeat:no-repeat;padding-right:44px;
+  background-size:6px 6px,6px 6px;background-repeat:no-repeat;padding-right:var(--e4);
 }
 .field select option{background:var(--deep-black);color:var(--soft-white);}
 .field textarea{resize:vertical;min-height:130px;}
@@ -499,15 +501,15 @@ h2.section-title .muted{color:var(--studio-gray);}
 /* ============================================================
    PÁGINAS LEGALES
    ============================================================ */
-.legal{padding-top:168px;padding-bottom:110px;}
-.legal-head{margin-bottom:56px;}
+.legal{padding-top:var(--e7);padding-bottom:var(--e6);}
+.legal-head{margin-bottom:var(--e5);}
 .legal-head h1{
   font-size:clamp(38px,5.4vw,68px);font-weight:600;line-height:1;
   letter-spacing:-.025em;text-transform:uppercase;max-width:18ch;
 }
 .legal-head h1 .muted{color:var(--studio-gray);}
 .legal-updated{
-  margin-top:20px;font-size:13px;letter-spacing:.14em;
+  margin-top:var(--e2);font-size:13px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--studio-gray);
 }
 /* Medida de lectura corta a propósito: es texto denso que nadie quiere leer,
@@ -515,20 +517,20 @@ h2.section-title .muted{color:var(--studio-gray);}
 .legal-body{max-width:70ch;}
 .legal-lead{
   font-size:19px;font-weight:300;color:var(--soft-white);
-  line-height:1.6;padding-bottom:36px;margin-bottom:8px;
+  line-height:1.6;padding-bottom:var(--e4);margin-bottom:8px;
   border-bottom:1px solid rgba(255,255,255,.1);
 }
 .legal-body h2{
   font-size:20px;font-weight:600;letter-spacing:-.01em;
-  color:var(--soft-white);margin:44px 0 14px;
+  color:var(--soft-white);margin:var(--e4) 0 var(--e2);
 }
 .legal-body p{
   font-size:16px;font-weight:300;color:var(--studio-gray);
-  line-height:1.75;margin-bottom:14px;
+  line-height:1.75;margin-bottom:var(--e2);
 }
-.legal-body ul{list-style:none;margin:6px 0 14px;display:grid;gap:12px;}
+.legal-body ul{list-style:none;margin:6px 0 var(--e2);display:grid;gap:var(--e1);}
 .legal-body li{
-  position:relative;padding-left:22px;
+  position:relative;padding-left:var(--e3);
   font-size:16px;font-weight:300;color:var(--studio-gray);line-height:1.7;
 }
 .legal-body li::before{
@@ -538,20 +540,20 @@ h2.section-title .muted{color:var(--studio-gray);}
 .legal-body strong{color:var(--soft-white);font-weight:600;}
 .legal-body a{color:var(--flash-orange);text-decoration:underline;text-underline-offset:3px;}
 .legal-note{
-  margin-top:52px;padding:24px 26px;border-radius:16px;
+  margin-top:var(--e4);padding:var(--e3) var(--e3);border-radius:16px;
   border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);
   font-size:15px;font-weight:300;line-height:1.65;color:var(--studio-gray);
 }
-.legal-back{margin-top:44px;}
+.legal-back{margin-top:var(--e4);}
 .legal-back a{color:var(--flash-orange);text-decoration:none;display:inline-block;padding:8px 0;}
-@media(max-width:900px){.legal{padding-top:140px;}}
+@media(max-width:900px){.legal{padding-top:var(--e7);}}
 
 /* ============================================================
    PÁGINA CORTA (gracias / 404)
    ============================================================ */
 .simple-page{
   min-height:100vh;display:flex;align-items:center;justify-content:center;
-  position:relative;overflow:hidden;text-align:center;padding:120px 20px;
+  position:relative;overflow:hidden;text-align:center;padding:var(--e6) var(--e2);
 }
 .simple-page::after{
   content:"";position:absolute;top:-20%;left:50%;transform:translateX(-50%);
@@ -565,17 +567,17 @@ h2.section-title .muted{color:var(--studio-gray);}
 .simple-inner{position:relative;z-index:2;max-width:600px;}
 .simple-inner .simple-tag{
   font-size:14px;text-transform:uppercase;letter-spacing:.2em;
-  color:var(--flash-orange);margin-bottom:20px;display:block;
+  color:var(--flash-orange);margin-bottom:var(--e2);display:block;
 }
 .simple-inner h1{
   font-size:clamp(44px,7vw,80px);font-weight:600;line-height:1;
-  letter-spacing:-.02em;text-transform:uppercase;margin-bottom:22px;
+  letter-spacing:-.02em;text-transform:uppercase;margin-bottom:var(--e3);
 }
 .simple-inner p{
   font-size:18px;font-weight:300;color:var(--studio-gray);
-  max-width:48ch;margin:0 auto 36px;
+  max-width:48ch;margin:0 auto var(--e4);
 }
-.simple-inner .simple-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.simple-inner .simple-actions{display:flex;gap:var(--e2);justify-content:center;flex-wrap:wrap;}
 
 /* ---------- REVEAL COMO ITEM DE GRID ----------
    <Reveal> mete un <div> entre la grid y la tarjeta, así que la tarjeta deja
@@ -657,8 +659,8 @@ h2.section-title .muted{color:var(--studio-gray);}
   .nav-toggle{display:flex;}
 }
 @media(max-width:640px){
-  .container{padding:0 22px;}
-  section{padding:80px 0;}
+  .container{padding:0 var(--e3);}
+  section{padding:var(--e5) 0;}
   .plans-grid{grid-template-columns:1fr;}
   .modules-grid{grid-template-columns:1fr;}
   /* En móvil el H1 crece varias líneas y las etiquetas absolutas terminan

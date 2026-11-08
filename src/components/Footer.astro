@@ -97,10 +97,10 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
 <style>
   .site-footer {
     position: relative;
-    margin-top: 40px;
+    margin-top: var(--e4);
     /* Espacio extra abajo: la burbuja del chat es fija en esta esquina y sin
        reserva tapaba los enlaces legales. */
-    padding: 0 0 92px;
+    padding: 0 0 var(--e6);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     background:
       radial-gradient(120% 100% at 50% 0%, rgba(255, 81, 0, 0.07), transparent 60%),
@@ -113,8 +113,8 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
   .foot-top {
     display: grid;
     grid-template-columns: 1fr 1.5fr;
-    gap: 70px;
-    padding: 88px 0 72px;
+    gap: var(--e5);
+    padding: var(--e6) 0 var(--e5);
   }
 
   .foot-brand .brand {
@@ -126,27 +126,27 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
     color: var(--soft-white);
   }
   .foot-tagline {
-    margin-top: 18px;
+    margin-top: var(--e2);
     font-size: 19px;
     font-weight: 500;
     color: var(--soft-white);
     letter-spacing: -0.01em;
   }
   .foot-pitch {
-    margin-top: 14px;
+    margin-top: var(--e2);
     max-width: 42ch;
     font-weight: 300;
     line-height: 1.65;
   }
   .foot-trust {
     list-style: none;
-    margin-top: 28px;
+    margin-top: var(--e3);
     display: grid;
-    gap: 10px;
+    gap: var(--e1);
   }
   .foot-trust li {
     position: relative;
-    padding-left: 22px;
+    padding-left: var(--e3);
     font-size: 14px;
     font-weight: 300;
     color: var(--soft-white);
@@ -165,7 +165,7 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
   .foot-nav {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 40px 30px;
+    gap: var(--e4) var(--e3);
   }
   .foot-col-title {
     font-size: 12px;
@@ -173,7 +173,7 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--soft-white);
-    margin-bottom: 20px;
+    margin-bottom: var(--e2);
   }
   .foot-col ul {
     list-style: none;
@@ -203,8 +203,8 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-top: 30px;
-    padding: 12px 20px;
+    margin-top: var(--e3);
+    padding: var(--e1) var(--e2);
     border: 1px solid rgba(255, 81, 0, 0.45);
     border-radius: 999px;
     font-size: 13px;
@@ -217,7 +217,7 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
   .foot-cta:hover {
     background: rgba(255, 81, 0, 0.1);
     border-color: var(--flash-orange);
-    gap: 13px;
+    gap: var(--e2);
   }
 
   /* ---------- INFERIOR ---------- */
@@ -225,9 +225,9 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 28px;
+    gap: var(--e3);
     flex-wrap: wrap;
-    padding-top: 30px;
+    padding-top: var(--e3);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
   .foot-copy {
@@ -275,7 +275,7 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
   .foot-legal {
     list-style: none;
     display: flex;
-    gap: 22px;
+    gap: var(--e3);
     order: 2;
   }
   .foot-legal a {
@@ -291,12 +291,12 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
   @media (max-width: 1024px) {
     .foot-top {
       grid-template-columns: 1fr;
-      gap: 54px;
-      padding: 70px 0 56px;
+      gap: var(--e5);
+      padding: var(--e5) 0 var(--e5);
     }
     .foot-nav {
       grid-template-columns: repeat(2, 1fr);
-      gap: 38px 24px;
+      gap: var(--e4) var(--e3);
     }
   }
   @media (max-width: 560px) {
@@ -314,10 +314,10 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
     */
     .foot-nav {
       grid-template-columns: repeat(2, 1fr);
-      gap: 24px 18px;
+      gap: var(--e3) var(--e2);
     }
     .foot-col-title {
-      margin-bottom: 12px;
+      margin-bottom: var(--e1);
     }
     /*
       Enlaces más juntos en teléfono. La columna de Servicios llegó a siete
@@ -350,19 +350,19 @@ import { footerColumns, socials, footerTrust } from '../data/footer';
 
     /* Los respiros de escritorio, a escala de teléfono. */
     .foot-top {
-      gap: 40px;
-      padding: 52px 0 40px;
+      gap: var(--e4);
+      padding: var(--e4) 0 var(--e4);
     }
     .foot-trust {
-      margin-top: 20px;
+      margin-top: var(--e2);
     }
     .foot-cta {
-      margin-top: 22px;
+      margin-top: var(--e3);
     }
     .foot-bottom {
       flex-direction: column;
       align-items: flex-start;
-      gap: 22px;
+      gap: var(--e3);
     }
     .foot-social {
       order: 0;

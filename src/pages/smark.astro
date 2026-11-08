@@ -185,9 +185,9 @@ const destinos = [
     display: flex;
     align-items: center;
     justify-content: center;
-    /* La regla global `section{padding:120px 0}` aquí sobra: el centrado ya da
+    /* La regla global `section{padding:var(--e6) 0}` aquí sobra: el centrado ya da
        el aire, y con ella la tarjeta se salía de pantalla en móviles bajos. */
-    padding: 40px 22px;
+    padding: var(--e4) var(--e3);
     overflow: hidden;
   }
 
@@ -242,7 +242,7 @@ const destinos = [
     z-index: 1;
     width: 100%;
     max-width: 440px;
-    padding: 30px 26px 22px;
+    padding: var(--e3) var(--e3) var(--e3);
     /* Vidrio sobre la escena: el fondo se sigue viendo, pero el texto tiene su
        propio contraste y no depende del recorte de la imagen. El `blur` es
        progresivo — sin soporte, queda el color sólido, que ya es legible. */
@@ -258,7 +258,7 @@ const destinos = [
 
   .smark-head {
     text-align: center;
-    margin-bottom: 26px;
+    margin-bottom: var(--e3);
   }
 
   /* El logo del favicon, como avatar. En un enlace de bio la marca se reconoce
@@ -270,7 +270,7 @@ const destinos = [
     justify-content: center;
     width: 58px;
     height: 58px;
-    margin-bottom: 16px;
+    margin-bottom: var(--e2);
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 18px;
     background: rgba(16, 1, 1, 0.7);
@@ -294,7 +294,7 @@ const destinos = [
     color: var(--flash-orange);
   }
   .smark-tagline {
-    margin-top: 12px;
+    margin-top: var(--e1);
     font-size: 17px;
     font-weight: 300;
     color: var(--soft-white);
@@ -308,7 +308,7 @@ const destinos = [
     flex-wrap: wrap;
     justify-content: center;
     gap: 6px;
-    margin-top: 16px;
+    margin-top: var(--e2);
   }
   .smark-creds li {
     /* Medidas apretadas a propósito: los tres caben en una fila a partir de
@@ -328,13 +328,13 @@ const destinos = [
 
   .smark-links {
     display: grid;
-    gap: 10px;
+    gap: var(--e1);
   }
   .smark-link {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 16px 20px;
+    gap: var(--e2);
+    padding: var(--e2) var(--e2);
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 18px;
     background: rgba(255, 255, 255, 0.03);
@@ -381,7 +381,7 @@ const destinos = [
   .smark-link.primary {
     background: var(--flash-orange);
     border-color: var(--flash-orange);
-    padding: 18px 20px;
+    padding: var(--e2) var(--e2);
   }
   .smark-link.primary .smark-link-label {
     color: var(--deep-black);
@@ -409,7 +409,7 @@ const destinos = [
     display: flex;
     justify-content: center;
     gap: 8px;
-    margin-top: 22px;
+    margin-top: var(--e3);
   }
   .smark-social a {
     display: flex;
@@ -432,14 +432,14 @@ const destinos = [
   }
 
   .smark-foot {
-    margin-top: 18px;
+    margin-top: var(--e2);
     text-align: center;
   }
   .smark-foot a {
     display: inline-block;
     /* 12px de texto se quedan en 15px de alto: el padding lo sube por encima
        de los 24px que pide WCAG 2.5.8. */
-    padding: 8px 12px;
+    padding: 8px var(--e1);
     font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -476,21 +476,21 @@ const destinos = [
      relleno antes que el texto. */
   @media (max-width: 360px) {
     .smark {
-      padding: 32px 14px;
+      padding: var(--e3) var(--e2);
     }
     .smark-card {
-      padding: 24px 18px 18px;
+      padding: var(--e3) var(--e2) var(--e2);
       border-radius: 24px;
     }
     .smark-link {
-      gap: 10px;
-      padding: 14px 16px;
+      gap: var(--e1);
+      padding: var(--e2) var(--e2);
     }
     .smark-link-label {
       font-size: 15px;
     }
     .smark-link.primary {
-      padding: 16px 16px;
+      padding: var(--e2) var(--e2);
     }
     .smark-link.primary .smark-link-label {
       font-size: 16px;

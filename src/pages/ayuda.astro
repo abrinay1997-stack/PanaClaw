@@ -95,11 +95,11 @@ const faqSchema = {
 
 <style>
   .ayuda {
-    padding-top: 168px;
-    padding-bottom: 110px;
+    padding-top: var(--e7);
+    padding-bottom: var(--e6);
   }
   .ayuda-head {
-    margin-bottom: 40px;
+    margin-bottom: var(--e4);
   }
   .ayuda-head h1 {
     font-size: clamp(38px, 5.6vw, 72px);
@@ -113,7 +113,7 @@ const faqSchema = {
     color: var(--studio-gray);
   }
   .ayuda-lead {
-    margin-top: 24px;
+    margin-top: var(--e3);
     max-width: 58ch;
     font-size: 18px;
     font-weight: 300;
@@ -124,15 +124,15 @@ const faqSchema = {
   /* Las píldoras las pone <SectionNav>; aquí solo el aire que la separa del
      primer grupo. */
   .ayuda-index {
-    padding-bottom: 54px;
+    padding-bottom: var(--e5);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .ayuda-group {
     display: grid;
     grid-template-columns: 0.75fr 1.25fr;
-    gap: 60px;
-    padding: 64px 0;
+    gap: var(--e5);
+    padding: var(--e5) 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     /* El nav flotante no puede tapar el titular al saltar por ancla */
     scroll-margin-top: 110px;
@@ -142,7 +142,7 @@ const faqSchema = {
     font-weight: 600;
     letter-spacing: -0.02em;
     line-height: 1.05;
-    margin-bottom: 14px;
+    margin-bottom: var(--e2);
   }
   .ayuda-group-head p {
     font-size: 15px;
@@ -163,8 +163,8 @@ const faqSchema = {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
-    padding: 20px 0;
+    gap: var(--e3);
+    padding: var(--e2) 0;
     font-size: 17px;
     font-weight: 500;
     line-height: 1.4;
@@ -206,7 +206,7 @@ const faqSchema = {
     transform: rotate(90deg);
   }
   .ayuda-item p {
-    padding: 0 0 24px;
+    padding: 0 0 var(--e3);
     max-width: 68ch;
     font-size: 16px;
     font-weight: 300;
@@ -218,10 +218,10 @@ const faqSchema = {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 40px;
+    gap: var(--e4);
     flex-wrap: wrap;
-    margin-top: 64px;
-    padding: 44px 46px;
+    margin-top: var(--e5);
+    padding: var(--e4) var(--e4);
     border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(255, 255, 255, 0.03);
@@ -230,7 +230,7 @@ const faqSchema = {
     font-size: clamp(24px, 3vw, 34px);
     font-weight: 600;
     letter-spacing: -0.02em;
-    margin-bottom: 12px;
+    margin-bottom: var(--e1);
   }
   .ayuda-more p {
     max-width: 52ch;
@@ -241,24 +241,24 @@ const faqSchema = {
   }
   .ayuda-more-actions {
     display: flex;
-    gap: 12px;
+    gap: var(--e1);
     flex-wrap: wrap;
   }
 
   @media (max-width: 900px) {
     .ayuda {
-      padding-top: 140px;
+      padding-top: var(--e7);
     }
     .ayuda-group {
       grid-template-columns: 1fr;
-      gap: 26px;
-      padding: 48px 0;
+      gap: var(--e3);
+      padding: var(--e4) 0;
     }
     .ayuda-group-head p {
       max-width: none;
     }
     .ayuda-more {
-      padding: 32px 26px;
+      padding: var(--e3) var(--e3);
     }
   }
 </style>

@@ -40,12 +40,12 @@ const { items, label } = Astro.props;
   .section-nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: var(--e1);
   }
   .section-nav a {
     /* 10px arriba y abajo sobre 13px de texto deja el objetivo por encima de
        los 24px que pide WCAG 2.5.8. Si se toca el tamaño, hay que recomprobarlo. */
-    padding: 10px 18px;
+    padding: var(--e1) var(--e2);
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 999px;
     font-size: 13px;
