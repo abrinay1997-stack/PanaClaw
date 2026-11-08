@@ -709,13 +709,13 @@ h2.section-title .muted{color:var(--studio-gray);}
    alto que la pantalla, la sección simplemente crece. */
 :is(.proceso-band,.proceso-scene,.manifest-scene,.who-scene,.cta,.proyectos-cta,
     .care-lead,.diag,.seg-porque,.seg-planes,.seg-tabla,.seg-como,.seg-alcance,.seg-faq,
-    .ebot-canales,.ebot-hace,.ebot-panel,.ebot-precio,.ebot-propiedad,.ebot-faq){
+    .ebot-canales,.ebot-hace,.ebot-panel,.ebot-precio,.ebot-cierre){
   min-height:100svh;
   display:flex;flex-direction:column;justify-content:center;
 }
 :is(.proceso-band,.proceso-scene,.manifest-scene,.who-scene,.cta,.proyectos-cta,
     .care-lead,.diag,.seg-porque,.seg-planes,.seg-tabla,.seg-como,.seg-alcance,.seg-faq,
-    .ebot-canales,.ebot-hace,.ebot-panel,.ebot-precio,.ebot-propiedad,.ebot-faq) > .container{
+    .ebot-canales,.ebot-hace,.ebot-panel,.ebot-precio,.ebot-cierre) > .container{
   width:100%;
 }
 

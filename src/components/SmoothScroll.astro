@@ -40,9 +40,97 @@
       rafId = requestAnimationFrame(raf);
     }
     rafId = requestAnimationFrame(raf);
+    armarIman();
   }
 
+  /**
+   * IMÁN POR SECCIÓN. Al terminar de desplazarse (la rueda se detuvo o se soltó el dedo), la
+   * pantalla se asienta sola en la sección más cercana, como Safetory.
+   *  - Sección que cabe en la pantalla: se alinea su borde de arriba.
+   *  - Sección más alta que la pantalla: se ancla solo cerca de su borde de arriba o de abajo,
+   *    para que se pueda leer por dentro sin que el imán te devuelva.
+   *  - Las franjas bajas (menos de 60 % de la pantalla) no son destino: son puentes.
+   *  - Una página que contenga `data-sin-iman` no lo usa (Ayuda y el cotizador son para
+   *    consultar y trabajar, no para recorrer).
+   *  - Sin Lenis (con «reducir movimiento») tampoco hay imán.
+   */
+  let tocando = false;
+  let temporizador: number | undefined;
+  let asentando = false;
+
+  let direccion = 1;
+
+  function destinoDelIman(): number | null {
+    if (document.querySelector('[data-sin-iman]')) return null;
+    if (document.documentElement.classList.contains('chat-bloqueo')) return null;
+    const vh = window.innerHeight;
+    const y = window.scrollY;
+    const posiciones: number[] = [];
+    let zonaLibre = false;
+    document.querySelectorAll<HTMLElement>('main section').forEach((sec) => {
+      const r = sec.getBoundingClientRect();
+      if (r.height < vh * 0.6 || sec.offsetParent === null) return;
+      const arriba = y + r.top;
+      posiciones.push(arriba);
+      if (r.height > vh * 1.12) {
+        // Sección alta: se ancla arriba y abajo, y en medio se lee sin imán.
+        const abajo = y + r.bottom - vh;
+        posiciones.push(abajo);
+        if (y > arriba + vh * 0.3 && y < abajo - vh * 0.3) zonaLibre = true;
+      }
+    });
+    if (zonaLibre || posiciones.length === 0) return null;
+    posiciones.sort((m, n) => m - n);
+    const antes = [...posiciones].reverse().find((p) => p <= y + 2);
+    const despues = posiciones.find((p) => p > y + 2);
+    const umbral = vh * 0.12; // menos que esto es un roce: vuelve; más, avanza
+    let destino: number | undefined;
+    if (direccion >= 0) {
+      destino = antes !== undefined && y - antes < umbral ? antes : despues ?? undefined;
+    } else {
+      destino = despues !== undefined && despues - y < umbral ? despues : antes ?? undefined;
+    }
+    if (destino === undefined || Math.abs(destino - y) < 2) return null;
+    // No arrastra más de dos pantallas: el imán asienta, no teletransporta.
+    if (Math.abs(destino - y) > vh * 1.6) return null;
+    return Math.max(0, Math.round(destino));
+  }
+
+  function alReposar() {
+    if (!lenis || tocando || asentando) return;
+    const destino = destinoDelIman();
+    if (destino === null) return;
+    asentando = true;
+    lenis.scrollTo(destino, {
+      duration: 0.85,
+      easing: (t: number) => 1 - Math.pow(1 - t, 3),
+      lock: false,
+      onComplete: () => { asentando = false; },
+    });
+    // Seguro por si la animación se interrumpe y nunca llama a onComplete.
+    window.setTimeout(() => { asentando = false; }, 1200);
+  }
+
+  function armarIman() {
+    window.clearTimeout(temporizador);
+    lenis?.on('scroll', (e: { direction?: number }) => {
+      if (asentando) return;
+      if (e.direction) direccion = e.direction;
+      window.clearTimeout(temporizador);
+      temporizador = window.setTimeout(alReposar, 140);
+    });
+  }
+
+  window.addEventListener('touchstart', () => { tocando = true; }, { passive: true });
+  window.addEventListener('touchend', () => {
+    tocando = false;
+    window.clearTimeout(temporizador);
+    temporizador = window.setTimeout(alReposar, 220);
+  }, { passive: true });
+
   function destroyLenis() {
+    window.clearTimeout(temporizador);
+    asentando = false;
     if (rafId !== null) cancelAnimationFrame(rafId);
     lenis?.destroy();
     lenis = null;

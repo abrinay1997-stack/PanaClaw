@@ -232,38 +232,6 @@ const celda = (valor: boolean | string) =>
         son lo que se pregunta MIRANDO los precios, y contestarlos cuatro
         pantallas más abajo es contestarlos después de decidir.
       -->
-      <Reveal>
-        <div class="seg-limites">
-          <div class="seg-limite">
-            <span class="seg-limite-k">¿Por qué un rango y no un precio?</span>
-            <p>{porQueRango}</p>
-          </div>
-          <div class="seg-limite">
-            <span class="seg-limite-k">Esto no es mantenimiento</span>
-            <p>
-              {seguridad.fronteras.care} De eso se ocupa
-              <a href={`${routes.servicios}#care`}>Care</a>, y son cosas distintas: puedes tener
-              una sin la otra.
-            </p>
-          </div>
-          <div class="seg-limite">
-            <span class="seg-limite-k">Esto no es el Diagnóstico de Ventas</span>
-            <p>
-              {seguridad.fronteras.diagnostico} El
-              <a href={`${routes.servicios}#diagnostico`}>{diagnostico.name}</a> cuesta
-              {' '}{diagnostico.price} y mira otra cosa.
-            </p>
-          </div>
-        </div>
-      </Reveal>
-
-      <Reveal>
-        <p class="seg-nota">
-          ¿Tu sitio lo hicimos nosotros? Media lista de aquí no te hace falta —no llevamos
-          complementos que actualizar ni panel público por el que entrar— y te lo vamos a decir
-          antes de cobrarte.
-        </p>
-      </Reveal>
     </div>
   </section>
 
@@ -338,8 +306,12 @@ const celda = (valor: boolean | string) =>
   </section>
 
   <!-- QUÉ SÍ Y QUÉ NO -->
-  <section class="seg-alcance">
+  <section class="seg-alcance" id="alcance">
     <div class="container">
+      <Reveal>
+        <span class="eyebrow">Alcance</span>
+        <h2 class="section-title">Qué entra, qué no, <span class="muted">y dónde termina.</span></h2>
+      </Reveal>
       <div class="seg-alcance-grid">
         <Reveal>
           <div>
@@ -358,6 +330,39 @@ const celda = (valor: boolean | string) =>
           </div>
         </Reveal>
       </div>
+
+      <Reveal>
+        <div class="seg-limites">
+          <div class="seg-limite">
+            <span class="seg-limite-k">¿Por qué un rango y no un precio?</span>
+            <p>{porQueRango}</p>
+          </div>
+          <div class="seg-limite">
+            <span class="seg-limite-k">Esto no es mantenimiento</span>
+            <p>
+              {seguridad.fronteras.care} De eso se ocupa
+              <a href={`${routes.servicios}#care`}>Care</a>, y son cosas distintas: puedes tener
+              una sin la otra.
+            </p>
+          </div>
+          <div class="seg-limite">
+            <span class="seg-limite-k">Esto no es el Diagnóstico de Ventas</span>
+            <p>
+              {seguridad.fronteras.diagnostico} El
+              <a href={`${routes.servicios}#diagnostico`}>{diagnostico.name}</a> cuesta
+              {' '}{diagnostico.price} y mira otra cosa.
+            </p>
+          </div>
+        </div>
+      </Reveal>
+
+      <Reveal>
+        <p class="seg-nota">
+          ¿Tu sitio lo hicimos nosotros? Media lista de aquí no te hace falta —no llevamos
+          complementos que actualizar ni panel público por el que entrar— y te lo vamos a decir
+          antes de cobrarte.
+        </p>
+      </Reveal>
     </div>
   </section>
 
@@ -925,4 +930,33 @@ const celda = (valor: boolean | string) =>
       min-width: 190px;
     }
   }
+
+  /* ---------- UNA PANTALLA POR SECCIÓN ---------- */
+  .seg-porque, .seg-planes, .seg-tabla, .seg-como, .seg-alcance, .seg-faq { padding-top: 84px; padding-bottom: var(--e3); }
+  .seg-planes :global(h2.section-title), .seg-tabla :global(h2.section-title), .seg-alcance :global(h2.section-title),
+  .seg-faq :global(h2.section-title), .seg-como :global(h2.section-title), .seg-porque :global(h2.section-title) {
+    font-size: clamp(26px, 3vw, 42px); max-width: none; margin-bottom: var(--e1);
+  }
+  .seg-planes :global(.seg-intro), .seg-porque :global(.seg-intro) { font-size: 16px; line-height: 1.55; max-width: 92ch; margin-bottom: var(--e2); }
+  .seg-grid { gap: var(--e2); }
+  .seg-planes :global(.plan-card) { padding: var(--e2) var(--e3); }
+  .seg-planes :global(.plan-card .desc) { font-size: 14px; line-height: 1.5; }
+  .seg-planes :global(.plan-card li) { padding-top: 2px; padding-bottom: 2px; font-size: 13px; line-height: 1.35; }
+  .seg-planes :global(.plan-card .price) { font-size: 36px; }
+  .seg-planes { padding-top: 78px; padding-bottom: var(--e2); }
+  .seg-requisito { font-size: 12.5px; margin-top: 6px; }
+  .seg-table :global(th), .seg-table :global(td) { padding: 7px 12px; font-size: 13.5px; line-height: 1.35; }
+  .seg-th-price { font-size: 15px; }
+  .seg-alcance-grid { gap: var(--e3); margin-top: var(--e2); }
+  .seg-alcance :global(.seg-check li), .seg-alcance :global(.seg-cross li) { padding-top: 4px; padding-bottom: 4px; font-size: 14px; }
+  .seg-limites { margin-top: var(--e3); gap: var(--e2); }
+  .seg-limite { padding: var(--e2); }
+  .seg-limite p { font-size: 13.5px; line-height: 1.5; }
+  .seg-nota { margin-top: var(--e2); font-size: 14px; }
+  /* Preguntas y cierre en la misma pantalla: preguntas a la izquierda, la llamada a la derecha. */
+  .seg-faq .container { display: grid; grid-template-columns: 1.4fr 0.8fr; column-gap: var(--e5); align-items: start; }
+  .seg-faq .container > :global(*) { grid-column: 1; }
+  .seg-faq .container > :global(.seg-cierre-wrap), .seg-faq .container > :global(*:has(.seg-cierre)) { grid-column: 2; grid-row: 1 / span 4; position: sticky; top: 100px; }
+  .seg-faq-item summary { padding-top: 12px; padding-bottom: 12px; font-size: 15.5px; }
+  @media (max-width: 1000px) { .seg-faq .container { grid-template-columns: 1fr; } .seg-faq .container > :global(*:has(.seg-cierre)) { grid-column: 1; grid-row: auto; position: static; } }
 </style>

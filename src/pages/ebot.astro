@@ -307,48 +307,49 @@ const mensajes: Record<string, [string, string]> = {
         <h2 class="section-title">{ebot.price} una vez. <span class="muted">Y dos cuentas que no nos pagas a nosotros.</span></h2>
       </Reveal>
 
-      <Reveal>
-        <div class="ebot-precio-card">
-          <div class="ebot-precio-copy">
-            <h3>Lo que nos pagas a nosotros</h3>
-            <p class="ebot-precio-desc">
-              Una sola vez, por montarlo y dejarlo funcionando en tu cuenta. No hay cuota de
-              plataforma, ni límite de mensajes, ni un precio que suba el año que viene.
-            </p>
-            <ul class="ebot-check">
-              {ebotIncluye.map((item) => <li>{item}</li>)}
-            </ul>
-          </div>
-          <div class="ebot-precio-tag">
-            <span class="ebot-precio-v">{ebot.price}</span>
-            <span class="ebot-precio-k">{ebot.priceKicker}</span>
-            <a class="btn btn-primary" href={ebotContactHref}>
-              <span class="dot"></span> Pedir {ebot.name}
-            </a>
-          </div>
-        </div>
-      </Reveal>
-
-      <div class="ebot-costos">
+      <div class="ebot-precio-grid">
         <Reveal>
-          <h3 class="ebot-sub">Lo que pagas por tu cuenta, cada mes</h3>
-          <p class="ebot-intro">
-            Estas dos no pasan por nosotros: las contratas tú, a tu nombre, y son las que hacen
-            que el agente sea tuyo de verdad. Son aproximadas y para un negocio normal; el panel te
-            enseña el gasto al día para que nunca sea una sorpresa.
-          </p>
+          <div class="ebot-precio-card">
+            <div class="ebot-precio-copy">
+              <h3>Lo que nos pagas a nosotros</h3>
+              <p class="ebot-precio-desc">
+                Una sola vez, por montarlo y dejarlo funcionando en tu cuenta. No hay cuota de
+                plataforma, ni límite de mensajes, ni un precio que suba el año que viene.
+              </p>
+              <ul class="ebot-check">
+                {ebotIncluye.map((item) => <li>{item}</li>)}
+              </ul>
+            </div>
+            <div class="ebot-precio-tag">
+              <span class="ebot-precio-v">{ebot.price}</span>
+              <span class="ebot-precio-k">{ebot.priceKicker}</span>
+              <a class="btn btn-primary" href={ebotContactHref}>
+                <span class="dot"></span> Pedir {ebot.name}
+              </a>
+            </div>
+          </div>
         </Reveal>
-        <div class="ebot-costo-grid">
-          {ebotCostos.map((costo) => (
-            <Reveal>
-              <div class="ebot-costo">
-                <span class="ebot-costo-k">{costo.concepto}</span>
-                <span class="ebot-costo-v">{costo.price}</span>
-                <span class="ebot-costo-a">{costo.aQuien}</span>
-                <p>{costo.desc}</p>
-              </div>
-            </Reveal>
-          ))}
+
+        <div class="ebot-costos">
+          <Reveal>
+            <h3 class="ebot-sub">Lo que pagas por tu cuenta, cada mes</h3>
+            <p class="ebot-costos-intro">
+              Estas dos no pasan por nosotros: las contratas tú, a tu nombre. Son aproximadas y para
+              un negocio normal; el panel te enseña el gasto al día.
+            </p>
+          </Reveal>
+          <div class="ebot-costo-grid">
+            {ebotCostos.map((costo) => (
+              <Reveal>
+                <div class="ebot-costo">
+                  <span class="ebot-costo-k">{costo.concepto}</span>
+                  <span class="ebot-costo-v">{costo.price}</span>
+                  <span class="ebot-costo-a">{costo.aQuien}</span>
+                  <p>{costo.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -364,54 +365,52 @@ const mensajes: Record<string, [string, string]> = {
   </section>
 
   <!-- PROPIEDAD -->
-  <section class="ebot-propiedad">
+  <!-- ES TUYO + PREGUNTAS: una sola pantalla -->
+  <section class="ebot-cierre" id="preguntas">
     <div class="container">
-      <div class="ebot-propiedad-grid">
-        <Reveal>
-          <h2 class="ebot-propiedad-title">Es tuyo. <span class="muted">Igual que el código de tu sitio.</span></h2>
-        </Reveal>
-        <div class="ebot-propiedad-facts">
-          {ebotPropiedad.map((hecho, i) => (
-            <Reveal delay={0.1 + i * 0.08}>
-              <div class="ebot-propiedad-fact">
-                <span class="ebot-propiedad-k">{hecho.k}</span>
-                <p>{hecho.desc}</p>
-              </div>
-            </Reveal>
-          ))}
+      <div class="ebot-cierre-grid">
+        <div class="ebot-cierre-izq">
+          <Reveal>
+            <h2 class="ebot-propiedad-title">Es tuyo. <span class="muted">Igual que el código de tu sitio.</span></h2>
+          </Reveal>
+          <div class="ebot-propiedad-facts">
+            {ebotPropiedad.map((hecho, i) => (
+              <Reveal delay={0.1 + i * 0.08}>
+                <div class="ebot-propiedad-fact">
+                  <span class="ebot-propiedad-k">{hecho.k}</span>
+                  <p>{hecho.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+
+        <div class="ebot-cierre-der">
+          <Reveal>
+            <span class="eyebrow">Preguntas</span>
+            <h2 class="ebot-cierre-titulo">Lo que se pregunta <span class="muted">antes de decir que sí.</span></h2>
+          </Reveal>
+          <div class="ebot-faq-items">
+            {ebotFaq.map((item) => (
+              <Reveal>
+                <details class="ebot-faq-item">
+                  <summary>
+                    <span>{item.q}</span>
+                    <span class="ebot-mark" aria-hidden="true"></span>
+                  </summary>
+                  <p>{item.a}</p>
+                </details>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal>
+            <p class="ebot-faq-foot">
+              ¿Otra duda? Está el <a href={routes.ayuda}>centro de ayuda</a>, y si tampoco está ahí,
+              contesta la misma persona que montaría tu agente.
+            </p>
+          </Reveal>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- PREGUNTAS -->
-  <section class="ebot-faq" id="preguntas">
-    <div class="container">
-      <Reveal>
-        <span class="eyebrow">Preguntas</span>
-        <h2 class="section-title">Lo que se pregunta <span class="muted">antes de decir que sí.</span></h2>
-      </Reveal>
-
-      <div class="ebot-faq-items">
-        {ebotFaq.map((item) => (
-          <Reveal>
-            <details class="ebot-faq-item">
-              <summary>
-                <span>{item.q}</span>
-                <span class="ebot-mark" aria-hidden="true"></span>
-              </summary>
-              <p>{item.a}</p>
-            </details>
-          </Reveal>
-        ))}
-      </div>
-
-      <Reveal>
-        <p class="ebot-faq-foot">
-          ¿Otra duda? Está el <a href={routes.ayuda}>centro de ayuda</a>, y si tampoco está ahí,
-          contesta la misma persona que montaría tu agente.
-        </p>
-      </Reveal>
     </div>
   </section>
 </BaseLayout>
@@ -1145,6 +1144,68 @@ const mensajes: Record<string, [string, string]> = {
       margin-top: var(--e4);
     }
   }
+
+  /* ---------- ES TUYO + PREGUNTAS ---------- */
+  .ebot-cierre { padding: 84px 0 var(--e3); }
+  .ebot-cierre-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: var(--e5); align-items: start; }
+  .ebot-cierre :global(.ebot-propiedad-title) {
+    font-size: clamp(28px, 3.4vw, 46px); font-weight: 600; line-height: 1.04; letter-spacing: -0.02em; text-transform: uppercase; margin-bottom: var(--e3);
+  }
+  .ebot-cierre :global(.ebot-propiedad-title .muted) { color: var(--studio-gray); }
+  .ebot-cierre :global(.ebot-cierre-titulo) {
+    font-size: clamp(24px, 2.6vw, 34px); font-weight: 600; line-height: 1.08; letter-spacing: -0.02em; text-transform: uppercase; margin-bottom: var(--e2);
+  }
+  .ebot-cierre :global(.ebot-cierre-titulo .muted) { color: var(--studio-gray); }
+  .ebot-cierre :global(.ebot-propiedad-facts) { display: grid; gap: var(--e2); }
+  @media (max-width: 900px) { .ebot-cierre-grid { grid-template-columns: 1fr; gap: var(--e4); } }
+
+  /* ---------- QUÉ CUESTA: UNA PANTALLA ---------- */
+  .ebot-precio { padding: 80px 0 var(--e2); }
+  .ebot-precio :global(h2.section-title), .ebot-panel :global(h2.section-title) {
+    font-size: clamp(26px, 3vw, 42px); max-width: none; margin-bottom: var(--e1);
+  }
+  .ebot-precio-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: var(--e2); align-items: start; margin-top: var(--e1); }
+  .ebot-precio-grid :global(.ebot-precio-card) { margin: 0; padding: var(--e2) var(--e3); }
+  .ebot-precio-grid :global(.ebot-check li) { padding-top: 3px; padding-bottom: 3px; font-size: 14px; line-height: 1.4; }
+  .ebot-precio-grid :global(.ebot-costos) { margin-top: 0; }
+  .ebot-precio-grid :global(.ebot-costo-grid) { grid-template-columns: 1fr; gap: var(--e1); }
+  .ebot-precio-grid :global(.ebot-costo) { padding: var(--e2); }
+  .ebot-costos-intro { font-size: 13.5px; font-weight: 300; color: var(--studio-gray); line-height: 1.55; margin: 6px 0 var(--e2); }
+  .ebot-precio :global(.ebot-no) { margin-top: var(--e2); }
+  @media (max-width: 1000px) { .ebot-precio-grid { grid-template-columns: 1fr; } }
+
+  /* ---------- PANEL: UNA PANTALLA ---------- */
+  .ebot-panel { padding: 84px 0 var(--e3); }
+  .ebot-panel .ebot-intro { max-width: 82ch; margin-bottom: var(--e2); font-size: 16px; line-height: 1.6; }
+  .ebot-panel :global(.ebot-panel-group) { padding: var(--e2) var(--e3); }
+
+  /* La tarjeta del precio se apila: el precio y el botón arriba, lo incluido en dos columnas. */
+  .ebot-precio-grid :global(.ebot-precio-card) { display: flex; flex-direction: column-reverse; gap: var(--e2); align-items: stretch; }
+  .ebot-precio-grid :global(.ebot-precio-tag) {
+    display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: var(--e2); flex-wrap: wrap;
+    text-align: left; padding: 0 0 var(--e2); border-bottom: 1px dashed rgba(255, 255, 255, 0.18);
+  }
+  .ebot-precio-grid :global(.ebot-precio-v) { font-size: clamp(40px, 4.4vw, 60px); line-height: 1; }
+  .ebot-precio-grid :global(.ebot-check) { display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--e3); }
+  .ebot-precio-grid :global(.ebot-check li) { break-inside: avoid; }
+  .ebot-precio-grid :global(.ebot-precio-copy h3) { font-size: 20px; }
+  .ebot-precio-grid :global(.ebot-precio-desc) { font-size: 14.5px; line-height: 1.55; margin: 6px 0 var(--e1); }
+  .ebot-precio-grid :global(.ebot-costo p) { font-size: 13.5px; line-height: 1.5; }
+  .ebot-precio-grid :global(.ebot-costo-v) { font-size: 26px; }
+  .ebot-precio :global(.ebot-cross) { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: var(--e3); }
+  .ebot-precio :global(.ebot-no) { padding: var(--e2) var(--e3); }
+  .ebot-precio :global(.ebot-no h3) { margin-bottom: var(--e1); font-size: 18px; }
+  .ebot-precio :global(.ebot-cross li) { break-inside: avoid; font-size: 14px; }
+  @media (max-width: 1000px) { .ebot-precio :global(.ebot-cross), .ebot-precio-grid :global(.ebot-check) { grid-template-columns: 1fr; } }
+
+  /* Las capacidades en pantallas chicas: dos columnas (la primera ocupa las dos) y luego una. */
+  @media (max-width: 1100px) {
+    .ebot-hace-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .ebot-hace-grid { grid-template-columns: 1fr; }
+    .ebot-hace-grid > :global(*:first-child) { grid-column: auto; }
+  }
 </style>
 
 <style is:global>
@@ -1153,4 +1214,5 @@ const mensajes: Record<string, [string, string]> = {
      que `global.css` aplica a las grids del resto del sitio, aquí con los
      nombres de esta página. Va en `is:global` porque el nodo intermedio lo
      genera el componente y no lleva el `data-astro-cid` de esta página. */
+
 </style>

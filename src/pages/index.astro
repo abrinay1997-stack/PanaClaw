@@ -27,6 +27,8 @@ const pruebas = ['Menos de un segundo', 'Sin complementos que se rompan', '72 ho
   activePath={routes.home}
 >
   <!-- HERO CINEMÁTICO -->
+  <!-- Portada: el héroe y la franja de proyectos suman exactamente una pantalla. -->
+  <div class="portada">
   <section class="hero hero-cinematic" id="top">
     <HeroShader />
 
@@ -106,6 +108,7 @@ const pruebas = ['Menos de un segundo', 'Sin complementos que se rompan', '72 ho
       </div>
     </div>
   </section>
+  </div>
 
   <!-- LOS TRES PILARES: una pantalla, tres franjas -->
   <section class="pil fondo-brasa" id="servicios" aria-labelledby="pil-titulo">
@@ -214,6 +217,8 @@ const pruebas = ['Menos de un segundo', 'Sin complementos que se rompan', '72 ho
 
 <style>
   /* ---------- HERO CINEMÁTICO ---------- */
+  .portada { display: flex; flex-direction: column; min-height: 100svh; }
+  .portada .hero-cinematic { flex: 1 1 auto; height: auto; min-height: 0; max-height: none; }
   .hero-cinematic {
     position: relative;
     min-height: 100svh;
@@ -537,7 +542,7 @@ const pruebas = ['Menos de un segundo', 'Sin complementos que se rompan', '72 ho
     .ademas-texto { grid-column: 1 / -1; }
     .ademas-precio { grid-column: 1; grid-row: 2; }
     .ademas-go { grid-column: 2; grid-row: 1; }
-    .hero-cinematic { min-height: 90vh; height: auto; padding: var(--e6) 0 var(--e6); }
+    .hero-cinematic, .portada .hero-cinematic { min-height: 90svh; height: auto; padding: var(--e6) 0 var(--e6); }
     .hero-title { font-size: clamp(44px, 12vw, 88px); }
   }
   @media (max-width: 640px) {
