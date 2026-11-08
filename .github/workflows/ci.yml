@@ -71,3 +71,6 @@ jobs:
       # lleve a una página y una sección que existan.
       - name: Chat
         run: npm run medir:chat
+
+      - name: Galería de proyectos
+        run: npm run medir:galeria
