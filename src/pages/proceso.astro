@@ -47,7 +47,7 @@ const manifiesto = [
   activePath={routes.proceso}
 >
   <!-- HERO -->
-  <section class="hero hero-short">
+  <section class="hero hero-short proc-hero">
     <div class="container hero-inner">
       <span class="year">Proceso</span>
       <span class="handle">3 reglas</span>
@@ -62,6 +62,17 @@ const manifiesto = [
         </p>
       </Reveal>
     </div>
+
+    <!-- Decorativo y derivado de los tres pasos reales: una línea que se dibuja y se enciende paso a paso. -->
+    <ol class="linea" aria-hidden="true">
+      {procesoSteps.map((step, i) => (
+        <li class="linea-paso" style={`--i:${i}`}>
+          <span class="linea-num">{step.num}</span>
+          <span class="linea-nodo"></span>
+          <span class="linea-texto">{step.title}</span>
+        </li>
+      ))}
+    </ol>
   </section>
 
   <!-- BANDA A SANGRE -->
@@ -403,5 +414,40 @@ const manifiesto = [
     .who-copy {
       max-width: none;
     }
+  }
+
+  /* ---------- PORTADA: LA LÍNEA DE LOS TRES PASOS ---------- */
+  .linea {
+    position: absolute; z-index: 1; right: max(var(--e4), calc((100vw - 1240px) / 2));
+    top: 50%; transform: translateY(-50%);
+    width: min(38vw, 520px);
+    list-style: none; display: grid; gap: var(--e5);
+    padding-left: var(--e5);
+  }
+  /* El riel vertical se dibuja de arriba abajo al cargar. */
+  .linea::before {
+    content: ''; position: absolute; left: 21px; top: 8px; bottom: 8px; width: 2px;
+    background: linear-gradient(180deg, var(--flash-orange), rgba(255, 81, 0, 0.12));
+    transform-origin: top; animation: linea-dibuja 1.4s cubic-bezier(.2,.7,.2,1) .3s backwards;
+  }
+  @keyframes linea-dibuja { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  .linea-paso { position: relative; display: grid; gap: 4px; animation: linea-entra .8s cubic-bezier(.2,.7,.2,1) calc(.5s + var(--i) * .35s) backwards; }
+  @keyframes linea-entra { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+  .linea-num {
+    font-size: clamp(56px, 6vw, 92px); font-weight: 700; line-height: .85; letter-spacing: -0.05em;
+    color: transparent; -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.35);
+  }
+  .linea-nodo {
+    position: absolute; left: calc(var(--e5) * -1 + 14px); top: 10px; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--flash-orange); box-shadow: 0 0 0 6px rgba(255, 81, 0, 0.18), 0 0 28px rgba(255, 81, 0, 0.7);
+    animation: linea-late 2.6s ease-in-out calc(var(--i) * .5s) infinite;
+  }
+  @keyframes linea-late { 50% { box-shadow: 0 0 0 12px rgba(255, 81, 0, 0), 0 0 40px rgba(255, 81, 0, 0.9); } }
+  .linea-texto { font-size: clamp(17px, 1.7vw, 22px); font-weight: 500; line-height: 1.25; max-width: 24ch; }
+  @media (max-width: 1100px) {
+    .linea { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .linea::before, .linea-paso, .linea-nodo { animation: none; }
   }
 </style>
