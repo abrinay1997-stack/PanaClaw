@@ -1,6 +1,6 @@
 ---
 /**
- * /ebot/ — la página del bot multicanal con panel.
+ * /ebot/ — la página del agente de IA con panel.
  *
  * Es la primera página del sitio que vende algo que NO es una web, y eso cambia
  * dos cosas respecto a `/planes`:
@@ -52,8 +52,8 @@ const amount = Number(ebot.price.replace(/[^0-9.]/g, ''));
 const serviceSchema = {
   '@context': 'https://schema.org',
   '@type': 'Service',
-  name: `${ebot.name} — bot multicanal con panel`,
-  serviceType: 'Implementación de asistente automatizado para atención al cliente',
+  name: `${ebot.name} — agente de inteligencia artificial con panel`,
+  serviceType: 'Implementación de un agente de inteligencia artificial para atención al cliente',
   description: ebot.summary,
   areaServed: { '@type': 'Country', name: site.location },
   provider: {
@@ -99,8 +99,8 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
 ---
 
 <BaseLayout
-  title={`${ebot.name} — bot multicanal`}
-  description={`${ebot.name}: contesta por ${canalNames} las 24 horas y guarda cada conversación y cada cliente en un panel tuyo. Implementación ${ebot.price}, pago único, sin mensualidad nuestra.`}
+  title={`${ebot.name} — agente de IA para WhatsApp e Instagram`}
+  description={`${ebot.name}: un agente de inteligencia artificial que conoce tu negocio y contesta por ${canalNames} las 24 horas. Montaje ${ebot.price}, pago único, sin mensualidad nuestra.`}
   activePath={routes.ebot}
   jsonLd={[serviceSchema, faqSchema]}
 >
@@ -110,8 +110,8 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     <div class="container">
       <div class="ebot-hero-copy">
         <Reveal eager>
-          <span class="eyebrow">{ebot.name} · Bot multicanal con panel</span>
-          <h1>Todos tus mensajes, <span class="muted">en un solo lugar.</span></h1>
+          <span class="eyebrow"><span class="ebot-nombre">{ebot.name}</span> · Agente de inteligencia artificial</span>
+          <h1>Un agente de IA que conoce tu negocio <span class="muted">y responde.</span></h1>
         </Reveal>
         <Reveal delay={0.12} eager>
           <p class="ebot-lead">{ebot.summary}</p>
@@ -193,7 +193,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     <div class="container">
       <Reveal>
         <span class="eyebrow">Qué hace</span>
-        <h2 class="section-title">Las mismas cinco preguntas, <span class="muted">contestadas sin ti.</span></h2>
+        <h2 class="section-title">No solo contesta. <span class="muted">Conoce tu negocio y actúa.</span></h2>
       </Reveal>
 
       <div class="ebot-hace-grid">
@@ -280,7 +280,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
           <h3 class="ebot-sub">Lo que pagas por tu cuenta, cada mes</h3>
           <p class="ebot-intro">
             Estas dos no pasan por nosotros: las contratas tú, a tu nombre, y son las que hacen
-            que el bot sea tuyo de verdad. Son aproximadas y para un negocio normal; el panel te
+            que el agente sea tuyo de verdad. Son aproximadas y para un negocio normal; el panel te
             enseña el gasto al día para que nunca sea una sorpresa.
           </p>
         </Reveal>
@@ -355,7 +355,7 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
       <Reveal>
         <p class="ebot-faq-foot">
           ¿Otra duda? Está el <a href={routes.ayuda}>centro de ayuda</a>, y si tampoco está ahí,
-          contesta la misma persona que montaría tu bot.
+          contesta la misma persona que montaría tu agente.
         </p>
       </Reveal>
     </div>
@@ -380,19 +380,27 @@ const pantallas = ebotPanel.reduce((n, g) => n + g.items.length, 0);
     z-index: 1;
   }
   .ebot-hero-copy {
-    max-width: 54ch;
+    max-width: 760px;
+  }
+  /* El nombre del producto se escribe eBot, nunca «EBOT»: el estilo de las
+     etiquetas pasa todo a mayúsculas y aquí no se aplica al nombre. */
+  .ebot-nombre {
+    text-transform: none;
   }
   /* Medido a 1440×900: con 88px y 15ch el titular ocupaba cinco líneas y
      empujaba el precio y los dos botones por debajo del pliegue. En una página
      que vende un producto que nadie conoce, la cifra tiene que verse sin
      scrollear — es la que decide si se sigue leyendo. */
   .ebot-hero h1 {
-    font-size: clamp(38px, 5vw, 74px);
+    font-size: clamp(36px, 4.4vw, 64px);
     font-weight: 600;
     line-height: 0.98;
     letter-spacing: -0.025em;
     text-transform: uppercase;
-    max-width: 17ch;
+    /* 17ch bastaba para «Todos tus mensajes, en un solo lugar.»; el titular del
+       agente de IA es más largo y a 17ch daba cinco líneas (precio y botones
+       fuera de la primera pantalla). 21ch lo deja en tres. */
+    max-width: 21ch;
     text-shadow: 0 4px 40px rgba(16, 1, 1, 0.85);
   }
   .ebot-hero h1 .muted {

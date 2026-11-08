@@ -1,4 +1,4 @@
-import { retrieve, invalidPrices, buildSystem, trimReply, type Kb } from './retrieval.ts';
+import { retrieve, invalidPrices, buildSystem, trimReply, type Kb, type KbFact } from './retrieval.ts';
 
 /**
  * Endpoint del chat de PanaClaw.
@@ -416,6 +416,67 @@ function dailyCapReached(): boolean {
   return dayCount > MAX_PER_DAY;
 }
 
+
+/* ------------------------------------------------------------------ *
+ * A dónde llevar a quien pregunta
+ * ------------------------------------------------------------------ */
+
+export interface Accion {
+  /** Lo que dice el botón. */
+  t: string;
+  /** Ruta del sitio, con ancla si hay una sección concreta. */
+  href: string;
+}
+
+/**
+ * De qué sección del sitio viene cada hecho.
+ *
+ * El chat no solo contesta: guía. Los hechos que el modelo usó para responder
+ * dicen de qué se está hablando, así que de ahí salen los botones —«Ver los
+ * planes», «Conocer eBot»— sin pedirle nada al modelo y sin que pueda inventar
+ * un enlace. Las anclas son `id` reales de cada página (si una página cambia su
+ * `id`, hay una prueba que lo detecta: `scripts/check-chat.mjs`).
+ */
+export function destinoDe(f: Pick<KbFact, 'id' | 'topic'>): Accion | null {
+  const id = f.id;
+  const faq = /^faq-(empezar|precio|proceso|despues)-/.exec(id);
+  if (faq) return { t: 'Ver la ayuda', href: `/ayuda/#${faq[1]}` };
+  if (id.startsWith('plan-') || id === 'planes-rango') return { t: 'Ver los planes', href: '/planes/#planes' };
+  if (id.startsWith('modulo-') || id === 'capacidades-que-son') return { t: 'Ver las capacidades', href: '/planes/#modulos' };
+  if (id === 'ebot-costos') return { t: 'Ver el precio de eBot', href: '/ebot/#precio' };
+  if (id.startsWith('ebot-faq')) return { t: 'Preguntas sobre eBot', href: '/ebot/#preguntas' };
+  if (id.startsWith('ebot')) return { t: 'Conocer eBot', href: '/ebot/' };
+  if (id.startsWith('seguridad-faq')) return { t: 'Preguntas sobre Seguridad', href: '/seguridad/#preguntas' };
+  if (id.startsWith('seguridad-vs-')) return { t: 'Comparar opciones', href: '/seguridad/#comparativa' };
+  if (id.startsWith('seguridad')) return { t: 'Ver Seguridad', href: '/seguridad/' };
+  if (id.startsWith('care')) return { t: 'Ver el mantenimiento', href: '/servicios/#care' };
+  if (id === 'diagnostico') return { t: 'Ver el diagnóstico', href: '/servicios/#diagnostico' };
+  if (id.startsWith('proceso') || id === 'plazos' || id === 'revisiones') return { t: 'Cómo trabajamos', href: '/proceso/' };
+  if (id === 'proyectos' || id === 'prueba-social') return { t: 'Ver proyectos', href: '/proyectos/' };
+  if (id === 'cotizador') return { t: 'Abrir el cotizador', href: '/cotizador/' };
+  if (id === 'contacto') return { t: 'Hablar con nosotros', href: '/contacto/' };
+  if (id.startsWith('pilar')) return { t: 'Ver los servicios', href: '/servicios/' };
+  if (id === 'privacidad') return { t: 'Ver la privacidad', href: '/privacidad/' };
+  if (id === 'wordpress' || id === 'propiedad' || id === 'pagos' || id === 'no-incluye') {
+    return { t: 'Ver la ayuda', href: '/ayuda/' };
+  }
+  return null;
+}
+
+/**
+ * El botón principal sale del hecho más relevante. Un segundo solo si el
+ * siguiente es del MISMO tema y apunta a otro sitio (p. ej. eBot y el precio de
+ * eBot). Mezclar temas distintos daba botones que no venían a cuento: una
+ * pregunta por plazos terminaba ofreciendo «Conocer eBot».
+ */
+export function accionesDe(facts: Pick<KbFact, 'id' | 'topic'>[]): Accion[] {
+  const [primero, segundo] = facts;
+  const a = primero ? destinoDe(primero) : null;
+  if (!a) return [];
+  const b = segundo && segundo.topic === primero!.topic ? destinoDe(segundo) : null;
+  return b && b.href !== a.href ? [a, b] : [a];
+}
+
 /* ------------------------------------------------------------------ *
  * Handler
  * ------------------------------------------------------------------ */
@@ -601,8 +662,12 @@ export async function atender(req: Request, entorno: Entorno): Promise<Response>
         `Prefiero no darte una cifra de memoria. Los precios están en la página de planes, ` +
         `y el cotizador calcula el tuyo exacto en cuatro preguntas.`,
       blocked: bad,
+      acciones: [
+        { t: 'Abrir el cotizador', href: '/cotizador/' },
+        { t: 'Ver los planes', href: '/planes/#planes' },
+      ],
     });
   }
 
-  return json({ reply, sources: facts.map((f) => f.id) });
+  return json({ reply, sources: facts.map((f) => f.id), acciones: accionesDe(facts) });
 }

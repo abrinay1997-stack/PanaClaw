@@ -64,3 +64,10 @@ jobs:
 
       - name: Cotizador
         run: npm run medir:cotizador
+
+      # El chat en teléfono y escritorio: que no se salga de la pantalla, que
+      # el campo mida 16 px (si no, Safari de iPhone amplía la página), que el
+      # teclado no se abra solo, que se pueda mover, y que cada botón de la guía
+      # lleve a una página y una sección que existan.
+      - name: Chat
+        run: npm run medir:chat

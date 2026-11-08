@@ -1,5 +1,10 @@
 /**
- * eBot — el bot multicanal con panel, montado en la cuenta del cliente.
+ * eBot — un agente de inteligencia artificial que conoce el negocio y responde por
+ * WhatsApp, Instagram, Messenger y Telegram, con panel, montado en la cuenta del cliente.
+ *
+ * «Agente» y no «bot», a propósito (decisión de la dueña, 8-nov-2026): un bot
+ * repite respuestas sueltas; esto conoce el negocio —lo que le cargamos— y además
+ * actúa: apunta a quien pregunta, agenda citas, te pasa la conversación cuando toca.
  *
  * Es el único producto del catálogo que NO es un sitio web, y por eso vive en su
  * propio archivo en vez de colarse en `plans.ts` o en `modules.ts`: no se entrega
@@ -91,7 +96,7 @@ export const ebot = {
    * que el chat responde: si cambia, cambia en los tres a la vez.
    */
   summary:
-    `Un asistente que contesta por WhatsApp, Instagram, Messenger y Telegram las 24 horas, con un panel donde ves cada conversación y cada cliente nuevo. Lo montamos por ${PRECIO} y queda en tu cuenta, no en la nuestra.`,
+    `Un agente de inteligencia artificial que conoce tu negocio y contesta por WhatsApp, Instagram, Messenger y Telegram las 24 horas, con un panel donde ves cada conversación y cada cliente nuevo. Lo montamos por ${PRECIO} y queda en tu cuenta, no en la nuestra.`,
 } as const;
 
 /* ------------------------------------------------------------------ *
@@ -114,7 +119,7 @@ export interface EbotCanal {
 export const ebotCanales: EbotCanal[] = [
   {
     name: 'WhatsApp',
-    desc: 'Donde de verdad te escriben. El bot contesta con tu número de siempre.',
+    desc: 'Donde de verdad te escriben. El agente contesta con tu número de siempre.',
     nota: 'Meta pide verificar tu negocio antes de dar el número oficial. El trámite es tuyo; te acompañamos.',
   },
   {
@@ -146,8 +151,8 @@ export const ebotCapacidades: EbotCapacidad[] = [
     desc: 'A las once de la noche y en domingo. La mayoría de los mensajes de un negocio son las mismas cinco preguntas —precio, horario, dónde están, si hay disponibilidad, cómo se paga— y esas ya no te despiertan.',
   },
   {
-    title: 'Responde con lo tuyo, no con lo que se imagina',
-    desc: 'Le cargamos tus precios, tus horarios, tus políticas y tus preguntas frecuentes. Busca ahí antes de contestar, así que dice lo que tu negocio dice, no lo que suena bien.',
+    title: 'Conoce tu negocio y responde con lo tuyo',
+    desc: 'Le cargamos tus precios, tus horarios, tus políticas y tus preguntas frecuentes. Busca ahí antes de contestar, así que dice lo que tu negocio dice, no lo que suena bien: no se imagina nada.',
   },
   {
     title: 'Entiende las notas de voz',
@@ -167,7 +172,7 @@ export const ebotCapacidades: EbotCapacidad[] = [
   },
   {
     title: 'Se aparta cuando entras tú',
-    desc: 'En cuanto respondes en una conversación, el bot se calla en esa y no te pisa. Vuelve cuando tú lo dices.',
+    desc: 'En cuanto respondes en una conversación, el agente se calla en esa y no te pisa. Vuelve cuando tú lo dices.',
   },
 ];
 
@@ -252,7 +257,7 @@ export const ebotCostos: EbotCosto[] = [
     corto: 'la nube',
     price: '$5 al mes',
     aQuien: 'Se paga a Cloudflare',
-    desc: 'Cloudflare es la empresa donde corre el bot. La cuenta se abre a tu nombre, con tu tarjeta, y ese plan da de sobra para un negocio.',
+    desc: 'Cloudflare es la empresa donde corre el agente. La cuenta se abre a tu nombre, con tu tarjeta, y ese plan da de sobra para un negocio.',
   },
   {
     concepto: 'El cerebro que piensa',
@@ -261,7 +266,7 @@ export const ebotCostos: EbotCosto[] = [
     aQuien: 'Se paga a la empresa de IA que elijas',
     // Sin repetir aquí lo del gasto al día: ya lo dice la entradilla de la
     // sección, tres centímetros más arriba y en la misma pantalla.
-    desc: 'Es tu propia llave de inteligencia artificial: pagas solo lo que el bot piensa, y solo mientras piensa. Un negocio normal ronda esa cifra; un mes flojo cuesta menos.',
+    desc: 'Es tu propia llave de inteligencia artificial: pagas solo lo que el agente piensa, y solo mientras piensa. Un negocio normal ronda esa cifra; un mes flojo cuesta menos.',
   },
 ];
 
@@ -306,7 +311,7 @@ export interface EbotHecho {
 export const ebotPropiedad: EbotHecho[] = [
   {
     k: 'Vive en tu cuenta',
-    desc: 'El bot y el panel corren en tu propia cuenta de Cloudflare, con tu llave. Nosotros no tenemos que estar en medio para que funcione, y el día que quieras seguir solo, sigues solo.',
+    desc: 'El agente y el panel corren en tu propia cuenta de Cloudflare, con tu llave. Nosotros no tenemos que estar en medio para que funcione, y el día que quieras seguir solo, sigues solo.',
   },
   {
     k: 'Las conversaciones son tuyas',
@@ -337,12 +342,12 @@ export const ebotFaq: EbotFaq[] = [
     a: `Porque no te lo alquilamos. El programa es abierto y ya está hecho; los ${PRECIO} son el trabajo de montarlo en tu cuenta, conectar tus canales y enseñarle lo que tu negocio sabe, y no se repiten nunca. Lo que sigue pagando cada mes no lo cobramos nosotros: son los $5 de la nube y el gasto de tu llave de IA, que van directo a esas dos empresas — con eso, en un año pagas menos que tres meses de casi cualquier plataforma que te lo alquile.`,
   },
   {
-    q: '¿El bot va a engañar a mis clientes?',
-    a: 'No, y no se puede configurar para eso. Si le preguntan si es un bot, lo admite. Cuando no está seguro de algo, prefiere avisarte a ti antes que inventar una respuesta. Un cliente al que le mienten a la cara es un cliente perdido, y eso cuesta más caro que cualquier mensaje sin contestar.',
+    q: '¿El agente va a engañar a mis clientes?',
+    a: 'No, y no se puede configurar para eso. Si le preguntan si es una inteligencia artificial, lo admite. Cuando no está seguro de algo, prefiere avisarte a ti antes que inventar una respuesta. Un cliente al que le mienten a la cara es un cliente perdido, y eso cuesta más caro que cualquier mensaje sin contestar.',
   },
   {
     q: '¿Y si contesta una barbaridad?',
-    a: `Los primeros ${AJUSTES} lo corregimos nosotros: es lo que dura el periodo de ajustes, y está para eso — los fallos de un bot no salen todos el primer día, salen cuando un cliente real pregunta algo que nadie previó. Después lo haces tú desde el panel, que es donde queda guardada cada conversación: la pantalla de Mejoras te muestra justo lo que no supo responder para que se lo enseñes. Y puedes apagarlo entero desde ahí en un clic, sin llamarnos.`,
+    a: `Los primeros ${AJUSTES} lo corregimos nosotros: es lo que dura el periodo de ajustes, y está para eso — los fallos de un agente de IA no salen todos el primer día, salen cuando un cliente real pregunta algo que nadie previó. Después lo haces tú desde el panel, que es donde queda guardada cada conversación: la pantalla de Mejoras te muestra justo lo que no supo responder para que se lo enseñes. Y puedes apagarlo entero desde ahí en un clic, sin llamarnos.`,
   },
   {
     q: '¿Cuánto tardo en tenerlo funcionando?',
@@ -350,11 +355,11 @@ export const ebotFaq: EbotFaq[] = [
   },
   {
     q: 'No tengo mis precios ni mis políticas escritos. ¿Sirve igual?',
-    a: 'Sirve, pero rinde la mitad. El bot es tan bueno como lo que le des de comer: sin material contesta lo básico y te pasa a ti todo lo demás. Con una hoja de precios y las diez preguntas de siempre ya cambia por completo. Si no lo tienes escrito, te ayudamos a ordenarlo en la conversación; escribirlo entero por ti es un trabajo aparte.',
+    a: 'Sirve, pero rinde la mitad. El agente es tan bueno como lo que le des de comer: sin material contesta lo básico y te pasa a ti todo lo demás. Con una hoja de precios y las diez preguntas de siempre ya cambia por completo. Si no lo tienes escrito, te ayudamos a ordenarlo en la conversación; escribirlo entero por ti es un trabajo aparte.',
   },
   {
     q: '¿Tengo que darles mis claves?',
-    a: 'No las de tu banco ni las de tus redes personales. Necesitamos entrar a la cuenta de la nube que se abre a tu nombre para este bot y a las conexiones de los canales que quieras usar. La llave de la IA no la vemos: se guarda cifrada dentro de tu propia cuenta. Cuando terminamos, cambias la contraseña del panel y listo.',
+    a: 'No las de tu banco ni las de tus redes personales. Necesitamos entrar a la cuenta de la nube que se abre a tu nombre para este agente y a las conexiones de los canales que quieras usar. La llave de la IA no la vemos: se guarda cifrada dentro de tu propia cuenta. Cuando terminamos, cambias la contraseña del panel y listo.',
   },
 ];
 
