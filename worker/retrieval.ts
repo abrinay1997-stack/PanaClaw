@@ -1,7 +1,7 @@
 /**
  * Lógica determinista del chat: recuperación y verificación de precios.
  *
- * Vive fuera del handler para que se pueda probar sin levantar Netlify ni
+ * Vive fuera del handler para que se pueda probar sin levantar ni un Worker ni
  * llamar a ningún modelo. Es justamente la parte que NO puede fallar: si la
  * recuperación trae el hecho equivocado, da igual lo bueno que sea el modelo.
  */

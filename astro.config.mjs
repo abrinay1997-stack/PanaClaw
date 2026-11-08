@@ -18,8 +18,8 @@ import sitemap from '@astrojs/sitemap';
  *   pone cada ruta (`trailingSlash:'always'`, abajo), y duplicarla aquí
  *   produciría `https://panaclaw.com//contacto/`.
  *
- * El subdominio `panaclaw.netlify.app` sigue existiendo y Netlify lo redirige
- * con 301 al dominio principal por sí solo — no hace falta declarar esa regla.
+ * `panaclaw.netlify.app` ya no redirige al dominio cuando se apaga el sitio de
+ * Netlify: si Google la indexó, conviene dejarla redirigiendo unas semanas.
  */
 export default defineConfig({
   site: 'https://panaclaw.com',

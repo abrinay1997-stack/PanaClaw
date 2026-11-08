@@ -1,7 +1,7 @@
 # PanaClaw
 
 Sitio web de PanaClaw, agencia de sitios web en Panamá. Astro con salida.
-estática pura, desplegado en Netlify y Cloudflare.
+estática pura, servido desde Cloudflare (un Worker con archivos estáticos).
 
 **En producción:** https://panaclaw.com
 
@@ -35,7 +35,7 @@ npm run dev        # http://localhost:4321
 ```
 
 Node 22. No hace falta base de datos ni servicios externos: el sitio es
-estático. El chat es lo único que necesita Netlify Functions, y cuando no las
+estático. El chat es lo único con código de servidor (`worker/`), y cuando no lo
 encuentra (dev, GitHub Pages) degrada solo a WhatsApp.
 
 ## Comandos
@@ -69,7 +69,7 @@ npm run medir:cotizador
 ```
 
 `medir:movil` y `medir:cotizador` necesitan Playwright — que **no** es
-dependencia del proyecto a propósito para que no infle cada build de Netlify
+dependencia del proyecto a propósito para que no infle cada build
 (en CI se instala solo para ese job, sin tocar `package.json`). Ver
 [`docs/convenciones.md`](docs/convenciones.md) para el porqué de cada
 comprobación.
@@ -93,11 +93,12 @@ src/
 └── content.config.ts  Schema del blog. Zod valida cada post en el build.
 
 public/             Archivos servidos tal cual (favicons, og.png, robots.txt).
-netlify/functions/  chat.mts — endpoint del chat. Único código de servidor.
+worker/              El Worker de Cloudflare: `index.ts` y `chat.ts` (el chat, único código de servidor).
 scripts/            Auditorías (algunas corren solas en CI, ver arriba) y capturas.
 brand-assets/       Fuentes originales de logo (SVG y PNG del usuario). NO se sirven.
 docs/               Estado, convenciones y chat.
-netlify.toml        Comando de build, cabeceras de seguridad y política de caché.
+wrangler.jsonc      Cómo lo publica Cloudflare: rutas del dominio y archivos.
+cloudflare/_headers Cabeceras de seguridad y política de caché.
 astro.config.mjs    Dominio del sitio, formato de URLs, plugin del sitemap.
 ```
 
@@ -142,7 +143,7 @@ draft: false           # opcional, oculta del listado si es true
 Contenido en Markdown...
 ```
 
-Publicar es hacer commit y push. Netlify redeployea en ~30 s. El listado en
+Publicar es hacer commit y push a `main` y ejecutar «Desplegar el sitio en Cloudflare» (GitHub → Actions). El listado en
 `/blog/` ordena por fecha desc; cada post lleva breadcrumbs, JSON-LD `Article`,
 posts relacionados (por keyword compartida) y CTA al cotizador al final.
 
@@ -227,21 +228,25 @@ qué se hizo):
 
 ## Despliegue
 
-Netlify construye y publica en cada push a `main`. `netlify.toml` define el
-comando, las cabeceras de seguridad y la caché.
+Cloudflare sirve el sitio. Se publica a mano desde GitHub → Actions →
+«Desplegar el sitio en Cloudflare» (`.github/workflows/cloudflare.yml`);
+`wrangler.jsonc` define las rutas del dominio y `cloudflare/_headers` las
+cabeceras de seguridad y la caché.
 
-GitHub Actions **no** despliega: `.github/workflows/ci.yml` solo verifica que
-el proyecto compile, en cada push a `main` y en cada pull request.
+`.github/workflows/ci.yml` solo verifica que el proyecto compile, en cada push a
+`main` y en cada pull request.
 
 ### Variables de entorno
 
-Se configuran en el panel de Netlify, **nunca en el repo**:
+Son **secretos del Worker** `panaclaw-sitio` (Cloudflare → Workers → Settings →
+Variables and Secrets), **nunca en el repo**:
 
 | Variable | Para qué |
 |---|---|
+| `META_API_KEY` | Chat con Muse Spark de Meta (el que se usa hoy). Modelo `muse-spark-1.2-contributor`; `META_MODEL` lo cambia |
 | `ANTHROPIC_API_KEY` | Chat con Claude (tiene prioridad si está) |
 | `GROQ_API_KEY` | Alternativa más barata para el chat |
-| `CHAT_PROVIDER` | Opcional, `groq` o `anthropic`. Ver [`docs/chat.md`](docs/chat.md) |
+| `CHAT_PROVIDER` | Opcional, `meta`, `groq` o `anthropic`. Ver [`docs/chat.md`](docs/chat.md) |
 | `CHAT_MODEL` | Opcional, para fijar el modelo (acepta varios separados por comas; los de por defecto quedan de repuesto) |
 | `CHAT_MAX_PER_DAY` | Opcional, techo diario del chat (300 por defecto) |
 

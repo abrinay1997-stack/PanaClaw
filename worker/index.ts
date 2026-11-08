@@ -6,18 +6,15 @@
  * hoy, el chat (`/api/chat`). Por eso `wrangler.jsonc` lo llama únicamente para
  * `/api/*`; el resto de las visitas ni lo despiertan ni lo cobran.
  *
- * La lógica del chat NO está aquí: es la misma de Netlify
- * (`netlify/functions/chat.mts`, función `atender`), importada tal cual. Aquí solo
- * se le dice quién escribe y cómo llegar a `kb.json`. Así hay una sola copia del
- * chat mientras el sitio vive en las dos plataformas, y ninguna de las dos se
- * puede quedar con la versión vieja.
+ * La lógica del chat vive en `worker/chat.ts` (función `atender`). Aquí solo se
+ * le dice quién escribe y cómo llegar a `kb.json`.
  *
  * Las claves (`ANTHROPIC_API_KEY`, `GROQ_API_KEY`…) llegan como secretos del
  * Worker y, con `nodejs_compat`, aparecen en `process.env`, que es donde el chat
- * ya las lee. No hay que tocar el chat para cambiar de plataforma.
+ * ya las lee.
  */
 
-import { atender } from '../netlify/functions/chat.mts';
+import { atender } from './chat.ts';
 
 interface Env {
   /** Los archivos de `dist/`. */

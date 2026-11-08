@@ -54,7 +54,7 @@ Tres decisiones de formato, todas pensadas para modelos pequeños:
 
 Estado actual (2026-08-06): **55 hechos, 21,5 kB, 17 importes en lista blanca.**
 
-### 2. `netlify/functions/_retrieval.mts` — la lógica determinista
+### 2. `worker/retrieval.ts` — la lógica determinista
 
 Recuperación léxica con normalización (sin acentos, sin signos, sin palabras
 vacías). Las `q` puntúan el triple que el cuerpo del hecho; a igualdad gana el
@@ -84,7 +84,7 @@ hecho que diga qué hay, aunque lo que haya sea «todavía no».
 
 Aquí también vive `invalidPrices()`, la barandilla.
 
-### 3. `netlify/functions/chat.mts` — el endpoint
+### 3. `worker/chat.ts` — el endpoint
 
 Publicado en `/api/chat`. Hace, en orden: límite de peticiones → validación →
 carga de la KB (cacheada 10 min) → recuperación → prompt → proveedor →
@@ -99,10 +99,9 @@ Dos decisiones que no son de estilo:
 - **Las sugerencias iniciales dirigen la conversación** hacia preguntas que la
   KB responde bien. En un modelo pequeño, encauzar la pregunta rinde más que
   pulir el prompt.
-- **Degrada a WhatsApp, no a un error.** Si `/api/chat` no existe (hoy, en
-  un hosting estático sin funciones), el widget lo detecta al primer intento y se convierte en un
-  atajo a WhatsApp y al cotizador. El mismo código sirve con funciones y sin ellas, hoy y en
-  Netlify mañana.
+- **Degrada a WhatsApp, no a un error.** Si `/api/chat` no existe (en
+  un hosting estático sin Worker, o en desarrollo), el widget lo detecta al primer intento y se
+  convierte en un atajo a WhatsApp y al cotizador.
 
 ---
 
@@ -127,11 +126,12 @@ puede publicar un precio falso.
 
 ---
 
-## Puesta en marcha en Netlify
+## Puesta en marcha en Cloudflare
 
-1. Conecta el repositorio a Netlify. `netlify.toml` ya declara el directorio de
-   funciones y el bundler.
-2. En **Site settings → Environment variables**, añade **una** de estas:
+1. El Worker `panaclaw-sitio` se publica desde GitHub → Actions → «Desplegar el
+   sitio en Cloudflare». `wrangler.jsonc` ya declara el Worker y los archivos.
+2. En Cloudflare → Workers → `panaclaw-sitio` → Settings → **Variables and
+   Secrets**, añade **una** de estas (como secreto):
    - `ANTHROPIC_API_KEY` — si está, tiene prioridad; mejores respuestas
    - `GROQ_API_KEY` — alternativa más barata y rápida
    - `META_API_KEY` — Muse Spark, de Meta (la misma llave de los CRM; no el token de Messenger). Modelo por defecto `muse-spark-1.2-contributor`, el más barato **porque Meta entrena con lo que recibe**, es decir, con lo que escriban los visitantes. Para el que no entrena: `META_MODEL=muse-spark-1.3`
@@ -169,7 +169,7 @@ y la respuesta que dio.
 > se reintenta: el problema es la clave o la cuota, y cambiarle el nombre al
 > modelo solo suma esperas.
 >
-> El diagnóstico en caliente, sin entrar a Netlify: la respuesta trae un `code`
+> El diagnóstico en caliente, sin entrar al panel: la respuesta trae un `code`
 > —`groq_http_400` es modelo o petición; `groq_http_401`, clave; `groq_network`,
 > tiempo agotado— visible en la pestaña Red del navegador.
 
@@ -191,7 +191,7 @@ de hablar con el modelo:
 
 - **Solo atiende peticiones del propio sitio.** Se compara el `Origin` (o el
   `Referer` si el navegador no manda `Origin`) contra el origen de la propia
-  petición, no contra una lista fija: así las previews de Netlify funcionan sin
+  petición, no contra una lista fija: así cualquier dirección del sitio funciona sin
   mantener nada. Un `Origin` se falsifica con curl —esto no es autenticación—,
   pero quita de en medio el abuso barato de apuntar un script a `/api/chat`.
 - **Tope diario para todo el sitio**, `CHAT_MAX_PER_DAY` (300 por defecto).
@@ -200,9 +200,9 @@ de hablar con el modelo:
 - **Límite de 12 mensajes por minuto y por IP.**
 
 Los dos contadores viven en memoria y cada instancia lleva la suya, así que
-Netlify levantando varias los multiplica. Son topes aproximados a propósito: un
+Cloudflare levantando varias los multiplica. Son topes aproximados a propósito: un
 contador exacto pide almacenamiento externo y una llamada de red en cada mensaje.
-Si algún día el chat pesa más en la factura, se suben a Netlify Blobs.
+Si algún día el chat pesa más en la factura, se pasan a una regla de límite de tasa de Cloudflare.
 
 - Historial recortado a 6 mensajes: el coste por turno no crece con la conversación.
 - `max_tokens: 260` y `temperature: 0.3`.
@@ -246,10 +246,10 @@ exactitud, y ese reparto es deliberado.
 ### Cómo se audita
 
 La recuperación es código puro y sin dependencias del DOM, así que se prueba sin
-levantar Netlify ni gastar una llamada al modelo:
+levantar un Worker ni gastar una llamada al modelo:
 
 ```js
-import { retrieve } from './netlify/functions/_retrieval.mts';
+import { retrieve } from './worker/retrieval.ts';
 const kb = JSON.parse(readFileSync('dist/kb.json', 'utf8'));
 retrieve(kb, '¿tienen testimonios?', 3);   // → qué hechos vería el modelo
 ```

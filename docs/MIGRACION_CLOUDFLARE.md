@@ -1,5 +1,9 @@
 # Salir de Netlify: el sitio en Cloudflare
 
+> **7-nov-2026:** hecho en el código. El chat ya vive en `worker/chat.ts`;
+> `netlify.toml`, `netlify/` y `@netlify/functions` se quitaron. Falta, fuera del
+> repositorio, desvincular el repositorio y el dominio en el panel de Netlify.
+
 > Meta del dueño: que el sitio, el hub y el CRM vivan todos en Cloudflare, y salir
 > de Netlify. El hub y el CRM ya están allí. Este documento deja el sitio listo
 > para el día del cambio, y dice con franqueza qué está probado y qué no.
