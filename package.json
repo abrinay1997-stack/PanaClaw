@@ -15,6 +15,8 @@
     "medir:movil": "node scripts/check-mobile.mjs",
     "medir:cotizador": "node scripts/check-cotizador.mjs",
     "medir:chat": "node scripts/check-chat.mjs",
+    "medir:galeria": "node scripts/check-galeria.mjs",
+    "medir:privacidad": "node scripts/check-privacidad.mjs",
     "medir:enlaces": "node scripts/check-links.mjs",
     "astro": "astro",
     "build:cloudflare": "astro build && node scripts/cloudflare-assets.mjs",

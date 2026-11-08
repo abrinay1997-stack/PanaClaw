@@ -284,8 +284,9 @@ const itemListSchema = {
   }
 
   @media (max-width: 900px) {
-    .muro { position: relative; top: auto; right: auto; width: 112%; height: 34svh; margin: var(--e3) -6% 0; transform: rotate(-6deg); -webkit-mask-image: none; mask-image: none; overflow: hidden; opacity: .75; }
-    .proy-hero { justify-content: flex-start; }
+    /* En el celular el fondo animado sobra: el titular y el botón mandan. */
+    .muro { display: none; }
+    .proy-hero { justify-content: center; }
     .galeria-pie { flex-direction: column; align-items: flex-start; gap: var(--e2); }
     .galeria-head h2 { font-size: 26px; }
   }
@@ -302,16 +303,18 @@ const itemListSchema = {
     pista.dataset.listo = '1';
     const cuenta = document.querySelector('[data-galeria-count]');
     const slides = Array.from(pista.children) as HTMLElement[];
+    // Posición de cada diapositiva dentro de la pista; la actual es la más cercana a lo desplazado.
+    const pos = () => slides.map((el) => el.offsetLeft - slides[0].offsetLeft);
     const actual = () => {
-      const x = pista.scrollLeft + 8;
+      const p = pos();
       let mejor = 0;
-      slides.forEach((el, i) => { if (el.offsetLeft - pista.offsetLeft <= x) mejor = i; });
+      p.forEach((v, i) => { if (Math.abs(v - pista.scrollLeft) < Math.abs(p[mejor] - pista.scrollLeft)) mejor = i; });
       return mejor;
     };
     const pintar = () => { if (cuenta) cuenta.textContent = `${actual() + 1} / ${slides.length}`; };
     const ir = (d: number) => {
       const i = Math.min(slides.length - 1, Math.max(0, actual() + d));
-      pista.scrollTo({ left: slides[i].offsetLeft - slides[0].offsetLeft, behavior: 'smooth' });
+      pista.scrollTo({ left: pos()[i], behavior: 'smooth' });
     };
     document.querySelectorAll<HTMLElement>('[data-galeria]').forEach((b) =>
       b.addEventListener('click', () => ir(Number(b.dataset.galeria))));
