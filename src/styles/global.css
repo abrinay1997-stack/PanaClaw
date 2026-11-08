@@ -718,3 +718,20 @@ h2.section-title .muted{color:var(--studio-gray);}
     .ebot-canales,.ebot-hace,.ebot-panel,.ebot-precio,.ebot-propiedad,.ebot-faq) > .container{
   width:100%;
 }
+
+/* ---------- FONDO DE BRASA ----------
+   Atmósfera para secciones de contenido (planes, pilares, precios): un resplandor
+   naranja arriba a la derecha, otro rojo abajo a la izquierda y una rejilla muy
+   tenue que se desvanece hacia los bordes. Detrás del contenido, sin tocar el
+   contraste del texto. */
+.fondo-brasa{position:relative;isolation:isolate;}
+.fondo-brasa::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(55% 48% at 90% 6%,rgba(255,81,0,.15),transparent 70%),
+    radial-gradient(48% 44% at 4% 96%,rgba(238,0,0,.11),transparent 70%),
+    linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px) 0 0/100% var(--e5),
+    linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px) 0 0/var(--e5) 100%;
+  -webkit-mask-image:radial-gradient(ellipse 80% 75% at 50% 50%,#000 35%,transparent 100%);
+          mask-image:radial-gradient(ellipse 80% 75% at 50% 50%,#000 35%,transparent 100%);
+}

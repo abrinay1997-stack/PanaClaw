@@ -37,19 +37,37 @@ import { routes } from '../data/links';
   description={`Sitios web desde $295, seguridad desde ${revision.price.split("–")[0]}, ${ebot.name} por ${ebot.price}, mantenimiento desde $35/mes y ${diagnostico.name}. Todo con precio publicado.`}
   activePath={routes.servicios}
 >
-  <!-- EL CATÁLOGO: todo lo que se vende, en una pantalla -->
-  <section class="cat">
+  <!-- ABRE: una pantalla con el titular y el camino a las tarjetas -->
+  <section class="cat-hero fondo-brasa">
     <div class="container">
       <div class="cat-head">
-        <span class="eyebrow">Servicios</span>
-        <h1>Todo lo que hacemos. <span class="muted">Y lo que cuesta.</span></h1>
-        <p class="cat-lead">
-          Seis cosas, ni una más. Cada una con su precio publicado y su forma de cobro — porque
-          «desde $35» y «desde $35 al mes» no son lo mismo, y la mitad de las agencias solo te
-          dice la primera mitad.
-        </p>
+        <Reveal eager>
+          <span class="eyebrow">Servicios</span>
+          <h1>Todo lo que hacemos. <span class="muted">Y lo que cuesta.</span></h1>
+        </Reveal>
+        <Reveal eager delay={0.12}>
+          <p class="cat-lead">
+            Seis cosas, ni una más. Cada una con su precio publicado y su forma de cobro — porque
+            «desde $35» y «desde $35 al mes» no son lo mismo, y la mitad de las agencias solo te
+            dice la primera mitad.
+          </p>
+        </Reveal>
+        <Reveal eager delay={0.22}>
+          <div class="cat-hero-actions">
+            <a class="btn btn-primary" href="#catalogo">
+              <svg class="ojo" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+              Ver las seis cosas
+            </a>
+            <a class="btn btn-ghost" href={routes.cotizador}>Calcular mi precio</a>
+          </div>
+        </Reveal>
       </div>
+    </div>
+  </section>
 
+  <!-- EL CATÁLOGO: las seis tarjetas, en su propia pantalla -->
+  <section class="cat" id="catalogo">
+    <div class="container">
       <!--
         Una fila por producto y la primera columna es «para quién», no el
         nombre: casi nadie sabe cómo se llama lo que necesita, pero todo el
@@ -205,10 +223,23 @@ import { routes } from '../data/links';
   .cat {
     min-height: 100svh;
     display: flex; flex-direction: column; justify-content: center;
-    padding-top: var(--e6);
-    padding-bottom: var(--e4);
+    padding-top: 84px;
+    padding-bottom: var(--e3);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
   .cat > .container { width: 100%; }
+  .cat { scroll-margin-top: 0; }
+  .cat-hero {
+    min-height: 100svh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: var(--e7) 0 var(--e5);
+  }
+  .cat-hero > .container { width: 100%; }
+  .cat-hero .cat-head { margin-bottom: 0; }
+  .cat-hero .cat-head h1 { font-size: clamp(42px, 7vw, 104px); max-width: 16ch; }
+  .cat-hero .cat-lead { font-size: clamp(17px, 1.6vw, 21px); max-width: 56ch; margin-top: var(--e3); }
+  .cat-hero-actions .ojo { color: var(--flash-orange); flex: none; }
+  .cat-hero-actions { display: flex; gap: var(--e2); flex-wrap: wrap; margin-top: var(--e4); }
   .cat-head {
     margin-bottom: var(--e3);
   }
@@ -242,7 +273,7 @@ import { routes } from '../data/links';
     list-style: none;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--e3) var(--e3);
+    gap: var(--e2) var(--e3);
   }
   .tk {
     --muesca: #100101;
@@ -259,9 +290,9 @@ import { routes } from '../data/links';
   .tk[data-lado='b'] { transform: rotate(0.3deg); }
   .tk:hover, .tk:focus-visible { transform: rotate(0deg) translateY(-6px); border-color: rgba(255, 81, 0, 0.7); }
   .tk:focus-visible { outline: 2px solid var(--flash-orange); outline-offset: 3px; }
-  .tk-cuerpo { padding: var(--e3); display: flex; flex-direction: column; }
+  .tk-cuerpo { padding: var(--e2) var(--e3); display: flex; flex-direction: column; }
   .tk-no {
-    font-size: 12px; letter-spacing: .22em; color: var(--studio-gray); margin-bottom: var(--e2);
+    font-size: 12px; letter-spacing: .22em; color: var(--studio-gray); margin-bottom: 6px;
     font-variant-numeric: tabular-nums;
   }
   .tk-name { font-size: clamp(22px, 2.2vw, 28px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; margin-bottom: var(--e1); }
@@ -269,8 +300,8 @@ import { routes } from '../data/links';
   .tk-desc { font-size: 15px; font-weight: 300; color: var(--studio-gray); line-height: 1.55; max-width: 46ch; }
   .tk-talon {
     border-left: 2px dashed rgba(255, 255, 255, 0.2);
-    padding: var(--e3) var(--e2);
-    display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 6px;
+    padding: var(--e2);
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 4px;
     background: rgba(255, 81, 0, 0.05);
     transition: background .25s;
     position: relative;
@@ -294,7 +325,7 @@ import { routes } from '../data/links';
   .tk-ver { margin-top: var(--e1); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--flash-orange); transition: transform .25s; }
   .tk:hover .tk-ver { transform: translateX(4px); }
   .cat-foot {
-    margin-top: var(--e4);
+    margin-top: var(--e2);
     font-size: 15px;
     font-weight: 300;
     color: var(--studio-gray);
@@ -312,28 +343,36 @@ import { routes } from '../data/links';
 
   /* ---------- CARE ---------- */
   .care-lead {
-    padding-top: var(--e4);
-    padding-bottom: var(--e6);
-    scroll-margin-top: 110px;
+    padding: 84px 0 var(--e3);
+    scroll-margin-top: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
+  .care-lead > .container { width: 100%; }
   .care-head {
-    margin-bottom: var(--e5);
+    margin-bottom: var(--e3);
   }
   .care-title {
-    font-size: clamp(32px, 4.4vw, 56px);
+    font-size: clamp(30px, 3.8vw, 52px);
     font-weight: 600;
     line-height: 1.02;
     letter-spacing: -0.02em;
     text-transform: uppercase;
-    max-width: 18ch;
+    max-width: none;
   }
   .care-title .muted {
     color: var(--studio-gray);
   }
+  /* Las tres tarjetas, la nota y la aclaración caben en la misma pantalla que el titular. */
+  .care-lead :global(.care-card) { padding: var(--e3) var(--e3); }
+  .care-lead :global(.care-card .care-price) { font-size: 34px; margin: var(--e1) 0 2px; }
+  .care-lead :global(.care-card ul) { margin-top: var(--e2); }
+  .care-lead :global(.care-card ul li) { padding: 6px 0 6px var(--e3); }
+  .care-lead :global(.care-card ul li::before) { top: 11px; }
+  .care-lead :global(.care-note) { margin-top: var(--e2); padding: var(--e2) var(--e3); }
   .care-otro {
-    max-width: 64ch;
-    margin-top: var(--e3);
-    font-size: 15px;
+    max-width: none;
+    margin-top: var(--e2);
+    font-size: 14px;
     font-weight: 300;
     color: var(--studio-gray);
     line-height: 1.7;
@@ -346,9 +385,9 @@ import { routes } from '../data/links';
     text-decoration-thickness: 1px;
   }
   .care-lead-text {
-    margin-top: var(--e3);
-    max-width: 54ch;
-    font-size: 18px;
+    margin-top: var(--e2);
+    max-width: 80ch;
+    font-size: 17px;
     font-weight: 300;
     color: var(--studio-gray);
     line-height: 1.6;

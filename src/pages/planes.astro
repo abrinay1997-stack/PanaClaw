@@ -12,6 +12,10 @@ import { planVisuals } from '../data/images';
 import { routes } from '../data/links';
 import { site } from '../data/site';
 
+// De menor a mayor precio, como en la portada: se lee como una escalera.
+const precioNum = (p: string) => Number(p.replace(/[^0-9]/g, ''));
+const planesOrdenados = [...plans].sort((a, b) => precioNum(a.price) - precioNum(b.price));
+
 const origin = Astro.site ?? new URL('http://localhost:4321');
 const planesUrl = new URL(routes.planes, origin).toString();
 
@@ -60,10 +64,11 @@ const showcase = ['start', 'corporate']
 >
   <!--
     Los precios van primero, sin hero de por medio: quien entra aquí ya sabe qué
-    quiere ver. El argumento de venta ("Cuatro planes. Cero letra chica.") pasa
-    justo debajo, cuando ya tiene las cifras delante y le sirve de respaldo.
+    quiere ver. El respaldo («precio cerrado, plazo cerrado, el código es tuyo»)
+    vive en la portada y en Proceso; repetirlo aquí era una pantalla que no
+    sumaba nada entre las cifras y las escenas.
   -->
-  <section class="planes" id="planes">
+  <section class="planes fondo-brasa" id="planes">
     <div class="container">
       <div class="planes-head">
         <span class="eyebrow">Sitios web · $295 – $1,200</span>
@@ -71,7 +76,7 @@ const showcase = ['start', 'corporate']
       </div>
 
       <div class="plans-grid">
-        {plans.map((plan) => (
+        {planesOrdenados.map((plan) => (
           <Reveal>
             <PlanCard plan={plan} />
           </Reveal>
@@ -108,37 +113,6 @@ const showcase = ['start', 'corporate']
     </div>
   </section>
 
-  <!-- RESPALDO: lo que sostiene esos precios -->
-  <section class="promise">
-    <div class="container">
-      <div class="promise-grid">
-        <Reveal>
-          <h2 class="promise-title">Cuatro planes. <span class="muted">Cero letra chica.</span></h2>
-        </Reveal>
-        <div class="promise-facts">
-          <Reveal delay={0.1}>
-            <div class="promise-fact">
-              <span class="promise-k">Precio cerrado</span>
-              <p>El número que ves es el que pagas. El alcance va por escrito antes de arrancar y lo que quede fuera se cotiza aparte, sin sorpresas a mitad del proyecto.</p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.18}>
-            <div class="promise-fact">
-              <span class="promise-k">Plazo cerrado</span>
-              <p>Cada plan trae su cronograma. Los días cuentan desde que recibimos tu contenido y el 50 % del pago, no desde una fecha imaginaria.</p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.26}>
-            <div class="promise-fact">
-              <span class="promise-k">El código es tuyo</span>
-              <p>El repositorio se transfiere a tu GitHub al pago final y el dominio queda a tu nombre. Si mañana te vas, te llevas todo.</p>
-            </div>
-          </Reveal>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- VITRINA: los dos extremos del catálogo, como escenas -->
   {showcase.map(({ plan, visual }, i) => {
     const side = i % 2 === 0 ? 'left' : 'right';
@@ -168,7 +142,7 @@ const showcase = ['start', 'corporate']
   })}
 
   <!-- CAPACIDADES AVANZADAS -->
-  <section class="modulos" id="modulos">
+  <section class="modulos fondo-brasa" id="modulos">
     <div class="container">
       <span class="eyebrow">Capacidades avanzadas</span>
       <h2 class="section-title">
@@ -232,54 +206,32 @@ const showcase = ['start', 'corporate']
 
   /* Destino de #modulos: sin esto el nav flotante tapa el titular al saltar. */
   .modulos {
-    scroll-margin-top: 110px;
+    scroll-margin-top: 0;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 84px 0 var(--e3);
+  }
+  .modulos > .container { width: 100%; }
+  /* Titular y texto más compactos para que las seis tarjetas entren en la misma pantalla. */
+  .modulos :global(h2.section-title) {
+    font-size: clamp(30px, 3.8vw, 52px);
+    max-width: none;
+    margin-bottom: var(--e2);
+  }
+  .modulos :global(.modules-intro) {
+    max-width: 78ch;
+    margin-top: var(--e1);
+    margin-bottom: var(--e3);
   }
 
   /* ---------- RESPALDO ---------- */
-  .promise {
-    padding: var(--e6) 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-  }
-  .promise-grid {
-    display: grid;
-    grid-template-columns: 0.9fr 1.1fr;
-    gap: var(--e5);
-    align-items: start;
-  }
-  .promise-title {
-    font-size: clamp(32px, 4.2vw, 56px);
-    font-weight: 600;
-    line-height: 1.02;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-  }
-  .promise-title .muted {
-    color: var(--studio-gray);
-  }
-  .promise-facts {
-    display: grid;
-    gap: var(--e3);
-  }
-  .promise-k {
-    display: block;
-    font-size: 13px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--flash-orange);
-    margin-bottom: var(--e1);
-  }
-  .promise-fact p {
-    font-size: 16px;
-    font-weight: 300;
-    color: var(--studio-gray);
-    line-height: 1.65;
-    max-width: 56ch;
-  }
 
   /* ---------- VITRINA ---------- */
   .showcase-scene {
     position: relative;
-    min-height: 78vh;
+    min-height: 100svh;
     display: flex;
     align-items: center;
     padding: var(--e6) 0;
@@ -341,10 +293,6 @@ const showcase = ['start', 'corporate']
   @media (max-width: 900px) {
     .planes {
       padding-top: var(--e7);
-    }
-    .promise-grid {
-      grid-template-columns: 1fr;
-      gap: var(--e4);
     }
     .showcase-scene {
       min-height: 0;

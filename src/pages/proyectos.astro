@@ -58,8 +58,7 @@ const itemListSchema = {
   <!-- HERO: texto a la izquierda, muro de capturas reales a la derecha -->
   <section class="hero hero-short proy-hero">
     <div class="container hero-inner proy-hero-inner">
-      <span class="year">Proyectos</span>
-      <span class="handle">{projects.length} sitios en línea</span>
+      <span class="year">Proyectos · {projects.length} sitios en línea</span>
       <div class="proy-hero-copy">
         <Reveal eager>
           <h1>No te lo contamos. <span class="muted">Ábrelos.</span></h1>
@@ -74,7 +73,11 @@ const itemListSchema = {
         <Reveal delay={0.25} eager>
           <div class="proy-hero-actions">
             <a class="btn btn-primary" href="#trabajo">
-              <span class="dot"></span> Ver los {projects.length} sitios
+              <svg class="ojo" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              Ver los {projects.length} sitios
             </a>
             <a class="btn btn-ghost" href={routes.cotizador}>Quiero el mío</a>
           </div>
@@ -181,6 +184,7 @@ const itemListSchema = {
 <style>
   /* ---------- HERO CON MURO ---------- */
   .proy-hero-copy { max-width: 46ch; position: relative; z-index: 2; }
+  .proy-hero-actions .ojo { color: var(--flash-orange); flex: none; }
   .proy-hero-actions { display: flex; gap: var(--e2); flex-wrap: wrap; margin-top: var(--e4); }
   .muro {
     position: absolute; z-index: 1; top: -8%; right: -6%;
