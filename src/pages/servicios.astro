@@ -62,19 +62,20 @@ import { routes } from '../data/links';
         uno a otro (Lighthouse "list"/"listitem", 22 ago 2026).
       */}
       <ul class="cat-list">
-        {catalogo.map((item) => (
-          <Reveal as="li" class="cat-item">
-            <a class="cat-link" href={item.href}>
-              <span class="cat-main">
-                <span class="cat-name">{item.name}</span>
-                <span class="cat-para">{item.paraQuien}</span>
-                <span class="cat-desc">{item.desc}</span>
+        {catalogo.map((item, i) => (
+          <Reveal as="li" class="tk-item" delay={(i % 2) * 0.08}>
+            <a class="tk" href={item.href} data-lado={i % 2 === 0 ? 'a' : 'b'}>
+              <span class="tk-cuerpo">
+                <span class="tk-no" aria-hidden="true">Nº {String(i + 1).padStart(2, '0')}</span>
+                <span class="tk-name">{item.name}</span>
+                <span class="tk-para">{item.paraQuien}</span>
+                <span class="tk-desc">{item.desc}</span>
               </span>
-              <span class="cat-money">
-                <span class="cat-price">{item.price}</span>
-                <span class="cat-cobro">{item.cobro}</span>
+              <span class="tk-talon">
+                <span class="tk-price">{item.price}</span>
+                <span class="tk-cobro">{item.cobro}</span>
+                <span class="tk-ver" aria-hidden="true">Ver →</span>
               </span>
-              <span class="cat-arrow" aria-hidden="true">→</span>
             </a>
           </Reveal>
         ))}
@@ -202,25 +203,28 @@ import { routes } from '../data/links';
   /* ---------- CATÁLOGO ---------- */
   /* Sin hero: el nav flotante necesita su aire arriba, igual que en /planes. */
   .cat {
-    padding-top: var(--e7);
-    padding-bottom: var(--e5);
+    min-height: 100svh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding-top: var(--e6);
+    padding-bottom: var(--e4);
   }
+  .cat > .container { width: 100%; }
   .cat-head {
-    margin-bottom: var(--e4);
+    margin-bottom: var(--e3);
   }
   .cat-head h1 {
-    font-size: clamp(38px, 5.6vw, 72px);
+    font-size: clamp(34px, 4.4vw, 58px);
     font-weight: 600;
     line-height: 1;
     letter-spacing: -0.025em;
     text-transform: uppercase;
-    max-width: 18ch;
+    max-width: 26ch;
   }
   .cat-head h1 .muted {
     color: var(--studio-gray);
   }
   .cat-lead {
-    margin-top: var(--e3);
+    margin-top: var(--e2);
     max-width: 62ch;
     font-size: 17px;
     font-weight: 300;
@@ -228,82 +232,67 @@ import { routes } from '../data/links';
     line-height: 1.7;
   }
 
+  /*
+    Cada servicio es un talón: cuerpo a la izquierda, precio en el talón que se
+    arranca por la línea de puntos. Es la idea de la marca —precio por escrito,
+    sin letra pequeña— hecha objeto, y evita la tarjeta genérica de icono +
+    título + texto. Cada talón se inclina un poco distinto, como puestos a mano.
+  */
   .cat-list {
     list-style: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  /* Toda la fila es el enlace: en una lista de seis, obligar a apuntar al
-     nombre convierte una decisión en puntería. */
-  .cat-link {
     display: grid;
-    grid-template-columns: 1fr auto 28px;
-    align-items: center;
-    gap: var(--e3);
-    padding: var(--e3) 8px var(--e3) 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    transition: background 0.25s, padding-left 0.25s;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--e3) var(--e3);
   }
-  .cat-link:hover {
+  .tk {
+    --muesca: #100101;
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 11.5rem);
+    height: 100%;
+    background: linear-gradient(160deg, #1d0707 0%, #140404 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.25s;
+  }
+  .tk[data-lado='a'] { transform: rotate(-0.35deg); }
+  .tk[data-lado='b'] { transform: rotate(0.3deg); }
+  .tk:hover, .tk:focus-visible { transform: rotate(0deg) translateY(-6px); border-color: rgba(255, 81, 0, 0.7); }
+  .tk:focus-visible { outline: 2px solid var(--flash-orange); outline-offset: 3px; }
+  .tk-cuerpo { padding: var(--e3); display: flex; flex-direction: column; }
+  .tk-no {
+    font-size: 12px; letter-spacing: .22em; color: var(--studio-gray); margin-bottom: var(--e2);
+    font-variant-numeric: tabular-nums;
+  }
+  .tk-name { font-size: clamp(22px, 2.2vw, 28px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; margin-bottom: var(--e1); }
+  .tk-para { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--flash-orange); margin-bottom: var(--e1); }
+  .tk-desc { font-size: 15px; font-weight: 300; color: var(--studio-gray); line-height: 1.55; max-width: 46ch; }
+  .tk-talon {
+    border-left: 2px dashed rgba(255, 255, 255, 0.2);
+    padding: var(--e3) var(--e2);
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 6px;
     background: rgba(255, 81, 0, 0.05);
-    padding-left: var(--e2);
+    transition: background .25s;
+    position: relative;
+    border-radius: 0 6px 6px 0;
   }
-  .cat-link:focus-visible {
-    outline: 2px solid var(--flash-orange);
-    outline-offset: -2px;
+  /* Las muescas del troquel: dos círculos del color del fondo mordiendo el borde. */
+  .tk-talon::before, .tk-talon::after {
+    content: '';
+    position: absolute;
+    left: -10px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--muesca, #100101);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
-  .cat-name {
-    display: block;
-    font-size: 21px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    margin-bottom: 6px;
-  }
-  /* La situación del cliente, en naranja: es la línea por la que se reconoce a
-     sí mismo, y es lo que decide el clic. */
-  .cat-para {
-    display: block;
-    font-size: 13px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--flash-orange);
-    margin-bottom: var(--e1);
-  }
-  .cat-desc {
-    display: block;
-    max-width: 62ch;
-    font-size: 15px;
-    font-weight: 300;
-    color: var(--studio-gray);
-    line-height: 1.6;
-  }
-  .cat-money {
-    text-align: right;
-  }
-  .cat-price {
-    display: block;
-    font-size: 26px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    white-space: nowrap;
-  }
-  /* Cómo se cobra, del mismo tamaño que una nota pero SIEMPRE presente: es la
-     mitad del precio que casi nadie publica. */
-  .cat-cobro {
-    display: block;
-    margin-top: 5px;
-    font-size: 12.5px;
-    font-weight: 300;
-    color: var(--studio-gray);
-  }
-  .cat-arrow {
-    font-size: 20px;
-    color: var(--studio-gray);
-    transition: transform 0.25s, color 0.25s;
-  }
-  .cat-link:hover .cat-arrow {
-    color: var(--flash-orange);
-    transform: translateX(4px);
-  }
+  .tk-talon::before { top: -10px; clip-path: inset(50% 0 0 0); }
+  .tk-talon::after { bottom: -10px; clip-path: inset(0 0 50% 0); }
+  .tk:hover .tk-talon { background: rgba(255, 81, 0, 0.12); }
+  .tk-price { font-size: clamp(24px, 2.4vw, 30px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.05; }
+  .tk-cobro { font-size: 12.5px; font-weight: 300; color: var(--studio-gray); line-height: 1.35; }
+  .tk-ver { margin-top: var(--e1); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--flash-orange); transition: transform .25s; }
+  .tk:hover .tk-ver { transform: translateX(4px); }
   .cat-foot {
     margin-top: var(--e4);
     font-size: 15px;
@@ -483,26 +472,13 @@ import { routes } from '../data/links';
     .cat {
       padding-top: var(--e7);
     }
-    /* El precio baja debajo del texto, no encoge: en una lista de compra, la
-       cifra apretada contra el borde en dos líneas es lo primero que deja de
-       leerse. La flecha se va — en un teléfono no hay hover que la explique. */
-    .cat-link {
-      grid-template-columns: 1fr;
-      gap: var(--e2);
-      padding: var(--e3) 0;
-    }
-    .cat-link:hover {
-      padding-left: 0;
-    }
-    .cat-money {
-      text-align: left;
-    }
-    .cat-price {
-      font-size: 22px;
-    }
-    .cat-arrow {
-      display: none;
-    }
+    /* El talón baja debajo del texto y la línea de puntos pasa a horizontal. */
+    .cat-list { grid-template-columns: 1fr; gap: var(--e2); }
+    .tk { grid-template-columns: 1fr; }
+    .tk[data-lado] { transform: none; }
+    .tk-talon { border-left: 0; border-top: 2px dashed rgba(255, 255, 255, 0.2); border-radius: 0 0 6px 6px; padding: var(--e2) var(--e3); }
+    .tk-talon::before { left: -10px; top: -10px; clip-path: inset(0 50% 0 0); }
+    .tk-talon::after { left: auto; right: -10px; top: -10px; bottom: auto; clip-path: inset(0 0 0 50%); }
     .diag-card {
       grid-template-columns: 1fr;
       gap: var(--e3);
