@@ -19,6 +19,8 @@ interface Props {
   as?: string;
   delay?: number;
   y?: number;
+  /** Entrada lateral en px (negativo = desde la izquierda). Por defecto 0: solo sube. */
+  x?: number;
   duration?: number;
   stagger?: boolean;
   class?: string;
@@ -49,6 +51,7 @@ const {
   as: Tag = 'div',
   delay = 0,
   y = 24,
+  x = 0,
   duration = 0.9,
   stagger = false,
   class: className = '',
@@ -56,7 +59,7 @@ const {
 } = Astro.props;
 
 const classes = ['reveal', stagger ? 'reveal--stagger' : '', className].filter(Boolean).join(' ');
-const styleVars = `--reveal-delay:${delay}s;--reveal-duration:${duration}s;--reveal-y:${y}px;`;
+const styleVars = `--reveal-delay:${delay}s;--reveal-duration:${duration}s;--reveal-y:${y}px;--reveal-x:${x}px;`;
 ---
 
 <Tag
@@ -145,7 +148,7 @@ const styleVars = `--reveal-delay:${delay}s;--reveal-duration:${duration}s;--rev
   /* Transitions puros: valores finales se aplican SIEMPRE, animación es enhancement */
   [data-reveal] {
     opacity: 0;
-    transform: translate3d(0, var(--reveal-y, 24px), 0);
+    transform: translate3d(var(--reveal-x, 0px), var(--reveal-y, 24px), 0);
     transition:
       opacity var(--reveal-duration, 0.9s) cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s),
       transform var(--reveal-duration, 0.9s) cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s);
@@ -180,7 +183,7 @@ const styleVars = `--reveal-delay:${delay}s;--reveal-duration:${duration}s;--rev
   @keyframes reveal-in {
     from {
       opacity: 0;
-      transform: translate3d(0, var(--reveal-y, 24px), 0);
+      transform: translate3d(var(--reveal-x, 0px), var(--reveal-y, 24px), 0);
     }
     to {
       opacity: 1;
