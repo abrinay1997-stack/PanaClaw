@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Reveal from '../components/Reveal.astro';
-import ProjectCard from '../components/ProjectCard.astro';
+import { Image } from 'astro:assets';
 import SceneBg from '../components/SceneBg.astro';
 
 import { projects, publishedMetrics } from '../data/projects';
@@ -23,6 +23,12 @@ import { site, waLink } from '../data/site';
  * sitio critica en las agencias.
  */
 const origin = Astro.site ?? new URL('http://localhost:4321');
+// Cada columna del muro empieza en un sitio distinto y se repite dos veces para que el bucle no tenga costura.
+const conCaptura = projects.filter((p) => p.image);
+const columnas = [0, 1, 2].map((k) => {
+  const giro = [...conCaptura.slice(k * 2), ...conCaptura.slice(0, k * 2)];
+  return [...giro, ...giro];
+});
 const anyMeasured = projects.some((p) => publishedMetrics(p).length > 0);
 
 const itemListSchema = {
@@ -49,50 +55,99 @@ const itemListSchema = {
   activePath={routes.proyectos}
   jsonLd={[itemListSchema]}
 >
-  <!-- HERO -->
-  <section class="hero hero-short">
-    <div class="container hero-inner">
+  <!-- HERO: texto a la izquierda, muro de capturas reales a la derecha -->
+  <section class="hero hero-short proy-hero">
+    <div class="container hero-inner proy-hero-inner">
       <span class="year">Proyectos</span>
       <span class="handle">{projects.length} sitios en línea</span>
-      <Reveal eager>
-        <h1>No te lo contamos. <span class="muted">Ábrelos.</span></h1>
-      </Reveal>
-      <Reveal delay={0.15} eager>
-        <p class="lead">
-          Todo lo demás en este sitio son promesas nuestras. Esto es lo único que puedes
-          comprobar sin fiarte de nadie: cada tarjeta abre el sitio real, funcionando hoy.
-          Míralo desde tu celular y cronométralo si quieres.
-        </p>
-      </Reveal>
+      <div class="proy-hero-copy">
+        <Reveal eager>
+          <h1>No te lo contamos. <span class="muted">Ábrelos.</span></h1>
+        </Reveal>
+        <Reveal delay={0.15} eager>
+          <p class="lead">
+            Todo lo demás en este sitio son promesas nuestras. Esto es lo único que puedes
+            comprobar sin fiarte de nadie: cada sitio abre en vivo, funcionando hoy. Míralo
+            desde tu celular y cronométralo si quieres.
+          </p>
+        </Reveal>
+        <Reveal delay={0.25} eager>
+          <div class="proy-hero-actions">
+            <a class="btn btn-primary" href="#trabajo">
+              <span class="dot"></span> Ver los {projects.length} sitios
+            </a>
+            <a class="btn btn-ghost" href={routes.cotizador}>Quiero el mío</a>
+          </div>
+        </Reveal>
+      </div>
+    </div>
+
+    <!-- Decorativo: los mismos sitios de la galería, repetidos para que el bucle no tenga costura. -->
+    <div class="muro" aria-hidden="true">
+      {[0, 1, 2].map((col) => (
+        <div class="muro-col" data-col={col}>
+          {columnas[col].map((project) => (
+            <Image
+              src={project.image!}
+              alt=""
+              widths={[320, 520]}
+              sizes="(max-width: 900px) 40vw, 22vw"
+              format="webp"
+              quality={60}
+              loading="eager"
+              decoding="async"
+            />
+          ))}
+        </div>
+      ))}
     </div>
   </section>
 
-  <!-- REJILLA DE PROYECTOS -->
-  <section class="proyectos" id="trabajo" aria-labelledby="trabajo-title">
-    <div class="container">
-      <!--
-        El diseño no pide un titular aquí —las tarjetas hablan solas—, pero sin
-        él la página saltaba del h1 al h3 de cada ficha y quien navega por
-        encabezados se encontraba el listado sin nombre.
-      -->
-      <h2 class="sr-only" id="trabajo-title">Sitios publicados</h2>
-
-      <div class="proyectos-grid">
-        {projects.map((project) => (
-          <Reveal>
-            <ProjectCard project={project} />
-          </Reveal>
-        ))}
+  <!-- GALERÍA: una pantalla, un sitio a la vez -->
+  <section class="galeria" id="trabajo" aria-labelledby="trabajo-title">
+    <div class="container galeria-head">
+      <h2 id="trabajo-title">Sitios publicados <span class="muted">· ábrelos</span></h2>
+      <div class="galeria-ctrl">
+        <span class="galeria-count" data-galeria-count aria-live="polite">1 / {projects.length}</span>
+        <button type="button" class="galeria-btn" data-galeria="-1" aria-label="Sitio anterior">←</button>
+        <button type="button" class="galeria-btn" data-galeria="1" aria-label="Sitio siguiente">→</button>
       </div>
-
-      {anyMeasured && (
-        <p class="proyectos-nota">
-          Las cifras las mide Google, con su propia prueba de velocidad y sobre el sitio en
-          vivo, tal como lo carga un celular. Cada una lleva al lado la fecha en que se tomó,
-          porque un número sin fecha deja de ser cierto sin que nadie lo toque.
-        </p>
-      )}
     </div>
+    <ul class="galeria-pista" data-galeria-pista tabindex="0" aria-label="Galería de sitios publicados">
+      {projects.map((project, i) => (
+        <li class="galeria-slide" data-slide={i}>
+          <a href={project.url} target="_blank" rel="noopener" class="galeria-marco"
+             aria-label={`Abrir ${project.domain} en una pestaña nueva`}>
+            <div class="galeria-barra" aria-hidden="true"><i></i><i></i><i></i><span>{project.domain}</span></div>
+            {project.image && (
+              <Image
+                src={project.image}
+                alt={`Captura de la portada de ${project.domain}`}
+                widths={[640, 1000, 1400]}
+                sizes="(max-width: 900px) 86vw, 70vw"
+                format="webp"
+                quality={78}
+                loading={i === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+              />
+            )}
+          </a>
+          <div class="galeria-pie">
+            <div>
+              <h3>{project.name}</h3>
+              <p>{[project.sector, project.summary].filter(Boolean).join(' · ') || project.domain}</p>
+            </div>
+            <a class="btn btn-ghost" href={project.url} target="_blank" rel="noopener">Abrir el sitio ↗</a>
+          </div>
+        </li>
+      ))}
+    </ul>
+    {anyMeasured && (
+      <p class="proyectos-nota container">
+        Las cifras las mide Google, con su propia prueba de velocidad y sobre el sitio en vivo,
+        tal como lo carga un celular. Cada una lleva al lado la fecha en que se tomó.
+      </p>
+    )}
   </section>
 
   <!-- CIERRE -->
@@ -124,22 +179,67 @@ const itemListSchema = {
 </BaseLayout>
 
 <style>
-  .proyectos {
-    padding: var(--e2) 0 var(--e6);
+  /* ---------- HERO CON MURO ---------- */
+  .proy-hero-copy { max-width: 46ch; position: relative; z-index: 2; }
+  .proy-hero-actions { display: flex; gap: var(--e2); flex-wrap: wrap; margin-top: var(--e4); }
+  .muro {
+    position: absolute; z-index: 1; top: -8%; right: -6%;
+    width: 58%; height: 116%;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--e2);
+    transform: rotate(-9deg);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 28%, #000 100%);
+            mask-image: linear-gradient(to right, transparent 0, #000 28%, #000 100%);
+    opacity: .9;
+    pointer-events: none;
   }
-  /*
-    Dos columnas fijas en vez de auto-fit: con cuatro fichas, `auto-fit` deja una
-    huérfana a ancho completo en cuanto una tarjeta crece más que las otras, y
-    aquí van a crecer desparejas mientras se completan los casos uno a uno.
-  */
-  .proyectos-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--e3);
-    align-items: start;
+  .muro-col { display: flex; flex-direction: column; gap: var(--e2); animation: muro-sube 46s linear infinite; }
+  .muro-col[data-col="1"] { animation-direction: reverse; animation-duration: 58s; margin-top: calc(var(--e4) * -1); }
+  .muro-col[data-col="2"] { animation-duration: 52s; margin-top: var(--e3); }
+  .muro :global(img) {
+    width: 100%; height: auto; aspect-ratio: 2 / 1; object-fit: cover; object-position: top;
+    border-radius: 10px; border: 1px solid rgba(255, 255, 255, .12);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, .55);
   }
+  @keyframes muro-sube { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+
+  /* ---------- GALERÍA ---------- */
+  .galeria { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: var(--e6) 0 var(--e5); border-top: 1px solid rgba(255, 255, 255, .06); }
+  .galeria-head { display: flex; align-items: end; justify-content: space-between; gap: var(--e3); margin-bottom: var(--e3); }
+  .galeria-head h2 { font-size: clamp(28px, 4vw, 52px); font-weight: 600; letter-spacing: -.02em; text-transform: uppercase; line-height: 1.02; }
+  .galeria-head h2 .muted { color: var(--studio-gray); }
+  .galeria-ctrl { display: flex; align-items: center; gap: var(--e1); flex: none; }
+  .galeria-count { font-size: 14px; letter-spacing: .12em; color: var(--studio-gray); margin-right: var(--e1); }
+  .galeria-btn {
+    width: 48px; height: 48px; border-radius: 50%; cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, .3); background: transparent; color: var(--soft-white);
+    font: inherit; font-size: 18px; transition: border-color .2s, color .2s;
+  }
+  .galeria-btn:hover { border-color: var(--flash-orange); color: var(--flash-orange); }
+  .galeria-btn:focus-visible { outline: 2px solid var(--flash-orange); outline-offset: 3px; }
+  .galeria-pista {
+    list-style: none; margin: 0; padding: 0 max(var(--e3), calc((100vw - 1240px) / 2));
+    display: flex; gap: var(--e3);
+    overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: max(var(--e3), calc((100vw - 1240px) / 2));
+    scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+  }
+  .galeria-pista::-webkit-scrollbar { display: none; }
+  .galeria-slide { flex: 0 0 min(86vw, 980px); scroll-snap-align: start; }
+  .galeria-marco {
+    display: block; border-radius: 14px; overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .14); background: #0c0202;
+    transition: border-color .25s, transform .35s;
+  }
+  .galeria-marco:hover { border-color: var(--flash-orange); transform: translateY(-4px); }
+  .galeria-barra { display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: #160404; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+  .galeria-barra i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255, 255, 255, .2); }
+  .galeria-barra span { margin-left: var(--e1); font-size: 13px; color: var(--studio-gray); letter-spacing: .04em; }
+  .galeria-marco :global(img) { display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; object-fit: cover; object-position: top; }
+  .galeria-pie { display: flex; align-items: center; justify-content: space-between; gap: var(--e3); padding-top: var(--e2); }
+  .galeria-pie h3 { font-size: clamp(20px, 2.4vw, 30px); font-weight: 600; letter-spacing: -.01em; }
+  .galeria-pie .btn { white-space: nowrap; flex: none; }
+  .galeria-pie p { font-size: 15px; font-weight: 300; color: var(--studio-gray); margin-top: 4px; }
   .proyectos-nota {
-    margin-top: var(--e4);
+    margin-top: var(--e3);
     max-width: 68ch;
     font-size: 14px;
     font-weight: 300;
@@ -184,14 +284,43 @@ const itemListSchema = {
   }
 
   @media (max-width: 900px) {
-    .proyectos-grid {
-      grid-template-columns: 1fr;
-    }
-    .proyectos {
-      padding-bottom: var(--e6);
-    }
-    .proyectos-cta {
-      padding: var(--e6) 0;
-    }
+    .muro { position: relative; top: auto; right: auto; width: 112%; height: 34svh; margin: var(--e3) -6% 0; transform: rotate(-6deg); -webkit-mask-image: none; mask-image: none; overflow: hidden; opacity: .75; }
+    .proy-hero { justify-content: flex-start; }
+    .galeria-pie { flex-direction: column; align-items: flex-start; gap: var(--e2); }
+    .galeria-head h2 { font-size: 26px; }
   }
 </style>
+
+<style>
+  @media (prefers-reduced-motion: reduce) { .muro-col { animation: none !important; } }
+</style>
+
+<script>
+  function iniciar() {
+    const pista = document.querySelector<HTMLElement>('[data-galeria-pista]');
+    if (!pista || pista.dataset.listo) return;
+    pista.dataset.listo = '1';
+    const cuenta = document.querySelector('[data-galeria-count]');
+    const slides = Array.from(pista.children) as HTMLElement[];
+    const actual = () => {
+      const x = pista.scrollLeft + 8;
+      let mejor = 0;
+      slides.forEach((el, i) => { if (el.offsetLeft - pista.offsetLeft <= x) mejor = i; });
+      return mejor;
+    };
+    const pintar = () => { if (cuenta) cuenta.textContent = `${actual() + 1} / ${slides.length}`; };
+    const ir = (d: number) => {
+      const i = Math.min(slides.length - 1, Math.max(0, actual() + d));
+      pista.scrollTo({ left: slides[i].offsetLeft - slides[0].offsetLeft, behavior: 'smooth' });
+    };
+    document.querySelectorAll<HTMLElement>('[data-galeria]').forEach((b) =>
+      b.addEventListener('click', () => ir(Number(b.dataset.galeria))));
+    pista.addEventListener('scroll', pintar, { passive: true });
+    pista.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); ir(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); ir(-1); }
+    });
+  }
+  iniciar();
+  document.addEventListener('astro:page-load', iniciar);
+</script>

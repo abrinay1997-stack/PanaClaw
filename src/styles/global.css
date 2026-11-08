@@ -230,11 +230,22 @@ a{color:inherit;text-decoration:none;}
 
 /* ---------- HERO ---------- */
 .hero{
-  position:relative;min-height:100vh;
+  position:relative;min-height:100svh;
   display:flex;flex-direction:column;justify-content:center;
   padding-top:100px;overflow:hidden;
 }
-.hero.hero-short{min-height:70vh;padding-top:var(--e6);}
+.hero.hero-short{min-height:100svh;padding-top:var(--e6);}
+/* El disco naranja gigante era del hero de la portada. En las páginas interiores
+   se leía como una mancha: aquí queda un resplandor bajo, de brasa, en la esquina. */
+.hero.hero-short::after{
+  top:auto;bottom:-32%;right:-14%;
+  width:62vw;height:62vw;
+  background:radial-gradient(circle at center,
+    rgba(255,81,0,.34) 0%,
+    rgba(238,0,0,.16) 40%,
+    rgba(16,1,1,0) 70%);
+  filter:blur(40px);
+}
 .hero::after{
   content:"";position:absolute;top:-10%;right:-10%;
   width:70vw;height:70vw;border-radius:50%;
@@ -678,4 +689,22 @@ h2.section-title .muted{color:var(--studio-gray);}
   .brand-logo{width:24px;height:24px;}
   .brand-name{font-size:14px;}
   .nav-cta{padding:8px 14px;font-size:12px;}
+}
+
+
+/* ---------- UNA SECCIÓN, UNA PANTALLA ----------
+   Cada bloque grande de las páginas interiores ocupa su pantalla completa
+   (como Safetory). `svh`, no `vh`: en el iPhone `vh` cuenta la barra del
+   navegador y empuja el contenido fuera de vista. Si el contenido es más
+   alto que la pantalla, la sección simplemente crece. */
+:is(.proceso-band,.proceso-scene,.manifest-scene,.who-scene,.cta,.proyectos-cta,
+    .care-lead,.diag,.seg-porque,.seg-planes,.seg-tabla,.seg-como,.seg-alcance,.seg-faq,
+    .ebot-canales,.ebot-hace,.ebot-panel,.ebot-precio,.ebot-propiedad,.ebot-faq){
+  min-height:100svh;
+  display:flex;flex-direction:column;justify-content:center;
+}
+:is(.proceso-band,.proceso-scene,.manifest-scene,.who-scene,.cta,.proyectos-cta,
+    .care-lead,.diag,.seg-porque,.seg-planes,.seg-tabla,.seg-como,.seg-alcance,.seg-faq,
+    .ebot-canales,.ebot-hace,.ebot-panel,.ebot-precio,.ebot-propiedad,.ebot-faq) > .container{
+  width:100%;
 }

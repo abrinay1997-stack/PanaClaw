@@ -252,7 +252,9 @@ const esWhatsApp = formDestination === 'whatsapp';
 <style>
   .ct {
     position: relative;
-    padding: var(--e7) 0 var(--e6);
+    min-height: 100svh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: var(--e6) 0 var(--e5);
     overflow: hidden;
   }
   .ct .container {
@@ -402,8 +404,11 @@ const esWhatsApp = formDestination === 'whatsapp';
   }
 
   /* ---------- DERECHA ---------- */
+  .ct-card .field { margin-bottom: var(--e2); }
+  .ct-card .field textarea { min-height: 96px; }
+  .ct-card h2 { padding-bottom: var(--e2); border-bottom: 2px dashed rgba(255, 255, 255, 0.16); }
   .ct-card {
-    padding: var(--e4) var(--e4) var(--e4);
+    padding: var(--e3) var(--e4) var(--e3);
     border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(12, 2, 2, 0.86);
@@ -422,7 +427,7 @@ const esWhatsApp = formDestination === 'whatsapp';
     font-weight: 300;
     color: var(--studio-gray);
     line-height: 1.6;
-    margin-bottom: var(--e3);
+    margin: var(--e2) 0;
   }
   .ct-row {
     display: grid;
