@@ -96,7 +96,12 @@ export function retrieve(kb: Kb, query: string, k = 6): KbFact[] {
 export function invalidPrices(reply: string, allowed: string[]): string[] {
   const found = reply.match(/\$\s?[\d.,]+/g) ?? [];
   const ok = new Set(allowed);
-  return found.map((f) => f.replace(/[^0-9,]/g, '')).filter((n) => n && !ok.has(n));
+  /*
+   * El patrón se lleva la puntuación que sigue a la cifra: en «desde $295, en
+   * Panamá» captura «$295,». Sin quitar esa coma final, un precio correcto
+   * contaba como inventado y el visitante recibía «prefiero no darte una cifra».
+   */
+  return found.map((f) => f.replace(/[^0-9,]/g, '').replace(/,+$/, '')).filter((n) => n && !ok.has(n));
 }
 
 /**
