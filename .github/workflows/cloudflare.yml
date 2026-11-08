@@ -2,7 +2,8 @@
 #
 # Es el mismo resultado que `npm run cloudflare:desplegar`, pero desde el
 # navegador. Hoy sirve para ensayar: publica en `panaclaw-sitio.<cuenta>.workers.dev`
-# y NO toca `panaclaw.com`, que sigue en Netlify. El día del cambio, los pasos
+# y deja puestas las rutas de `panaclaw.com`, que NO atienden nada mientras los
+# registros DNS del dominio estén en nube gris: el sitio sigue en Netlify. El día del cambio, los pasos
 # están en `docs/MIGRACION_CLOUDFLARE.md`.
 #
 # ── Lo único que hay que crear a mano (una vez) ─────────────────────────────

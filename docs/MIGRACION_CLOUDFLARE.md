@@ -88,16 +88,16 @@ si importan: se pierden con el sitio.
    `npx wrangler secret put ANTHROPIC_API_KEY` (y `GROQ_API_KEY` o `META_API_KEY` si se usan). Probar
    el chat en la dirección de `workers.dev` antes de seguir.
 2. **Formulario**: decidir el camino de arriba y dejarlo hecho.
-3. **Dominio**: añadir `panaclaw.com` a Cloudflare (si no está ya) y, en
-   `wrangler.jsonc`, activar
-   ```jsonc
-   "routes": [
-     { "pattern": "panaclaw.com", "custom_domain": true },
-     { "pattern": "www.panaclaw.com", "custom_domain": true }
-   ]
-   ```
-   y desplegar. Esto toma el dominio: es el momento del cambio y por eso no está
-   puesto desde ahora.
+3. **Dominio** (por rutas de zona; no se borra ningún registro):
+   1. `wrangler.jsonc` ya trae `routes` para `panaclaw.com/*` y
+      `www.panaclaw.com/*`. Desplegarlo no cambia nada para los visitantes
+      mientras los registros sigan en nube gris.
+   2. En Cloudflare → SSL/TLS: modo **Full (strict)** y **Always Use HTTPS**.
+   3. Crear la regla de redirección del paso 4.
+   4. **El cambio:** en DNS, poner `A @` y `CNAME www` en **Proxied** (nube
+      naranja). Desde ahí atiende el Worker.
+   5. **Volver atrás:** ponerlos otra vez en **DNS only** (nube gris); el tráfico
+      regresa a Netlify en cuanto caduca el TTL.
 4. **`www` → dominio principal**: una regla de redirección (Rules → Redirect Rules)
    de `www.panaclaw.com/*` a `https://panaclaw.com/${1}`, 301. `astro.config.mjs`
    declara el dominio **sin** `www`, así que el canonical apunta al apex.
