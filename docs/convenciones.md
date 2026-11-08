@@ -82,13 +82,13 @@ declara en un solo sitio**:
 
 ```ts
 // src/data/site.ts
-export const formDestination: FormDestination = 'netlify';
+export const formDestination: FormDestination = 'whatsapp';
 ```
 
-- **`'netlify'`** (hoy) — el `<form>` sale con los atributos `data-netlify` y
+- **`'netlify'`** — el `<form>` sale con los atributos `data-netlify` y
   **Netlify Forms recibe el `POST`**. Los envíos aparecen en el panel de Netlify.
   El script ni siquiera engancha el listener.
-- **`'whatsapp'`** — el `<form>` sale sin atributos de Netlify, el script
+- **`'whatsapp'`** (hoy, desde la mudanza a Cloudflare) — el `<form>` sale sin atributos de Netlify, el script
   intercepta el `submit`, compone un mensaje con los campos y abre `wa.me` con el
   texto ya redactado, redirigiendo a `/gracias`. Si el navegador bloquea el
   pop-up, navega a `wa.me` en la misma pestaña.

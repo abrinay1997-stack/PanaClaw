@@ -67,4 +67,4 @@ export function waLink(msg: string = contact.whatsappDefaultMsg): string {
  */
 export type FormDestination = 'netlify' | 'whatsapp';
 
-export const formDestination: FormDestination = 'netlify';
+export const formDestination: FormDestination = 'whatsapp';
