@@ -74,6 +74,11 @@ interface Provider {
   /** Modelos a probar dentro de este proveedor, en orden. Ver `listaModelos()`. */
   models: string[];
   body: (model: string, system: string, msgs: ChatMessage[]) => unknown;
+  /**
+   * La misma petición sin la orden de no razonar, para el caso de que el
+   * proveedor la rechace con un 400 que mencione `thinking`. Solo Meta la usa.
+   */
+  sinOrden?: (model: string, system: string, msgs: ChatMessage[]) => unknown;
   extract: (json: any) => string;
 }
 
@@ -277,12 +282,24 @@ function pickProviders(): Provider[] {
         'anthropic-version': '2023-06-01',
       },
       models: listaModelos(process.env.META_MODEL, generico, ...MODELOS_META),
-      // Muse Spark razona antes de contestar: con 260 tokens, todo el cupo se
-      // puede ir en pensar y el texto sale vacío (pasó en el ensayo). El largo de
-      // lo que se publica lo sigue decidiendo `trimReply()`.
+      // Muse Spark RAZONA antes de contestar y por defecto no se le puede poner
+      // tope: en el ensayo se gastó 1500 tokens enteros pensando, con cero de
+      // texto visible (`parada=max_tokens; bloques=[redacted_thinking:0]`), y cada
+      // pregunta tardaba 18 segundos para terminar en «se me cayó la conexión».
+      // Para un chat de preguntas y respuestas con el contexto ya dado, el
+      // razonamiento sobra: se pide apagado, y queda holgura por si lo ignora.
+      // El largo de lo que se publica lo sigue decidiendo `trimReply()`.
       body: (model, system, msgs) => ({
         model,
-        max_tokens: 1500,
+        max_tokens: 3000,
+        temperature: 0.3,
+        thinking: { type: 'disabled' },
+        system,
+        messages: msgs,
+      }),
+      sinOrden: (model, system, msgs) => ({
+        model,
+        max_tokens: 3000,
         temperature: 0.3,
         system,
         messages: msgs,
@@ -462,12 +479,25 @@ export async function atender(req: Request, entorno: Entorno): Promise<Response>
   porProveedor: for (const provider of proveedores) {
     for (const model of provider.models) {
       try {
-        const res = await fetch(provider.url, {
-          method: 'POST',
-          headers: provider.headers,
-          body: JSON.stringify(provider.body(model, system, messages)),
-          signal: AbortSignal.timeout(20_000),
-        });
+        const pedir = (cuerpo: unknown) =>
+          fetch(provider.url, {
+            method: 'POST',
+            headers: provider.headers,
+            body: JSON.stringify(cuerpo),
+            signal: AbortSignal.timeout(20_000),
+          });
+
+        let res = await pedir(provider.body(model, system, messages));
+
+        // Si el proveedor no entiende la orden de no razonar, se repite sin ella
+        // antes de dar el modelo por malo.
+        if (res.status === 400 && provider.sinOrden) {
+          const motivo = (await res.clone().text().catch(() => '')).slice(0, 500);
+          if (/thinking/i.test(motivo)) {
+            console.error(`[chat] ${provider.name} (${model}) rechazó la orden de no razonar: ${motivo}`);
+            res = await pedir(provider.sinOrden(model, system, messages));
+          }
+        }
 
         if (!res.ok) {
           /*
