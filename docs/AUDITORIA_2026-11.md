@@ -136,6 +136,38 @@ Propuesta: quitarlos hasta que existan las cuentas. **Gravedad: baja.**
     de programar. Prueba final: tapar el logo y comparar con tres agencias; si
     no se distingue, no está.
 
+### 2.2 El chat: de burbuja a guía (hecho en esta rama)
+
+**[visto, con captura de iPhone del 8-nov]** El chat se abría con la página
+ampliada y recortado por la derecha. **Causa:** el campo de texto medía 14,5 px y
+Safari de iPhone amplía la página al enfocar un campo de menos de 16 px; y el
+código lo enfocaba solo al abrir. En escritorio era una ventana fija, sin poder
+moverla, y la rueda del ratón sobre la conversación movía la página de atrás.
+
+**Qué cambió [medido con `npm run medir:chat`]:**
+- **Teléfono:** hoja que sube desde abajo (se arrastra hacia abajo para cerrarla),
+  campo de 16 px, el teclado ya no se abre solo, botones de 44 px, la página de
+  atrás queda quieta, y la hoja sube cuando aparece el teclado.
+  Comprobado en iPhone SE, 13, 14 Pro Max y Pixel 7 (emulados): cabe entera, sin
+  desborde lateral.
+- **Escritorio:** se mueve arrastrando la cabecera (no se sale de la ventana,
+  recuerda dónde la dejó y el doble clic la devuelve a su sitio), se agranda y la
+  rueda sobre la conversación mueve la conversación.
+- **Guía:** atajos siempre visibles («Ayúdame a elegir», «Ver proyectos»,
+  «Cotizar»); «Ayúdame a elegir» pregunta qué necesita la persona y la lleva a
+  la página o sección; las respuestas traen botones que salen de los hechos que
+  usó el servidor (nunca de lo que invente el modelo); si el destino está en la
+  misma página, se desplaza hasta la sección, la marca un instante y en teléfono
+  pliega el chat para que se vea.
+- **Contexto:** las preguntas de arranque cambian según la página (en `/ebot/`
+  preguntan por eBot, en `/planes/` por los planes).
+- La prueba comprueba también que cada pregunta de arranque recupera el hecho
+  correcto y que cada ancla a la que apunta el chat existe de verdad.
+
+**Lo que no se puede comprobar desde aquí:** Chromium emulando un iPhone no
+reproduce el zoom automático de Safari. Se vigila la causa (tamaño de letra y foco
+automático); el resultado real se ve en el iPhone **después de desplegar**.
+
 ### 2.1 El blog
 
 **[medido]** 24 artículos, 5 categorías (la de «casos» está vacía; «guía» tiene
@@ -216,6 +248,27 @@ Propuesta: quitarlos hasta que existan las cuentas. **Gravedad: baja.**
 5. **Presupuesto de rendimiento en CI:** hoy el móvil está en el borde (LCP
    2,3–2,6 s). Lo que añada movimiento no puede empeorarlo. Regla: lo que está
    sobre el pliegue anima en CSS puro; lo demás, al entrar en pantalla.
+
+### 3.1 Qué se toma de Safetory (el diseño que usted admira)
+
+**[visto]** Se estudió `abrinay1997-stack/safetory` (estudio de grabación, Astro +
+Three.js + GSAP). Lo que da su espaciado y su ritmo:
+
+| Safetory | Qué significa para PanaClaw |
+|---|---|
+| **Una sola escala, la áurea (φ), para tipografía Y espaciado:** 10 · 16 · 26 · 42 · 68 · 110 · 178 · 288 px. Cada margen, hueco y tamaño sale de ahí | Es la razón por la que «todo respira igual». PanaClaw hoy usa 120 px fijos de relleno vertical en cada sección (también en un teléfono) y medidas sueltas. Propuesta: variables `--phi-*` y rehacer los espacios con ellas, con relleno **fluido** (56 → 120 px, como ya hace D'CASA) |
+| **Reparto 61,8 % / 38,2 %** en los bloques de dos columnas y en el hero | Mejor que el 50/50: un lado manda y el otro acompaña. Aplicable a hero, planes y proyectos |
+| **Un bloque, una idea, una pantalla** (100 dvh): «espacio negativo caro» | La portada de PanaClaw mide 5 716 px en móvil con huecos vacíos entre secciones; con la escala, el ritmo se vuelve intencional |
+| **Etiqueta pequeña (kicker) + titular + texto**, siempre con el mismo hueco entre los tres | Ya lo usa PanaClaw (etiqueta naranja), pero con huecos distintos en cada página |
+| **Titulares con `text-wrap: balance` e interlineado 0,92** | Líneas más parejas y titulares más compactos, sin cambiar la fuente |
+| **Titular que entra letra por letra, con una prueba que se deshace sola si el troceado cambia la altura** (evita saltos de página, CLS) | Es la idea más valiosa técnicamente: animar titulares sin riesgo. D'CASA ya lo hace palabra por palabra sin librerías |
+| **Movimiento diferido:** el módulo de animación (48 KB) no entra en el arranque y la página se lee igual si nunca llega | Mismo criterio que PanaClaw ya sigue (el hero va en CSS puro) |
+| **Cada animación es solo `transform` y `opacity`**, una sola vez al entrar en pantalla, y se apaga con `prefers-reduced-motion` | Es la regla del sitio; se mantiene |
+| *Última mejora de Safetory:* «tarjetas nítidas que se apagan al acercarse» | Idea para las tarjetas (C10): al pasar el puntero por una, las demás bajan de intensidad y la elegida gana protagonismo |
+
+**Lo que NO se copia:** Three.js ni GSAP. Safetory vive de su escena 3D; PanaClaw
+vende «abre en menos de un segundo» y su LCP en móvil ya está en el borde
+(2,3–2,6 s). Se toma el **ritmo, la escala y la coreografía**, hechos en CSS.
 
 ---
 
@@ -352,7 +405,8 @@ pequeñas, con su comprobación.
    Con eso preparo las 2 o 3 direcciones.
 8. **Blog:** ¿los cinco temas propuestos le sirven? ¿Cuáles son los 3
    artículos que más quiere que lea alguien nuevo?
-9. **Iconos del pie:** ¿quitamos LinkedIn, GitHub y X hasta que existan?
+9. **Escala de espaciado:** ¿adoptamos la escala áurea de Safetory como única medida del sitio?
+10. **Iconos del pie:** ¿quitamos LinkedIn, GitHub y X hasta que existan?
 
 ## 8. Lo que NO se pudo verificar
 

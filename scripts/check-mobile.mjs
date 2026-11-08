@@ -288,7 +288,18 @@ async function checkChat(browser, base) {
       const p = document.querySelector('.chat-panel').getBoundingClientRect();
       // Lo que de verdad duele es que se corten los controles, no el borde.
       const out = [];
+      const panel = document.querySelector('.chat-panel');
+      // Una fila que se desplaza de lado a propósito (los atajos de la guía) recorta
+      // lo que queda fuera, y eso no es un control cortado: es su manera de caber.
+      const seDesplaza = (el) => {
+        for (let n = el.parentElement; n && n !== panel; n = n.parentElement) {
+          const o = getComputedStyle(n).overflowX;
+          if (o === 'auto' || o === 'scroll') return true;
+        }
+        return false;
+      };
       for (const el of document.querySelectorAll('.chat-panel *')) {
+        if (seDesplaza(el)) continue;
         const b = el.getBoundingClientRect();
         if (b.width > 0 && (b.right > vw + 0.5 || b.left < -0.5)) {
           out.push(el.className ? String(el.className).trim().split(/\s+/)[0] : el.tagName);

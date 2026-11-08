@@ -17,25 +17,26 @@ import { routes } from '../data/links';
  *    Pages hoy y en Netlify mañana.
  */
 /*
- * La segunda es de eBot y va en ese sitio a propósito.
- *
- * Es el único producto del catálogo que nadie viene buscando: quien entra al
- * sitio busca una web, así que si el chat no lo nombra, no aparece en la
- * conversación jamás. Pero va SEGUNDA y no primera — el precio de un sitio
- * sigue siendo la pregunta que trae a la gente.
- *
- * Y va escrita como se pregunta («¿tienen bot para WhatsApp?»), no como se
- * llama el producto: quien no conoce el nombre no puede pulsar una pastilla que
- * diga «eBot». Comprobado contra la recuperación real de `_retrieval.mts` sobre
- * la base ya construida: devuelve `ebot-que-es` en primer lugar.
+ * Las preguntas de arranque cambian según la página en la que estás (están en el
+ * script, en `porPagina`): quien mira /planes/ pregunta otra cosa que quien mira
+ * /ebot/. Todas están escritas como se pregunta, no como se llaman los
+ * productos —quien no conoce el nombre no puede pulsar una pastilla que diga
+ * «eBot»—, y todas se comprobaron contra la recuperación real del chat: cada una
+ * devuelve el hecho que toca en los dos primeros lugares.
  */
-const sugerencias = [
-  '¿Cuánto cuesta un sitio?',
-  '¿Tienen bot para WhatsApp?',
-  '¿En cuánto tiempo lo entregan?',
-  '¿El código es mío?',
-  '¿Qué incluye el mantenimiento?',
-];
+const rutas = {
+  planes: routes.planes,
+  servicios: routes.servicios,
+  ebot: routes.ebot,
+  seguridad: routes.seguridad,
+  proyectos: routes.proyectos,
+  proceso: routes.proceso,
+  cotizador: routes.cotizador,
+  contacto: routes.contacto,
+  ayuda: routes.ayuda,
+  blog: routes.blog,
+  home: routes.home,
+};
 ---
 
 <div class="chat" data-chat transition:persist="chat">
@@ -67,31 +68,59 @@ const sugerencias = [
     <span class="chat-launcher-label">Asistente</span>
   </button>
 
-  <section class="chat-panel" id="chat-panel" data-chat-panel hidden aria-label="Asistente de PanaClaw">
-    <header class="chat-head">
-      <div>
+  {/* Solo en teléfono: oscurece la página y, al tocarlo, cierra el chat. */}
+  <div class="chat-backdrop" data-chat-backdrop hidden></div>
+
+  {/*
+    `data-lenis-prevent`: el desplazamiento suave de la página (Lenis) captura la
+    rueda y el dedo en toda la ventana. Sin este atributo, mover el contenido del
+    chat desplazaba la página de atrás y no la conversación.
+  */}
+  <section
+    class="chat-panel"
+    id="chat-panel"
+    data-chat-panel
+    data-lenis-prevent
+    hidden
+    tabindex="-1"
+    aria-label="Asistente de PanaClaw"
+  >
+    <header class="chat-head" data-chat-head>
+      {/* Asa para arrastrar hacia abajo y cerrar (teléfono). Decorativa. */}
+      <span class="chat-grip" aria-hidden="true"></span>
+      <div class="chat-head-text">
         <p class="chat-title">Asistente de {site.name}</p>
-        <p class="chat-sub">Responde sobre planes, precios y plazos</p>
+        <p class="chat-sub" data-chat-sub>Te contesto y te llevo adonde necesitas</p>
       </div>
-      <button class="chat-close" type="button" data-chat-close aria-label="Cerrar el chat">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <path d="M18 6 6 18M6 6l12 12" />
-        </svg>
-      </button>
+      <div class="chat-head-actions">
+        <button class="chat-icon-btn chat-expand" type="button" data-chat-expand aria-label="Agrandar el chat" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+          </svg>
+        </button>
+        <button class="chat-icon-btn chat-close" type="button" data-chat-close aria-label="Cerrar el chat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
     </header>
 
     <div class="chat-log" data-chat-log role="log" aria-live="polite" aria-atomic="false">
       <div class="chat-msg is-bot">
         <p>
-          Pregúntame lo que quieras sobre planes, precios, plazos o cómo trabajamos.
+          Hola. Te contesto dudas y te llevo a lo que buscas en el sitio.
           Si no lo sé, te paso con una persona.
         </p>
       </div>
-      <div class="chat-suggestions" data-chat-suggestions>
-        {sugerencias.map((s) => (
-          <button type="button" class="chat-chip" data-chat-suggestion={s}>{s}</button>
-        ))}
-      </div>
+      <div class="chat-suggestions" data-chat-suggestions></div>
+    </div>
+
+    {/* Atajos que siempre están: la guía. Se desplazan de lado, no ocupan alto. */}
+    <div class="chat-guia" data-chat-guia role="group" aria-label="Atajos">
+      <button type="button" class="chat-chip is-guia is-main" data-chat-elegir>Ayúdame a elegir</button>
+      <a class="chat-chip is-guia" data-chat-ir href={routes.proyectos}>Ver proyectos</a>
+      <a class="chat-chip is-guia" data-chat-ir href={routes.cotizador}>Cotizar</a>
     </div>
 
     <form class="chat-form" data-chat-form>
@@ -102,6 +131,8 @@ const sugerencias = [
         name="q"
         placeholder="Escribe tu pregunta…"
         autocomplete="off"
+        autocapitalize="sentences"
+        enterkeyhint="send"
         maxlength="500"
         data-chat-input
       />
@@ -119,38 +150,108 @@ const sugerencias = [
   </section>
 </div>
 
-<script is:inline define:vars={{ whatsapp: waLink(), cotizador: routes.cotizador }}>
+<script is:inline define:vars={{ whatsapp: waLink(), rutas }}>
   (() => {
     const root = document.querySelector('[data-chat]');
     if (!root || root.dataset.bound) return;
     root.dataset.bound = 'true';
 
+    const html = document.documentElement;
     const panel = root.querySelector('[data-chat-panel]');
+    const head = root.querySelector('[data-chat-head]');
     const toggle = root.querySelector('[data-chat-toggle]');
     const closeBtn = root.querySelector('[data-chat-close]');
+    const expandBtn = root.querySelector('[data-chat-expand]');
+    const backdrop = root.querySelector('[data-chat-backdrop]');
+    const sub = root.querySelector('[data-chat-sub]');
     const log = root.querySelector('[data-chat-log]');
     const form = root.querySelector('[data-chat-form]');
     const input = root.querySelector('[data-chat-input]');
     const send = root.querySelector('[data-chat-send]');
     const suggestions = root.querySelector('[data-chat-suggestions]');
+    const guia = root.querySelector('[data-chat-guia]');
+    const elegirBtn = root.querySelector('[data-chat-elegir]');
 
     /** Historial que se manda al servidor. Corto: el backend re-recupera cada turno. */
     const history = [];
     let busy = false;
     let endpointDown = false;
+    let conversando = false;
+
+    const mq = (q) => window.matchMedia(q).matches;
+    /** Teléfono: el chat es una hoja que sube desde abajo. */
+    const esMovil = () => mq('(max-width: 640px)');
+    /** Pantalla táctil: abrir el teclado solo cuando la persona toca el campo. */
+    const esTactil = () => mq('(pointer: coarse)');
+    const reducido = () => mq('(prefers-reduced-motion: reduce)');
+
+    const guardar = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
+    const leer = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+
+    /* ------------------------------------------------------------------ *
+     * Abrir y cerrar
+     * ------------------------------------------------------------------ */
 
     const open = () => {
       panel.hidden = false;
       toggle.setAttribute('aria-expanded', 'true');
       root.classList.add('is-open');
-      input.focus();
+      sincronizarMovil();
+      aplicarPosicion();
+      ajustarTeclado();
+      /*
+       * EL TECLADO NO SE ABRE SOLO EN TELÉFONO.
+       *
+       * Antes aquí había `input.focus()` siempre. En Safari de iPhone, enfocar un
+       * campo con letra menor de 16 px AMPLÍA la página —y no vuelve a su
+       * tamaño—, así que el panel quedaba recortado por la derecha y la página
+       * entera se veía agrandada: lo que enseñó la captura del 8-nov-2026.
+       * Ahora el campo mide 16 px y, además, en pantallas táctiles el foco va al
+       * panel (que no abre teclado) y el teclado sale cuando la persona toca el
+       * campo porque quiere escribir.
+       */
+      if (esTactil()) panel.focus({ preventScroll: true });
+      else input.focus();
     };
-    const close = () => {
+    const close = (devolverFoco = true) => {
       panel.hidden = true;
+      panel.style.transform = '';
       toggle.setAttribute('aria-expanded', 'false');
       root.classList.remove('is-open');
-      toggle.focus();
+      html.classList.remove('chat-bloqueo');
+      backdrop.hidden = true;
+      if (devolverFoco) toggle.focus({ preventScroll: true });
     };
+    /** Al ir a una sección o a otra página, en teléfono el chat se pliega para que se vea. */
+    const plegarEnMovil = () => { if (esMovil() && !panel.hidden) close(false); };
+
+    /** Teléfono: fondo oscuro y la página de atrás no se desplaza. Escritorio: nada de eso. */
+    function sincronizarMovil() {
+      if (panel.hidden) return;
+      const movil = esMovil();
+      html.classList.toggle('chat-bloqueo', movil);
+      backdrop.hidden = !movil;
+    }
+
+    /**
+     * El teclado de iPhone y Android encoge el viewport VISUAL, no el de diseño:
+     * un panel anclado abajo se queda tapado por el teclado. Se mide lo que lo
+     * tapa y se sube el panel esa cantidad; y se acota su alto a lo que se ve.
+     */
+    const vv = window.visualViewport;
+    function ajustarTeclado() {
+      if (!vv || panel.hidden || !esMovil()) {
+        root.style.removeProperty('--chat-kb');
+        root.style.removeProperty('--chat-vvh');
+        return;
+      }
+      const tapado = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      root.style.setProperty('--chat-kb', `${Math.round(tapado)}px`);
+      root.style.setProperty('--chat-vvh', `${Math.round(vv.height)}px`);
+    }
+    vv?.addEventListener('resize', ajustarTeclado);
+    vv?.addEventListener('scroll', ajustarTeclado);
+    window.addEventListener('resize', () => { sincronizarMovil(); ajustarTeclado(); aplicarPosicion(); });
 
     /**
      * La llamada de atención del lanzador.
@@ -182,23 +283,298 @@ const sugerencias = [
       if (++llamadas < 2) setTimeout(llamarLaAtencion, 35000);
     }
 
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setTimeout(llamarLaAtencion, 12000);
-    }
+    if (!reducido()) setTimeout(llamarLaAtencion, 12000);
 
     toggle.addEventListener('click', () => {
       if (panel.hidden) {
-        sessionStorage.setItem(YA_ABIERTO, '1');
+        try { sessionStorage.setItem(YA_ABIERTO, '1'); } catch {}
         toggle.classList.remove('is-calling');
         open();
       } else {
         close();
       }
     });
-    closeBtn.addEventListener('click', close);
+    closeBtn.addEventListener('click', () => close());
+    backdrop.addEventListener('click', () => close());
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !panel.hidden) close();
     });
+
+    /* ------------------------------------------------------------------ *
+     * Escritorio: mover y agrandar
+     * ------------------------------------------------------------------ */
+
+    const POS = 'panaclaw:chat-pos';
+    const ANCHO = 'panaclaw:chat-grande';
+    let dx = 0;
+    let dy = 0;
+
+    /** Mover solo tiene sentido con ratón y pantalla ancha; en teléfono es una hoja fija. */
+    const puedeMover = () => !esMovil() && mq('(pointer: fine)');
+
+    /** Deja el panel dentro de la ventana, sea cual sea la posición guardada. */
+    function acotar() {
+      const r = panel.getBoundingClientRect();
+      const antes = { dx, dy };
+      // `r` ya incluye el desplazamiento actual: se calcula el sobrante y se corrige.
+      const m = 8;
+      if (r.left < m) dx += m - r.left;
+      if (r.right > window.innerWidth - m) dx -= r.right - (window.innerWidth - m);
+      if (r.top < m) dy += m - r.top;
+      if (r.bottom > window.innerHeight - m) dy -= r.bottom - (window.innerHeight - m);
+      return antes.dx !== dx || antes.dy !== dy;
+    }
+    function pintarPosicion() {
+      panel.style.transform = dx || dy ? `translate3d(${Math.round(dx)}px, ${Math.round(dy)}px, 0)` : '';
+    }
+    function aplicarPosicion() {
+      if (panel.hidden) return;
+      if (!puedeMover()) { panel.style.transform = ''; return; }
+      pintarPosicion();
+      if (acotar()) pintarPosicion();
+    }
+    try {
+      const g = JSON.parse(leer(POS) || 'null');
+      if (g && Number.isFinite(g.dx) && Number.isFinite(g.dy)) { dx = g.dx; dy = g.dy; }
+    } catch {}
+
+    let arrastre = null;
+    head.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || e.target.closest('button, a')) return;
+      if (puedeMover()) {
+        arrastre = { x: e.clientX, y: e.clientY, dx, dy, tipo: 'mover' };
+      } else if (esMovil()) {
+        arrastre = { x: e.clientX, y: e.clientY, dy: 0, tipo: 'cerrar' };
+      } else return;
+      head.setPointerCapture(e.pointerId);
+      panel.classList.add('is-arrastrando');
+    });
+    head.addEventListener('pointermove', (e) => {
+      if (!arrastre) return;
+      if (arrastre.tipo === 'mover') {
+        dx = arrastre.dx + (e.clientX - arrastre.x);
+        dy = arrastre.dy + (e.clientY - arrastre.y);
+        pintarPosicion();
+        if (acotar()) pintarPosicion();
+      } else {
+        arrastre.dy = Math.max(0, e.clientY - arrastre.y);
+        panel.style.transform = `translate3d(0, ${arrastre.dy}px, 0)`;
+      }
+    });
+    const soltar = () => {
+      if (!arrastre) return;
+      panel.classList.remove('is-arrastrando');
+      if (arrastre.tipo === 'mover') {
+        guardar(POS, JSON.stringify({ dx: Math.round(dx), dy: Math.round(dy) }));
+      } else if (arrastre.dy > 90) {
+        close(false);
+      } else {
+        panel.style.transform = '';
+      }
+      arrastre = null;
+    };
+    head.addEventListener('pointerup', soltar);
+    head.addEventListener('pointercancel', soltar);
+    // Doble clic en la cabecera: vuelve a su sitio.
+    head.addEventListener('dblclick', (e) => {
+      if (e.target.closest('button, a') || !puedeMover()) return;
+      dx = 0; dy = 0; guardar(POS, null); pintarPosicion();
+    });
+
+    function fijarGrande(grande) {
+      panel.classList.toggle('is-grande', grande);
+      expandBtn.setAttribute('aria-pressed', String(grande));
+      expandBtn.setAttribute('aria-label', grande ? 'Reducir el chat' : 'Agrandar el chat');
+      guardar(ANCHO, grande ? '1' : null);
+      requestAnimationFrame(aplicarPosicion);
+    }
+    expandBtn.addEventListener('click', () => fijarGrande(!panel.classList.contains('is-grande')));
+    if (leer(ANCHO) === '1') fijarGrande(true);
+
+    /* ------------------------------------------------------------------ *
+     * La guía: a dónde llevar a cada quien
+     * ------------------------------------------------------------------ */
+
+    const quitarBarra = (r) => (r.length > 1 ? r.replace(/\/$/, '') : r);
+
+    const esc = (t) => t.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const ancla = (ruta, hash) => `${ruta}${hash}`;
+
+    /** Los botones de acción: enlaces normales, para que funcionen también sin esta lógica. */
+    function acciones(lista) {
+      // Un botón que lleva a la página donde ya estás, sin sección concreta, no
+      // lleva a ningún lado: se omite.
+      const aqui = quitarBarra(location.pathname);
+      lista = (lista || []).filter((a) => {
+        try {
+          const u = new URL(a.href, location.href);
+          return u.origin !== location.origin || u.hash || quitarBarra(u.pathname) !== aqui;
+        } catch {
+          return true;
+        }
+      });
+      if (!lista.length) return '';
+      return lista
+        .map((a, i) => {
+          const externo = /^https?:/i.test(a.href);
+          const extra = externo ? ' target="_blank" rel="noopener"' : '';
+          return `<a class="chat-action${i === 0 ? ' is-main' : ''}" data-chat-ir href="${esc(a.href)}"${extra}>${esc(a.t)}</a>`;
+        })
+        .join('');
+    }
+
+    /** «Ayúdame a elegir»: qué necesita la persona → a dónde llevarla. Solo rutas, ninguna cifra. */
+    const necesidades = [
+      {
+        t: 'Una web nueva',
+        r: 'Los cuatro planes tienen precio y plazo publicados. Si prefieres que te lo calculemos, el cotizador lo hace en cuatro preguntas.',
+        a: [{ t: 'Calcular mi precio', href: rutas.cotizador }, { t: 'Ver los 4 planes', href: ancla(rutas.planes, '#planes') }],
+      },
+      {
+        t: 'Vender en línea',
+        r: 'Para una tienda con carrito y cobros en línea existe un plan pensado para eso. Míralo con lo que incluye y lo que no.',
+        a: [{ t: 'Ver los planes', href: ancla(rutas.planes, '#planes') }, { t: 'Calcular mi precio', href: rutas.cotizador }],
+      },
+      {
+        t: 'Un agente de IA para WhatsApp',
+        r: 'eBot es un agente de inteligencia artificial que conoce tu negocio y contesta por WhatsApp, Instagram, Messenger y Telegram.',
+        a: [{ t: 'Conocer eBot', href: rutas.ebot }, { t: 'Ver el precio', href: ancla(rutas.ebot, '#precio') }],
+      },
+      {
+        t: 'Proteger mi sitio',
+        r: 'Revisamos el sitio que ya tienes, te decimos por dónde podrían entrar y lo cerramos.',
+        a: [{ t: 'Ver Seguridad', href: rutas.seguridad }, { t: 'Cómo se revisa', href: ancla(rutas.seguridad, '#como') }],
+      },
+      {
+        t: 'Ver trabajos reales',
+        r: 'Cada tarjeta abre el sitio real, funcionando hoy. Míralo desde tu celular y cronométralo.',
+        a: [{ t: 'Ver proyectos', href: rutas.proyectos }],
+      },
+      {
+        t: 'No sé por dónde empezar',
+        r: 'Está bien. Empieza por ver cómo trabajamos, o escríbenos y te orientamos.',
+        a: [{ t: 'Cómo trabajamos', href: rutas.proceso }, { t: 'Hablar con una persona', href: whatsapp }],
+      },
+    ];
+
+    function elegir() {
+      quitarSugerencias();
+      conversando = true;
+      if (esTactil()) input.blur();
+      const el = document.createElement('div');
+      el.className = 'chat-msg is-bot';
+      const p = document.createElement('p');
+      p.textContent = 'Cuéntame qué necesitas y te llevo directo.';
+      el.appendChild(p);
+      const op = document.createElement('div');
+      op.className = 'chat-opciones';
+      necesidades.forEach((n, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chat-chip';
+        b.dataset.chatNecesidad = String(i);
+        b.textContent = n.t;
+        op.appendChild(b);
+      });
+      el.appendChild(op);
+      log.appendChild(el);
+      verUltimo(el);
+    }
+
+    log.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-chat-necesidad]');
+      if (!b) return;
+      const n = necesidades[Number(b.dataset.chatNecesidad)];
+      b.closest('.chat-opciones')?.remove();
+      bubble(n.t, 'user');
+      history.push({ role: 'user', content: n.t });
+      history.push({ role: 'assistant', content: n.r });
+      bubble(n.r, 'bot', acciones(n.a));
+    });
+    elegirBtn.addEventListener('click', elegir);
+
+    /**
+     * Preguntas de arranque según la página. Cada una se comprobó contra la
+     * recuperación real del chat (devuelve el hecho que toca entre los dos
+     * primeros). Si la página no está aquí, salen las de la portada.
+     */
+    const base = [
+      '¿Cuánto cuesta un sitio?',
+      '¿Tienen un agente de IA para WhatsApp?',
+      '¿En cuánto tiempo lo entregan?',
+      '¿El código es mío?',
+    ];
+    const porPagina = {
+      [rutas.planes]: ['¿Qué planes tienen?', '¿Qué no incluye el precio?', '¿En cuánto tiempo lo entregan?'],
+      [rutas.proyectos]: ['¿Cuánto cuesta un sitio?', '¿El código es mío?', '¿En cuánto tiempo lo entregan?'],
+      [rutas.ebot]: ['¿Qué es eBot?', '¿Cuánto cuesta eBot?', '¿Qué pasa si el agente contesta mal?'],
+      [rutas.seguridad]: ['¿Qué incluye la auditoría?', '¿Auditoría o mantenimiento?'],
+      [rutas.servicios]: ['¿Qué incluye el mantenimiento?', '¿Cuánto cuesta un sitio?'],
+      [rutas.cotizador]: ['¿Cómo funciona el cotizador?', '¿En cuánto tiempo lo entregan?'],
+      [rutas.proceso]: ['¿En cuánto tiempo lo entregan?', '¿Cómo se paga?'],
+    };
+    const claves = Object.keys(porPagina);
+
+    function contextualizar() {
+      if (conversando || !suggestions) return;
+      const aqui = quitarBarra(location.pathname);
+      const k = claves.find((c) => quitarBarra(c) === aqui);
+      const lista = k ? porPagina[k] : base;
+      suggestions.textContent = '';
+      lista.forEach((q) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chat-chip';
+        b.dataset.chatSuggestion = q;
+        b.textContent = q;
+        suggestions.appendChild(b);
+      });
+      // Si ya estás en una de las páginas de los atajos, ese atajo sobra.
+      guia.querySelectorAll('a[data-chat-ir]').forEach((a) => {
+        const mismo = quitarBarra(new URL(a.href, location.href).pathname) === aqui;
+        a.hidden = mismo;
+      });
+    }
+    contextualizar();
+    document.addEventListener('astro:page-load', contextualizar);
+
+    /** Ir a una sección de ESTA página: desplazarse hasta ella y marcarla un instante. */
+    function resaltar(el) {
+      el.classList.remove('chat-destino');
+      void el.offsetWidth; // reinicia la animación si ya la tenía
+      el.classList.add('chat-destino');
+      setTimeout(() => el.classList.remove('chat-destino'), 2000);
+    }
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest?.('[data-chat-ir]');
+      if (!a || !root.contains(a) || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      let url;
+      try { url = new URL(a.href, location.href); } catch { return; }
+      if (url.origin !== location.origin) { plegarEnMovil(); return; } // WhatsApp y demás: se abren aparte
+      const mismaPagina = quitarBarra(url.pathname) === quitarBarra(location.pathname);
+      const destino = url.hash ? document.getElementById(decodeURIComponent(url.hash.slice(1))) : null;
+      if (mismaPagina && destino) {
+        e.preventDefault();
+        plegarEnMovil();
+        // Un instante para que el chat termine de plegarse y no estorbe al desplazamiento.
+        setTimeout(() => {
+          destino.scrollIntoView({ behavior: reducido() ? 'auto' : 'smooth', block: 'start' });
+          resaltar(destino);
+        }, esMovil() ? 120 : 0);
+      } else {
+        plegarEnMovil();
+      }
+    });
+
+    /* ------------------------------------------------------------------ *
+     * La conversación
+     * ------------------------------------------------------------------ */
+
+    function verUltimo(el) {
+      // Sin animación si la persona pidió menos movimiento.
+      log.scrollTo({ top: log.scrollHeight, behavior: reducido() ? 'auto' : 'smooth' });
+      return el;
+    }
 
     function bubble(text, who, extraHtml) {
       const el = document.createElement('div');
@@ -213,7 +589,7 @@ const sugerencias = [
         el.appendChild(extra);
       }
       log.appendChild(el);
-      log.scrollTop = log.scrollHeight;
+      verUltimo(el);
       return el;
     }
 
@@ -223,8 +599,13 @@ const sugerencias = [
       el.innerHTML = '<span></span><span></span><span></span>';
       el.setAttribute('aria-label', 'Escribiendo');
       log.appendChild(el);
-      log.scrollTop = log.scrollHeight;
+      verUltimo(el);
       return el;
+    }
+
+    function quitarSugerencias() {
+      suggestions?.remove();
+      conversando = true;
     }
 
     /** Cuando no hay backend (GitHub Pages), el chat se vuelve un atajo útil. */
@@ -232,8 +613,7 @@ const sugerencias = [
       return bubble(
         'El asistente aún no está conectado en esta versión del sitio. Te paso las dos vías rápidas:',
         'bot',
-        `<a class="chat-action" href="${whatsapp}" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>` +
-          `<a class="chat-action" href="${cotizador}">Cotizar en 4 preguntas</a>`
+        acciones([{ t: 'Escríbenos por WhatsApp', href: whatsapp }, { t: 'Cotizar en 4 preguntas', href: rutas.cotizador }])
       );
     }
 
@@ -241,7 +621,7 @@ const sugerencias = [
       if (busy || !text.trim()) return;
       busy = true;
       send.disabled = true;
-      suggestions?.remove();
+      quitarSugerencias();
 
       bubble(text, 'user');
       history.push({ role: 'user', content: text });
@@ -277,12 +657,14 @@ const sugerencias = [
         const reply = data.reply || 'No pude responder eso.';
         history.push({ role: 'assistant', content: reply });
 
-        const wantsQuote = /cotizador|cuatro preguntas/i.test(reply);
-        bubble(
-          reply,
-          'bot',
-          wantsQuote ? `<a class="chat-action" href="${cotizador}">Abrir el cotizador</a>` : ''
-        );
+        // Los botones salen de lo que el servidor usó para contestar (a qué
+        // página pertenece cada hecho). Si la respuesta habla del cotizador, ese
+        // botón va primero.
+        let lista = Array.isArray(data.acciones) ? data.acciones.slice(0, 3) : [];
+        if (/cotizador|cuatro preguntas/i.test(reply) && !lista.some((a) => a.href === rutas.cotizador)) {
+          lista = [{ t: 'Abrir el cotizador', href: rutas.cotizador }, ...lista].slice(0, 3);
+        }
+        bubble(reply, 'bot', acciones(lista));
       } catch {
         endpointDown = true;
         dots.remove();
@@ -290,7 +672,9 @@ const sugerencias = [
       } finally {
         busy = false;
         send.disabled = false;
-        input.focus();
+        // En pantalla táctil no se reabre el teclado solo: taparía la respuesta
+        // que acaba de llegar. La persona vuelve a tocar el campo si sigue.
+        if (!esTactil()) input.focus();
       }
     }
 
@@ -321,6 +705,7 @@ const sugerencias = [
     display: inline-flex;
     align-items: center;
     gap: 10px;
+    min-height: 48px;
     padding: 13px 20px 13px 16px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 999px;
@@ -332,6 +717,7 @@ const sugerencias = [
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
+    touch-action: manipulation;
     box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
     transition: transform 0.22s, border-color 0.22s, background 0.22s;
   }
@@ -388,7 +774,7 @@ const sugerencias = [
     82% { transform: translate3d(0, 0, 0); }
   }
 
-  /* ---------- PANEL ---------- */
+  /* ---------- PANEL (escritorio) ---------- */
   .chat-panel {
     position: absolute;
     right: 0;
@@ -407,15 +793,51 @@ const sugerencias = [
     -webkit-backdrop-filter: blur(24px);
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7);
     overflow: hidden;
+    outline: none;
+    transform-origin: bottom right;
+    /* `backwards` y no `both`: con `both` la animación se queda aplicada al
+       terminar y pisa el `transform` en línea con el que se arrastra el panel. */
+    animation: chat-abre 0.28s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+  .chat-panel[hidden] {
+    display: none;
+  }
+  /* Agrandado: para leer respuestas largas sin apretarse. */
+  .chat-panel.is-grande {
+    width: min(540px, calc(100vw - 40px));
+    height: min(720px, calc(100vh - 80px));
+  }
+  /* Mientras se arrastra no hay transiciones: el panel sigue al puntero sin retraso. */
+  .chat-panel.is-arrastrando {
+    transition: none;
+    user-select: none;
+  }
+  @keyframes chat-abre {
+    from { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.97); }
+    to { opacity: 1; transform: none; }
   }
 
   .chat-head {
+    position: relative;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 16px;
-    padding: 18px 18px 14px;
+    gap: 12px;
+    padding: 16px 12px 14px 18px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+    touch-action: none;
+  }
+  /* Con ratón la cabecera se agarra para mover el panel. */
+  @media (pointer: fine) and (min-width: 641px) {
+    .chat-head {
+      cursor: grab;
+    }
+    .chat-panel.is-arrastrando .chat-head {
+      cursor: grabbing;
+    }
+  }
+  .chat-grip {
+    display: none;
   }
   .chat-title {
     font-size: 15px;
@@ -428,10 +850,14 @@ const sugerencias = [
     font-weight: 300;
     color: var(--studio-gray);
   }
-  .chat-close {
+  .chat-head-actions {
     flex-shrink: 0;
-    width: 30px;
-    height: 30px;
+    display: flex;
+    gap: 6px;
+  }
+  .chat-icon-btn {
+    width: 34px;
+    height: 34px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -440,19 +866,37 @@ const sugerencias = [
     background: rgba(255, 255, 255, 0.06);
     color: var(--studio-gray);
     cursor: pointer;
+    touch-action: manipulation;
+    transition: background 0.2s, color 0.2s;
   }
-  .chat-close svg {
-    width: 15px;
-    height: 15px;
+  .chat-icon-btn svg {
+    width: 16px;
+    height: 16px;
   }
-  .chat-close:hover {
+  .chat-icon-btn:hover {
     background: rgba(255, 255, 255, 0.12);
     color: var(--soft-white);
+  }
+  .chat-icon-btn:focus-visible,
+  .chat-chip:focus-visible,
+  .chat-launcher:focus-visible,
+  .chat-send:focus-visible {
+    outline: 2px solid var(--flash-orange);
+    outline-offset: 2px;
+  }
+  .chat-log :global(.chat-action:focus-visible) {
+    outline: 2px solid var(--flash-orange);
+    outline-offset: 2px;
   }
 
   .chat-log {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    /* La rueda y el dedo mueven la conversación y, al llegar al final, no
+       arrastran la página de atrás. */
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     padding: 18px;
     display: flex;
     flex-direction: column;
@@ -473,6 +917,7 @@ const sugerencias = [
     font-size: 14.5px;
     font-weight: 300;
     line-height: 1.55;
+    animation: chat-entra 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .chat-log :global(.chat-msg.is-bot) {
     align-self: flex-start;
@@ -487,7 +932,12 @@ const sugerencias = [
     font-weight: 400;
     border-bottom-right-radius: 5px;
   }
+  @keyframes chat-entra {
+    from { opacity: 0; transform: translate3d(0, 8px, 0); }
+    to { opacity: 1; transform: none; }
+  }
 
+  /* Botones de acción: llevan a una sección o a otra página. */
   .chat-log :global(.chat-actions) {
     display: flex;
     flex-wrap: wrap;
@@ -495,24 +945,62 @@ const sugerencias = [
     margin-top: 12px;
   }
   .chat-log :global(.chat-action) {
-    display: inline-block;
-    padding: 8px 14px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 8px 15px;
     border: 1px solid rgba(255, 81, 0, 0.5);
     border-radius: 999px;
-    font-size: 12.5px;
+    font-size: 13px;
     color: var(--flash-orange);
+    touch-action: manipulation;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .chat-log :global(.chat-action.is-main) {
+    background: var(--flash-orange);
+    border-color: var(--flash-orange);
+    color: var(--deep-black);
+    font-weight: 500;
   }
   .chat-log :global(.chat-action:hover) {
-    background: rgba(255, 81, 0, 0.12);
+    background: rgba(255, 81, 0, 0.14);
+  }
+  .chat-log :global(.chat-action.is-main:hover) {
+    background: #ff6a26;
   }
 
-  .chat-suggestions {
+  .chat-suggestions,
+  .chat-log :global(.chat-opciones) {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
   }
+  .chat-log :global(.chat-opciones) {
+    margin-top: 12px;
+  }
   .chat-chip {
-    padding: 9px 14px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--studio-gray);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.2;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .chat-chip:hover {
+    border-color: var(--flash-orange);
+    color: var(--soft-white);
+  }
+  .chat-log :global(.chat-chip) {
+    min-height: 38px;
+    padding: 8px 14px;
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 999px;
     background: transparent;
@@ -520,11 +1008,39 @@ const sugerencias = [
     font-family: inherit;
     font-size: 13px;
     cursor: pointer;
-    transition: border-color 0.2s, color 0.2s;
+    touch-action: manipulation;
   }
-  .chat-chip:hover {
+  .chat-log :global(.chat-chip:hover) {
     border-color: var(--flash-orange);
     color: var(--soft-white);
+  }
+
+  /* La guía: atajos que siempre están, en una sola fila que se desplaza de lado. */
+  .chat-guia {
+    display: flex;
+    gap: 8px;
+    padding: 10px 14px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+  }
+  .chat-guia::-webkit-scrollbar {
+    display: none;
+  }
+  .chat-guia .chat-chip {
+    flex: none;
+    scroll-snap-align: start;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .chat-guia .chat-chip[hidden] {
+    display: none;
+  }
+  .chat-chip.is-main {
+    border-color: rgba(255, 81, 0, 0.55);
+    color: var(--flash-orange);
   }
 
   .chat-log :global(.chat-msg.is-thinking) {
@@ -550,18 +1066,25 @@ const sugerencias = [
   .chat-form {
     display: flex;
     gap: 8px;
-    padding: 12px 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.09);
+    padding: 4px 14px 12px;
   }
   .chat-form input {
     flex: 1;
+    min-width: 0;
+    min-height: 46px;
     padding: 12px 14px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.04);
     color: var(--soft-white);
     font-family: inherit;
-    font-size: 14.5px;
+    /*
+      16 px, y no menos: es el mínimo con el que Safari de iPhone NO amplía la
+      página al enfocar el campo. Con 14,5 px se ampliaba y el chat quedaba
+      recortado por la derecha (captura del 8-nov-2026). No es estético; no se
+      baja.
+    */
+    font-size: 16px;
   }
   .chat-form input:focus {
     outline: none;
@@ -572,19 +1095,21 @@ const sugerencias = [
   }
   .chat-send {
     flex-shrink: 0;
-    width: 44px;
+    width: 48px;
+    min-height: 46px;
     border: none;
     border-radius: 12px;
     background: var(--flash-orange);
     color: var(--deep-black);
     cursor: pointer;
+    touch-action: manipulation;
     display: inline-flex;
     align-items: center;
     justify-content: center;
   }
   .chat-send svg {
-    width: 17px;
-    height: 17px;
+    width: 18px;
+    height: 18px;
   }
   .chat-send:disabled {
     opacity: 0.45;
@@ -611,10 +1136,41 @@ const sugerencias = [
     white-space: nowrap;
   }
 
+  /* Fondo oscuro de la hoja (solo teléfono; en escritorio nunca se muestra). */
+  .chat-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    animation: chat-aparece 0.25s ease both;
+  }
+  .chat-backdrop[hidden] {
+    display: none;
+  }
+  @keyframes chat-aparece {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Los pulgares: botones táctiles de 44 px como mínimo. */
+  @media (pointer: coarse) {
+    .chat-icon-btn {
+      width: 44px;
+      height: 44px;
+    }
+    .chat-chip,
+    .chat-log :global(.chat-chip),
+    .chat-log :global(.chat-action) {
+      min-height: 44px;
+    }
+    .chat-expand {
+      display: none;
+    }
+  }
+
   @media (max-width: 520px) {
     .chat {
       right: 14px;
-      bottom: 14px;
+      bottom: calc(14px + env(safe-area-inset-bottom, 0px));
     }
     .chat-launcher-label {
       display: none;
@@ -622,30 +1178,81 @@ const sugerencias = [
     .chat-launcher {
       padding: 14px;
     }
-    /*
-      En teléfono el panel se ancla al viewport, no al lanzador.
+  }
 
-      Antes era `position:absolute` dentro de `.chat` —que va desplazado
-      `right:14px`— y encima pedía `width:calc(100vw - 28px)`. Dos medidas
-      distintas decidiendo el mismo ancho: si `100vw` no coincide exactamente
-      con el ancho útil, el panel se descuadra y se sale por la derecha. Es
-      justo lo que pasaba en Safari de iOS, donde `100vw` no siempre mide lo
-      que se ve; en Chromium no se reproducía.
+  /*
+    TELÉFONO: el chat es una hoja que sube desde abajo.
 
-      Con `left` y `right` fijados y `width:auto`, el ancho lo deriva el
-      navegador del viewport real. No hay aritmética que pueda desajustarse.
-    */
-    .chat-panel {
+    Anclada al viewport con `left` y `right`, sin cálculos con `100vw` (en
+    Safari de iOS `100vw` no siempre mide lo que se ve). El alto lo acota lo que
+    se ve de verdad: `--chat-vvh`, que el script mide con `visualViewport` y que
+    encoge cuando sale el teclado; y `--chat-kb` sube la hoja lo que el teclado
+    tapa. `dvh` queda de reserva para navegadores sin `visualViewport`.
+  */
+  @media (max-width: 640px) {
+    .chat-panel,
+    .chat-panel.is-grande {
       position: fixed;
-      left: 14px;
-      right: 14px;
-      bottom: 14px;
+      left: 0;
+      right: 0;
+      bottom: var(--chat-kb, 0px);
       width: auto;
-      /* dvh descuenta la barra de direcciones de Safari; vh queda de reserva
-         para navegadores que no lo soporten. */
-      height: min(72vh, 560px);
-      height: min(72dvh, 560px);
+      height: min(86vh, 680px);
+      height: min(86dvh, calc(var(--chat-vvh, 100dvh) - 8px), 680px);
+      border-radius: 22px 22px 0 0;
+      border-bottom: none;
+      /* Opaco: sobre la página de atrás el 3 % de transparencia dejaba ver su
+         texto como un fantasma detrás de la conversación. */
+      background: #0c0202;
+      transform-origin: bottom center;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      animation: chat-sube 0.32s cubic-bezier(0.22, 1, 0.36, 1) backwards;
     }
+    .chat-panel:not(.is-arrastrando) {
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .chat-grip {
+      display: block;
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      width: 40px;
+      height: 4px;
+      margin-left: -20px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.22);
+    }
+    .chat-head {
+      padding-top: 24px;
+    }
+    .chat-log {
+      padding: 14px;
+    }
+    .chat-log :global(.chat-msg) {
+      max-width: 92%;
+    }
+    .chat-foot {
+      padding-bottom: 10px;
+    }
+  }
+  @keyframes chat-sube {
+    from { transform: translate3d(0, 100%, 0); }
+    to { transform: none; }
+  }
+
+  /* La sección a la que lleva un botón se marca un instante para que se vea dónde se llegó.
+     Está en el global porque la sección es de otra página. */
+  :global(.chat-destino) {
+    animation: chat-destino 1.8s ease-out;
+  }
+  @keyframes chat-destino {
+    0% { outline: 2px solid rgba(255, 81, 0, 0.9); outline-offset: -8px; }
+    100% { outline: 2px solid rgba(255, 81, 0, 0); outline-offset: -8px; }
+  }
+  /* Con el chat abierto en teléfono la página de atrás no se mueve. */
+  :global(html.chat-bloqueo) {
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -654,5 +1261,10 @@ const sugerencias = [
     .chat-launcher.is-calling,
     .chat-launcher.is-calling::after { animation: none; }
     .chat-log :global(.chat-msg.is-thinking span) { animation: none; opacity: 0.6; }
+    .chat-panel,
+    .chat-backdrop,
+    .chat-log :global(.chat-msg) { animation: none; }
+    .chat-panel:not(.is-arrastrando) { transition: none; }
+    :global(.chat-destino) { animation: none; outline: 2px solid rgba(255, 81, 0, 0.6); outline-offset: -8px; }
   }
 </style>
