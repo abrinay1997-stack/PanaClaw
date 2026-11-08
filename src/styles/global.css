@@ -108,24 +108,10 @@ a{color:inherit;text-decoration:none;}
   background:rgba(22,6,6,.40);
   -webkit-backdrop-filter:var(--refraccion,blur(18px) saturate(200%) brightness(1.1));
   backdrop-filter:var(--refraccion,blur(18px) saturate(200%) brightness(1.1));
-  border:1px solid rgba(255,255,255,.30);
-  box-shadow:
-    inset 0 1.5px 0 rgba(255,255,255,.6),
-    inset 0 -1px 0 rgba(255,255,255,.2),
-    inset 0 0 0 1px rgba(255,255,255,.06),
-    0 16px 40px -20px rgba(0,0,0,.75);
-  transition:background .28s ease,border-color .28s ease;
+  /* Sin contorno ni filos blancos: el vidrio se define por lo que deforma, no por una línea. */
+  box-shadow:0 16px 40px -20px rgba(0,0,0,.75);
+  transition:background .28s ease;
 }
-/* Reflejo: una franja de luz que cruza la píldora al pasar el puntero. Se mueve con
-   clip-path, no con transform: una caja desplazada agranda el ancho de la página. */
-.nav-pill::after{
-  content:"";position:absolute;inset:1px;z-index:-1;border-radius:inherit;pointer-events:none;
-  background:rgba(255,255,255,.18);
-  clip-path:polygon(-22% 0,0 0,-10% 100%,-32% 100%);
-  opacity:0;
-  transition:clip-path .9s cubic-bezier(.22,1,.36,1),opacity .4s ease;
-}
-.nav-pill:hover::after{clip-path:polygon(100% 0,122% 0,112% 100%,90% 100%);opacity:1;}
 .nav-pill > *{position:relative;}
 /* Un SVG con el filtro de refracción, sin ocupar lugar. */
 .filtro-liquido{position:absolute;width:0;height:0;overflow:hidden;}
@@ -138,9 +124,9 @@ a{color:inherit;text-decoration:none;}
   height:var(--gota-alto,36px);width:var(--gota-ancho,0px);
   transform:translate3d(var(--gota-x,0px),var(--gota-y,0px),0);
   border-radius:999px;
-  background:rgba(255,255,255,.13);
-  border:1px solid rgba(255,255,255,.42);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.65),inset 0 -1px 0 rgba(255,255,255,.22);
+  background:rgba(255,255,255,.11);
+  border:0;
+  box-shadow:none;
   opacity:0;pointer-events:none;
   transition:transform .5s cubic-bezier(.34,1.56,.64,1),width .5s cubic-bezier(.34,1.56,.64,1),opacity .18s ease;
 }

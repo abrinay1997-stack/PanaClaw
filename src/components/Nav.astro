@@ -128,15 +128,20 @@ const { activePath = '' } = Astro.props;
    * la persona pidió reducirlo.
    */
   function initLiquido() {
+    const header = document.querySelector<HTMLElement>('.floating-nav');
     const filtro = document.querySelector<SVGSVGElement>('.filtro-liquido');
     const ruido = filtro?.querySelector('feTurbulence');
-    if (!filtro || !ruido || filtro.dataset.listo) return;
-    filtro.dataset.listo = '1';
+    if (!header || !filtro || !ruido) return;
     const chromium = (navigator as unknown as { userAgentData?: { brands?: { brand: string }[] } }).userAgentData?.brands?.some(
       (b) => b.brand === 'Chromium',
     );
     if (!chromium || !window.CSS?.supports?.('backdrop-filter', 'url(#a)')) return;
-    document.documentElement.style.setProperty('--refraccion', 'url(#liquido) blur(3px) saturate(220%) brightness(1.08)');
+    // La variable va en el <header>, que PERSISTE entre páginas. En <html> se perdía: al navegar sin
+    // recargar, Astro reemplaza los atributos de <html> y el vidrio volvía a ser mate.
+    // Se reaplica en cada carga de página por si algo la quitó.
+    header.style.setProperty('--refraccion', 'url(#liquido) blur(3px) saturate(220%) brightness(1.08)');
+    if (filtro.dataset.listo) return;
+    filtro.dataset.listo = '1';
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
     anim.setAttribute('attributeName', 'baseFrequency');
