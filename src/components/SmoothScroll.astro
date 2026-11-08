@@ -64,17 +64,19 @@
     if (document.querySelector('[data-sin-iman]')) return null;
     if (document.documentElement.classList.contains('chat-bloqueo')) return null;
     const vh = window.innerHeight;
-    const y = window.scrollY;
+    const l = lenis as unknown as { targetScroll?: number } | null;
+    const actual = window.scrollY; // dónde está ahora: las posiciones de las secciones se miden desde aquí
+    const y = typeof l?.targetScroll === 'number' ? l.targetScroll : actual; // dónde IBA a parar el gesto
     const posiciones: number[] = [];
     let zonaLibre = false;
     document.querySelectorAll<HTMLElement>('main section').forEach((sec) => {
       const r = sec.getBoundingClientRect();
       if (r.height < vh * 0.6 || sec.offsetParent === null) return;
-      const arriba = y + r.top;
+      const arriba = actual + r.top;
       posiciones.push(arriba);
       if (r.height > vh * 1.12) {
         // Sección alta: se ancla arriba y abajo, y en medio se lee sin imán.
-        const abajo = y + r.bottom - vh;
+        const abajo = actual + r.bottom - vh;
         posiciones.push(abajo);
         if (y > arriba + vh * 0.3 && y < abajo - vh * 0.3) zonaLibre = true;
       }
@@ -83,7 +85,7 @@
     posiciones.sort((m, n) => m - n);
     const antes = [...posiciones].reverse().find((p) => p <= y + 2);
     const despues = posiciones.find((p) => p > y + 2);
-    const umbral = vh * 0.12; // menos que esto es un roce: vuelve; más, avanza
+    const umbral = vh * 0.05; // menos que esto es un roce: vuelve; más, avanza
     let destino: number | undefined;
     if (direccion >= 0) {
       destino = antes !== undefined && y - antes < umbral ? antes : despues ?? undefined;
@@ -102,24 +104,39 @@
     if (destino === null) return;
     asentando = true;
     lenis.scrollTo(destino, {
-      duration: 0.85,
+      duration: 0.42,
       easing: (t: number) => 1 - Math.pow(1 - t, 3),
       lock: false,
+      force: true,
       onComplete: () => { asentando = false; },
     });
     // Seguro por si la animación se interrumpe y nunca llama a onComplete.
-    window.setTimeout(() => { asentando = false; }, 1200);
+    window.setTimeout(() => { asentando = false; }, 800);
   }
 
   function armarIman() {
     window.clearTimeout(temporizador);
+    // Fuera de la rueda (teclado, barra de scroll): al reposar.
     lenis?.on('scroll', (e: { direction?: number }) => {
       if (asentando) return;
       if (e.direction) direccion = e.direction;
       window.clearTimeout(temporizador);
-      temporizador = window.setTimeout(alReposar, 140);
+      temporizador = window.setTimeout(alReposar, 110);
     });
   }
+
+  // La rueda: el imán actúa 60 ms después del último giro, sin esperar a que termine la
+  // inercia del scroll suave (que tarda más de un segundo). Decide por donde IBA a parar.
+  let finRueda: number | undefined;
+  window.addEventListener('wheel', (e) => {
+    if (!lenis) return;
+    if ((e.target as HTMLElement)?.closest?.('[data-lenis-prevent]')) return; // se desplaza algo interno (el chat)
+    if (e.deltaY !== 0) direccion = e.deltaY > 0 ? 1 : -1;
+    asentando = false;
+    window.clearTimeout(temporizador);
+    window.clearTimeout(finRueda);
+    finRueda = window.setTimeout(alReposar, 60);
+  }, { passive: true });
 
   window.addEventListener('touchstart', () => { tocando = true; }, { passive: true });
   window.addEventListener('touchend', () => {

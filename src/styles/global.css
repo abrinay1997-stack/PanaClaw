@@ -93,24 +93,58 @@ a{color:inherit;text-decoration:none;}
      viewport. El aire de la marca se da con su propio padding. */
   padding:9px;
   border-radius:999px;
-  /* Vidrio ahumado (como el menú de D'CASA, en oscuro): se ve lo que pasa por
-     detrás, desenfocado y más vivo, pero el oscuro de la marca manda para que
-     el texto se lea sobre cualquier captura. */
   position:relative;
-  background:linear-gradient(180deg,rgba(32,8,8,.62) 0%,rgba(12,2,2,.58) 100%);
-  backdrop-filter:blur(20px) saturate(190%);
-  -webkit-backdrop-filter:blur(20px) saturate(190%);
-  border:1px solid rgba(255,255,255,.14);
-  box-shadow:0 14px 48px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(255,81,0,.12);
+  isolation:isolate;
   width:100%;
-  transition:padding .28s ease, background .28s ease;
+  transition:padding .28s ease;
 }
-/* Brillo de borde a borde en la mitad de arriba, como la luz sobre un cristal. */
+/* VIDRIO LÍQUIDO (el mismo mecanismo que la cabecera de D'CASA).
+   El vidrio va en una capa propia y no en la píldora: `backdrop-filter` convierte a
+   su elemento en contenedor de los hijos fijos y el menú móvil quedaría encerrado.
+   En Chromium, `--refraccion` (la pone Nav.astro) añade el filtro `#liquido`: lo que
+   pasa por detrás se ve ondulado, como a través de agua. En el resto, desenfoque. */
 .nav-pill::before{
-  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,0) 52%);
+  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
+  background:rgba(22,6,6,.40);
+  -webkit-backdrop-filter:var(--refraccion,blur(18px) saturate(200%) brightness(1.1));
+  backdrop-filter:var(--refraccion,blur(18px) saturate(200%) brightness(1.1));
+  border:1px solid rgba(255,255,255,.30);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.6),
+    inset 0 -1px 0 rgba(255,255,255,.2),
+    inset 0 0 0 1px rgba(255,255,255,.06),
+    0 16px 40px -20px rgba(0,0,0,.75);
+  transition:background .28s ease,border-color .28s ease;
 }
+/* Reflejo: una franja de luz que cruza la píldora al pasar el puntero. Se mueve con
+   clip-path, no con transform: una caja desplazada agranda el ancho de la página. */
+.nav-pill::after{
+  content:"";position:absolute;inset:1px;z-index:-1;border-radius:inherit;pointer-events:none;
+  background:rgba(255,255,255,.18);
+  clip-path:polygon(-22% 0,0 0,-10% 100%,-32% 100%);
+  opacity:0;
+  transition:clip-path .9s cubic-bezier(.22,1,.36,1),opacity .4s ease;
+}
+.nav-pill:hover::after{clip-path:polygon(100% 0,122% 0,112% 100%,90% 100%);opacity:1;}
 .nav-pill > *{position:relative;}
+/* Un SVG con el filtro de refracción, sin ocupar lugar. */
+.filtro-liquido{position:absolute;width:0;height:0;overflow:hidden;}
+/* La gota: una burbuja de vidrio que se desliza con rebote hasta el enlace bajo el
+   puntero o con el foco, y reposa en el de la página actual. */
+.nav-pill nav{position:relative;}
+.nav-links{position:relative;z-index:1;}
+.nav-gota{
+  position:absolute;top:0;left:0;z-index:0;
+  height:var(--gota-alto,36px);width:var(--gota-ancho,0px);
+  transform:translate3d(var(--gota-x,0px),var(--gota-y,0px),0);
+  border-radius:999px;
+  background:rgba(255,255,255,.13);
+  border:1px solid rgba(255,255,255,.42);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.65),inset 0 -1px 0 rgba(255,255,255,.22);
+  opacity:0;pointer-events:none;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1),width .5s cubic-bezier(.34,1.56,.64,1),opacity .18s ease;
+}
+.nav-gota.is-visible{opacity:1;}
 .nav-pill nav{display:flex;justify-content:center;}
 .nav-links{
   display:flex;
@@ -129,11 +163,8 @@ a{color:inherit;text-decoration:none;}
   border-radius:999px;
   transition:color .25s, background .25s, padding .28s ease;
 }
-.nav-links a:hover{color:var(--soft-white);background:rgba(255,255,255,.06);}
-.nav-links a[aria-current="page"]{
-  color:var(--soft-white);
-  background:rgba(255,255,255,.08);
-}
+.nav-links a:hover{color:var(--soft-white);}
+.nav-links a[aria-current="page"]{color:var(--soft-white);}
 
 .brand{
   /* Alineación al centro (no a la baseline): el logo no tiene línea de base y
@@ -226,8 +257,8 @@ a{color:inherit;text-decoration:none;}
 .floating-nav.is-scrolled{top:10px;max-width:1044px;}
 .floating-nav.is-scrolled .nav-pill{
   padding:5px;
-  background:linear-gradient(180deg,rgba(28,6,6,.78) 0%,rgba(10,2,2,.74) 100%);
 }
+.floating-nav.is-scrolled .nav-pill::before{background:rgba(18,4,4,.52);}
 .floating-nav.is-scrolled .brand{padding:6px 0 6px 11px;gap:8px;}
 .floating-nav.is-scrolled .brand-logo{width:24px;height:24px;}
 .floating-nav.is-scrolled .brand-name{font-size:15px;}
@@ -677,6 +708,10 @@ h2.section-title .muted{color:var(--studio-gray);}
     padding:12px 16px;
     text-align:left;
   }
+  /* Sin gota en el desplegable del teléfono: allí el estado se marca con fondo. */
+  .nav-gota{display:none;}
+  .nav-pill nav .nav-links a:hover,
+  .nav-pill nav .nav-links a[aria-current="page"]{background:rgba(255,255,255,.08);}
   .nav-toggle{display:flex;}
 }
 @media(max-width:640px){
