@@ -3,8 +3,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Reveal from '../components/Reveal.astro';
 import SectionNav from '../components/SectionNav.astro';
 import { faqGroups, faq } from '../data/faq';
+import { getCollection } from 'astro:content';
 import { routes } from '../data/links';
 import { site, contact, waLink } from '../data/site';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const recientes = posts.slice(0, 6);
+const etiquetas: Record<string, string> = {
+  precios: 'Precios', guias: 'Guía', comparativas: 'Comparativa', casos: 'Caso', panama: 'Panamá',
+};
+const fecha = (d: Date) =>
+  new Intl.DateTimeFormat('es-PA', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
 
 /**
  * Centro de ayuda.
@@ -46,7 +56,7 @@ const faqSchema = {
       <div class="ayuda-index">
         <SectionNav
           label="Secciones de ayuda"
-          items={faqGroups.map((g) => ({ href: `#${g.id}`, label: g.title }))}
+          items={[...faqGroups.map((g) => ({ href: `#${g.id}`, label: g.title })), { href: '#blog', label: 'Del blog' }]}
         />
       </div>
 
@@ -72,6 +82,28 @@ const faqSchema = {
           </div>
         </section>
       ))}
+
+      <!-- El blog vive aquí también: la duda que no está en las preguntas suele estar en un artículo. -->
+      <section class="ayuda-group ayuda-blog" id="blog">
+        <div class="ayuda-group-head">
+          <h2>Del blog</h2>
+          <p>Lo último que escribimos, sin jerga y con datos reales.</p>
+          <a class="ayuda-blog-todos" href={routes.blog}>Ver los {posts.length} artículos →</a>
+        </div>
+        <ul class="ayuda-posts">
+          {recientes.map((post) => (
+            <Reveal as="li">
+              <a class="ayuda-post" href={`/blog/${post.id.replace(/\.md$/, '')}/`}>
+                <span class="ayuda-post-meta">
+                  {etiquetas[post.data.category] ?? post.data.category} · {fecha(post.data.date)}
+                </span>
+                <span class="ayuda-post-title">{post.data.title}</span>
+                <span class="ayuda-post-go" aria-hidden="true">→</span>
+              </a>
+            </Reveal>
+          ))}
+        </ul>
+      </section>
 
       <!-- Salida para lo que no esté cubierto -->
       <aside class="ayuda-more">
@@ -213,6 +245,24 @@ const faqSchema = {
     color: var(--studio-gray);
     line-height: 1.75;
   }
+
+
+  .ayuda-blog-todos { display: inline-block; margin-top: var(--e2); font-size: 14px; color: var(--flash-orange); text-decoration: underline; text-underline-offset: .18em; text-decoration-thickness: 1px; }
+  .ayuda-posts { list-style: none; display: grid; }
+  .ayuda-post {
+    display: grid; grid-template-columns: 1fr auto; gap: 4px var(--e3); align-items: center;
+    padding: var(--e2) 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: padding-left .25s, background .25s;
+  }
+  .ayuda-post:hover { padding-left: var(--e1); background: rgba(255, 81, 0, 0.05); }
+  .ayuda-post:focus-visible { outline: 2px solid var(--flash-orange); outline-offset: -2px; }
+  .ayuda-post-meta { grid-column: 1; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--flash-orange); }
+  .ayuda-post-title { grid-column: 1; font-size: 18px; font-weight: 500; line-height: 1.35; }
+  .ayuda-post-go { grid-column: 2; grid-row: 1 / span 2; color: var(--studio-gray); transition: transform .25s, color .25s; }
+  .ayuda-post:hover .ayuda-post-go { color: var(--flash-orange); transform: translateX(4px); }
+
+  /* Una pregunta-grupo, una pantalla. */
+  .ayuda-group { min-height: 100svh; align-content: center; }
 
   .ayuda-more {
     display: flex;
