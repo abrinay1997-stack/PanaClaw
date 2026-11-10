@@ -75,5 +75,11 @@ jobs:
       - name: Privacidad del chat
         run: npm run medir:privacidad
 
+      # Ataque simulado al chat (inundación, turnos falsos, modelo desviado que
+      # promete precios o regalos). Corre contra el código real con un proveedor de
+      # IA de mentira: no gasta nada.
+      - name: Ataque simulado al chat
+        run: npm run medir:ataque
+
       - name: Galería de proyectos
         run: npm run medir:galeria
