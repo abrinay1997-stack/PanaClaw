@@ -17,6 +17,7 @@
     "medir:chat": "node scripts/check-chat.mjs",
     "medir:galeria": "node scripts/check-galeria.mjs",
     "medir:privacidad": "node scripts/check-privacidad.mjs",
+    "medir:ataque": "node scripts/check-ataque.mjs",
     "medir:enlaces": "node scripts/check-links.mjs",
     "astro": "astro",
     "build:cloudflare": "astro build && node scripts/cloudflare-assets.mjs",

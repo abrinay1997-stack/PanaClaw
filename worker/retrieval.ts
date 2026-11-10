@@ -87,21 +87,94 @@ export function retrieve(kb: Kb, query: string, k = 6): KbFact[] {
 }
 
 /**
+ * Un importe escrito como se escribe en un chat: con puntos de miles, con
+ * decimales en cero, con la coma de miles de la lista blanca. «1.200», «1,200» y
+ * «1200.00» son la misma cifra y tienen que compararse como tal.
+ */
+function normalizaImporte(crudo: string): string {
+  return crudo
+    .replace(/[^0-9.,]/g, '')
+    .replace(/[.,]0+$/, '')
+    .replace(/\.(?=\d{3}(?!\d))/g, ',')
+    .replace(/[^0-9,]/g, '')
+    .replace(/,+$/, '');
+}
+
+/** Sin acentos ni mayúsculas, para comparar «días» con «dias» y «USD» con «usd». */
+function plano(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+const NUMERO_EN_LETRAS =
+  '(?:uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|trece|catorce|quince|' +
+  'dieci\\w+|veinte|veinti\\w+|treinta|cuarenta|cincuenta|sesenta|setenta|ochenta|noventa|' +
+  'cien|ciento|doscientos|trescientos|cuatrocientos|quinientos|seiscientos|setecientos|' +
+  'ochocientos|novecientos|mil|millon|millones)';
+
+/**
  * Importes de la respuesta que NO están en la lista blanca del build.
  *
  * Es la única defensa que no depende de que el modelo obedezca el prompt. En un
  * sitio cuya promesa es "precio público y fijo", una cifra inventada es el peor
  * fallo posible: contradice justo aquello que se vende.
+ *
+ * La primera versión solo miraba «$999». La prueba de ataque del 10-nov-2026 coló
+ * «999 dólares», «999 USD», «999$», «B/. 999» y «novecientos noventa y nueve
+ * dólares»: un modelo desviado no necesita el signo para dar un precio. Ahora se
+ * miran todas las formas de decir dinero, y una cifra en letras seguida de
+ * «dólares» o «balboas» se bloquea siempre (no hay forma segura de leerla; se
+ * manda al cotizador, que es lo que se haría con un precio dudoso).
  */
 export function invalidPrices(reply: string, allowed: string[]): string[] {
-  const found = reply.match(/\$\s?[\d.,]+/g) ?? [];
+  const texto = plano(reply);
   const ok = new Set(allowed);
-  /*
-   * El patrón se lleva la puntuación que sigue a la cifra: en «desde $295, en
-   * Panamá» captura «$295,». Sin quitar esa coma final, un precio correcto
-   * contaba como inventado y el visitante recibía «prefiero no darte una cifra».
-   */
-  return found.map((f) => f.replace(/[^0-9,]/g, '').replace(/,+$/, '')).filter((n) => n && !ok.has(n));
+  const cifras: string[] = [];
+
+  // «$295», «US$ 295»
+  for (const m of texto.matchAll(/\$\s?(\d[\d.,]*)/g)) cifras.push(m[1]);
+  // «295$», «295 dolares», «295 usd», «295 balboas», «295 b/.»
+  for (const m of texto.matchAll(/(\d[\d.,]*)\s?(?:\$|dolares?|usd|balboas?|b\/\.?)/g)) cifras.push(m[1]);
+  // «USD 295», «B/. 295», «balboas 295»
+  for (const m of texto.matchAll(/(?:usd|b\/\.?|balboas?)\s?(\d[\d.,]*)/g)) cifras.push(m[1]);
+
+  const malas = cifras.map(normalizaImporte).filter((n) => n && !ok.has(n));
+
+  const enLetras = new RegExp(`\\b${NUMERO_EN_LETRAS}\\b(?:\\s+(?:y\\s+)?[a-z]+){0,3}\\s+(?:dolares?|balboas?)\\b`);
+  const m = enLetras.exec(texto);
+  if (m) malas.push(m[0]);
+
+  return [...new Set(malas)];
+}
+
+/**
+ * Promesas que no son un importe pero cuestan lo mismo: un descuento, un plazo,
+ * un «gratis». Se permiten SOLO si el hecho que se le dio al modelo ese turno las
+ * dice. Un modelo desviado (o un visitante que le puso palabras en la boca) no
+ * puede regalar nada que el contexto no regale.
+ *
+ * Mira porcentajes, plazos con cifra («en 3 días») y palabras de regalo o
+ * garantía. Lo que no comprueba: plazos en letras («en tres días»).
+ */
+export function promesasSinRespaldo(reply: string, facts: Pick<KbFact, 'text'>[]): string[] {
+  const texto = plano(reply);
+  const base = plano(facts.map((f) => f.text).join('\n'));
+  const malas: string[] = [];
+
+  const porcentajes = (s: string) => new Set([...s.matchAll(/(\d+)\s?%/g)].map((m) => `${m[1]}%`));
+  const bases = porcentajes(base);
+  for (const p of porcentajes(texto)) if (!bases.has(p)) malas.push(p);
+
+  const plazos = (s: string) =>
+    new Set([...s.matchAll(/(\d+)\s?(dias?|semanas?|horas?|meses|mes|anos?)\b/g)].map((m) => `${m[1]} ${m[2].replace(/s$/, '')}`));
+  const plazosBase = plazos(base);
+  for (const p of plazos(texto)) if (!plazosBase.has(p)) malas.push(p);
+
+  const PALABRAS =
+    /\b(gratis|gratuit[oa]s?|sin costo|sin cargo|sin pagar|descuentos?|promocion(?:es)?|ofertas?|garantia|garantizad[oa]s?|reembolso|devolucion|regalo|regalamos|regalad[oa]s?)\b/g;
+  const permitidas = new Set([...base.matchAll(PALABRAS)].map((m) => m[1]));
+  for (const m of texto.matchAll(PALABRAS)) if (!permitidas.has(m[1])) malas.push(m[1]);
+
+  return [...new Set(malas)];
 }
 
 /**
